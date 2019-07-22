@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.vehicle.out.model.VehicleOutStocks" table="vehicle_out_stocks" schema="dbo">
+        <id name="outStockNo" column="out_stock_no"/>
+        <property name="stationId" column="station_id"/>
+        <property name="outStockTime" column="out_stock_time"/>
+        <property name="outStockCount" column="out_stock_count"/>
+        <property name="outStockMoney" column="out_stock_money"/>
+        <property name="outStockType" column="out_stock_type"/>
+        <property name="originalStockType" column="original_stock_type"/>
+        <property name="contractNo" column="contract_no"/>
+        <property name="contractCode" column="contract_code"/>
+        <property name="customerType" column="customer_type"/>
+        <property name="customerId" column="customer_id"/>
+        <property name="customerNo" column="customer_no"/>
+        <property name="customerName" column="customer_name"/>
+        <property name="deliveryLocus" column="delivery_locus"/>
+        <property name="comment" column="comment"/>
+        <property name="approver" column="approver"/>
+        <property name="approveTime" column="approve_time"/>
+        <property name="approveStatus" column="approve_status"/>
+        <property name="originalOutStockNo" column="original_out_stock_no"/>
+        <property name="cancelReason" column="cancel_reason"/>
+        <property name="targetStationId" column="target_station_id"/>
+        <property name="confirmStatus" column="confirm_status"/>
+        <property name="confirmMan" column="confirm_man"/>
+        <property name="confirmTime" column="confirm_time"/>
+        <property name="vmiNo" column="vmi_no"/>
+        <property name="seller" column="seller"/>
+        <property name="outStockCost" column="out_stock_cost"/>
+        <property name="outStockCarriage" column="out_stock_carriage"/>
+        <property name="totModifiedFee" column="tot_modified_fee"/>
+        <property name="insuranceCost" column="insurance_cost"/>
+        <property name="presentCost" column="present_cost"/>
+        <property name="chargeCost" column="charge_cost"/>
+        <property name="unitNo" column="unit_no"/>
+        <property name="unitName" column="unit_name"/>
+        <property name="creator" column="creator"/>
+        <property name="createTime" column="create_time"/>
+        <property name="modifier" column="modifier"/>
+        <property name="modifyTime" column="modify_time"/>
+        <property name="carryCompanyId" column="carry_company_id"/>
+        <property name="carryCompanyNo" column="carry_company_no"/>
+        <property name="carryCompanyName" column="carry_company_name"/>
+        <property name="carriage" column="carriage"/>
+        <property name="remark" column="remark"/>
+        <property name="sellerCallBackFlag" column="seller_call_back_flag"/>
+        <property name="errorCode" column="error_code"/>
+        <property name="errorMsg" column="error_msg"/>
+        <property name="identifier" column="identifier"/>
+        <property name="saleDepartmentId" column="sale_department_id"/>
+        <property name="departmentId" column="department_id"/>
+        <property name="documentNo" column="document_no"/>
+        <property name="status" column="status"/>
+        <property name="userId" column="user_id"/>
+        <property name="userNo" column="user_no"/>
+        <property name="userName" column="user_name"/>
+        <property name="departmentNo" column="department_no"/>
+        <property name="departmentName" column="department_name"/>
+        <property name="submitStationId" column="submit_station_id"/>
+        <property name="submitStationName" column="submit_station_name"/>
+        <property name="submitTime" column="submit_time"/>
+        <property name="approverId" column="approver_id"/>
+        <property name="approverNo" column="approver_no"/>
+        <property name="approverName" column="approver_name"/>
+        <property name="vatNo" column="vat_no"/>
+
+
+
+    </class>
+</hibernate-mapping>

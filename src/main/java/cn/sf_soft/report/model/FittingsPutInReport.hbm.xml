@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="cn.sf_soft.report.model.FittingsPutInReport" abstract="true">
+    	<id name="id">
+    		<column name="id"></column>
+    		<generator class="assigned"/>
+    	</id>
+    	<property name="stationName">
+    		<column name="station_name"></column>
+    	</property>
+    	<property name="analyseType">
+    		<column name="analyse_type"></column>
+    	</property>
+    	<property name="analyseCount">
+    		<column name="analyse_count"></column>
+    	</property>
+    	<property name="analyseResult">
+    		<column name="analyse_result"></column>
+    	</property>
+    	<property name="sort">
+    		<column name="sort"></column>
+    	</property>
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class name="cn.sf_soft.office.approval.model.ApproveLevelsPoints" table="base_approve_levels_points" schema="dbo" >
+        <id name="balpId" type="java.lang.String">
+            <column name="balp_id" length="40" />
+            <generator class="assigned" />
+        </id>
+        <property name="levelId" type="java.lang.String">
+            <column name="level_id" length="40" not-null="true" />
+        </property>
+        <property name="approveName" type="java.lang.String">
+            <column name="approve_name" not-null="true" sql-type="nvarchar(40)"/>
+        </property>
+        <property name="approveMode" type="java.lang.Short">
+            <column name="approve_mode" not-null="true" sql-type="tinyint"/>
+        </property>
+        <property name="approverId" type="java.lang.String">
+            <column name="approver_id"/>
+        </property>
+          <property name="approverNo" type="java.lang.String">
+            <column name="approver_no"/>
+        </property>
+         <property name="approverName" type="java.lang.String">
+            <column name="approver_name"/>
+        </property>
+        <property name="boundValue" type="java.lang.String">
+            <column name="bound_value" />
+        </property>
+        <property name="boundItem" type="java.lang.String">
+            <column name="bound_item" sql-type="nvarchar(MAX)"/>
+        </property>
+        <property name="boundExcept" type="java.lang.Boolean">
+            <column name="bound_except" not-null="true" />
+        </property>
+        <property name="remark" type="java.lang.String">
+            <column name="remark" sql-type="nvarchar(MAX)"/>
+        </property>
+        
+        <set name="levelPointCondition" table="base_approve_levels_points_conditions">
+        	<key column="balp_id"/>
+        	<one-to-many class="cn.sf_soft.office.approval.model.ApproveLevelsPointsConditions"/>
+        </set>
+    </class>
+</hibernate-mapping>

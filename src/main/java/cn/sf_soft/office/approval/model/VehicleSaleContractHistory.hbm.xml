@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.office.approval.model.VehicleSaleContractHistory" table="vehicle_sale_contract_history" schema="dbo">
+        <id name="historyId" column="history_id"/>
+        <property name="sort" column="sort"/>
+        <property name="contractNo" column="contract_no"/>
+        <property name="varyTime" column="vary_time"/>
+        <property name="deposit" column="deposit"/>
+        <property name="depositOri" column="deposit_ori"/>
+        <property name="depositNew" column="deposit_new"/>
+        <property name="saleMode" column="sale_mode"/>
+        <property name="saleModeOri" column="sale_mode_ori"/>
+        <property name="saleModeNew" column="sale_mode_new"/>
+        <property name="signTime" column="sign_time"/>
+        <property name="signTimeOri" column="sign_time_ori"/>
+        <property name="signTimeNew" column="sign_time_new"/>
+        <property name="planFinishTime" column="plan_finish_time"/>
+        <property name="planFinishTimeOri" column="plan_finish_time_ori"/>
+        <property name="planFinishTimeNew" column="plan_finish_time_new"/>
+        <property name="deliveryLocus" column="delivery_locus"/>
+        <property name="deliveryLocusOri" column="delivery_locus_ori"/>
+        <property name="deliveryLocusNew" column="delivery_locus_new"/>
+        <property name="seller" column="seller"/>
+        <property name="sellerOri" column="seller_ori"/>
+        <property name="sellerNew" column="seller_new"/>
+        <property name="visitorName" column="visitor_name"/>
+        <property name="visitorNameOri" column="visitor_name_ori"/>
+        <property name="visitorNameNew" column="visitor_name_new"/>
+        <property name="customerName" column="customer_name"/>
+        <property name="customerNameOri" column="customer_name_ori"/>
+        <property name="customerNameNew" column="customer_name_new"/>
+        <property name="customerCertificateType" column="customer_certificate_type"/>
+        <property name="customerCertificateTypeOri" column="customer_certificate_type_ori"/>
+        <property name="customerCertificateTypeNew" column="customer_certificate_type_new"/>
+        <property name="customerCertificateNo" column="customer_certificate_no"/>
+        <property name="customerCertificateNoOri" column="customer_certificate_no_ori"/>
+        <property name="customerCertificateNoNew" column="customer_certificate_no_new"/>
+        <property name="customerMobile" column="customer_mobile"/>
+        <property name="customerMobileOri" column="customer_mobile_ori"/>
+        <property name="customerMobileNew" column="customer_mobile_new"/>
+        <property name="profession" column="profession"/>
+        <property name="professionOri" column="profession_ori"/>
+        <property name="professionNew" column="profession_new"/>
+        <property name="creator" column="creator"/>
+        <property name="createTime" column="create_time"/>
+        <property name="status" column="status"/>
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,975 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- 定义各报表统计的 SQL语句； 注意name属性的值不能重复 -->
+<hibernate-mapping>
+
+	
+	<!-- =======================================资金账户======================================= -->
+	<!-- 资金账户查询 -->
+	<sql-query name="getFundsAccounts">
+		<return class="cn.sf_soft.finance.funds.model.FundsAccounts"/>
+			<![CDATA[
+								SELECT  a.* ,
+			        b.meaning AS account_type_meaning ,
+			        c.meaning AS account_kind_meaning ,
+			        ISNULL(d.amount, 0.00) AS beginning_balance ,
+			        ISNULL(e.debit_amount, 0.00) AS debit_amount ,
+			        ISNULL(e.debit_count, 0) AS debit_count ,
+			        ISNULL(e.credit_amount, 0.00) AS credit_amount ,
+			        ISNULL(e.credit_count, 0) AS credit_count
+			FROM    ( SELECT    account_id ,
+			                    account_no ,
+			                    account_name ,
+			                    bank_account_name ,
+			                    bank_name ,
+			                    bank_number ,
+			                    address ,
+			                    account_type ,
+			                    account_kind
+			          FROM      base_funds_accounts
+			          WHERE     (	 station_id IS NULL  
+			                    	  :station
+			                    )
+			                    AND status = 1
+			                    AND ( account_type < 40
+			                          OR account_type > 30
+			                          OR default_user = :userId
+			                        )
+			        ) a
+			        LEFT JOIN ( SELECT  code ,
+			                            meaning
+			                    FROM    sys_flags
+			                    WHERE   field_no = 'funds_account_type'
+			                  ) b ON a.account_type = b.code
+			        LEFT JOIN ( SELECT  code ,
+			                            meaning
+			                    FROM    sys_flags
+			                    WHERE   field_no = 'funds_account_kind'
+			                  ) c ON a.account_kind = c.code
+			        LEFT JOIN ( SELECT  account_id ,
+			                            SUM(CASE WHEN entry_type < 50
+			                                     THEN -document_amount
+			                                     ELSE document_amount
+			                                END) AS amount
+			                    FROM    finance_document_entries
+			                    WHERE   account_id IS NOT NULL
+			                            AND DATEDIFF(DAY, :beginTime, document_time) < 0
+			                    GROUP BY account_id
+			                  ) d ON a.account_id = d.account_id
+			        LEFT JOIN ( SELECT  account_id ,
+			                            SUM(CASE WHEN entry_type < 50 THEN document_amount
+			                                     ELSE 0.00
+			                                END) AS debit_amount ,
+			                            SUM(CASE WHEN entry_type < 50 THEN 1
+			                                     ELSE 0
+			                                END) AS debit_count ,
+			                            SUM(CASE WHEN entry_type < 50 THEN 0.00
+			                                     ELSE document_amount
+			                                END) AS credit_amount ,
+			                            SUM(CASE WHEN entry_type < 50 THEN 0
+			                                     ELSE 1
+			                                END) AS credit_count
+			                    FROM    finance_document_entries
+			                    WHERE   account_id IS NOT NULL
+			                            AND DATEDIFF(DAY, :beginTime, document_time) >= 0
+			                            AND DATEDIFF(DAY, :endTime, document_time) <= 0
+			                    GROUP BY account_id
+			                  ) e ON a.account_id = e.account_id where 1=1  :hql
+			ORDER BY a.account_type ,
+			        a.account_no
+       		]]>
+	</sql-query>
+	
+	<!--资金账户查询总记录数  -->
+	<sql-query name="getFundsAccountsCount">
+			<![CDATA[
+					SELECT COUNT(*) as total_count FROM ( 	SELECT  a.* ,
+			        b.meaning AS account_type_meaning ,
+			        c.meaning AS account_kind_meaning ,
+			        ISNULL(d.amount, 0.00) AS beginning_balance ,
+			        ISNULL(e.debit_amount, 0.00) AS debit_amount ,
+			        ISNULL(e.debit_count, 0) AS debit_count ,
+			        ISNULL(e.credit_amount, 0.00) AS credit_amount ,
+			        ISNULL(e.credit_count, 0) AS credit_count
+			FROM    ( SELECT    account_id ,
+			                    account_no ,
+			                    account_name ,
+			                    bank_account_name ,
+			                    bank_name ,
+			                    bank_number ,
+			                    address ,
+			                    account_type ,
+			                    account_kind
+			          FROM      base_funds_accounts
+			          WHERE     (	 station_id IS NULL  
+			                    	  :station
+			                    )
+			                    AND status = 1
+			                    AND ( account_type < 40
+			                          OR account_type > 30
+			                          OR default_user = :userId
+			                        )
+			        ) a
+			        LEFT JOIN ( SELECT  code ,
+			                            meaning
+			                    FROM    sys_flags
+			                    WHERE   field_no = 'funds_account_type'
+			                  ) b ON a.account_type = b.code
+			        LEFT JOIN ( SELECT  code ,
+			                            meaning
+			                    FROM    sys_flags
+			                    WHERE   field_no = 'funds_account_kind'
+			                  ) c ON a.account_kind = c.code
+			        LEFT JOIN ( SELECT  account_id ,
+			                            SUM(CASE WHEN entry_type < 50
+			                                     THEN -document_amount
+			                                     ELSE document_amount
+			                                END) AS amount
+			                    FROM    finance_document_entries
+			                    WHERE   account_id IS NOT NULL
+			                            AND DATEDIFF(DAY, :beginTime, document_time) < 0
+			                    GROUP BY account_id
+			                  ) d ON a.account_id = d.account_id
+			        LEFT JOIN ( SELECT  account_id ,
+			                            SUM(CASE WHEN entry_type < 50 THEN document_amount
+			                                     ELSE 0.00
+			                                END) AS debit_amount ,
+			                            SUM(CASE WHEN entry_type < 50 THEN 1
+			                                     ELSE 0
+			                                END) AS debit_count ,
+			                            SUM(CASE WHEN entry_type < 50 THEN 0.00
+			                                     ELSE document_amount
+			                                END) AS credit_amount ,
+			                            SUM(CASE WHEN entry_type < 50 THEN 0
+			                                     ELSE 1
+			                                END) AS credit_count
+			                    FROM    finance_document_entries
+			                    WHERE   account_id IS NOT NULL
+			                            AND DATEDIFF(DAY, :beginTime, document_time) >= 0
+			                            AND DATEDIFF(DAY, :endTime, document_time) <= 0
+			                    GROUP BY account_id
+			                  ) e ON a.account_id = e.account_id where 1=1  :hql
+			) g
+       		]]>
+	</sql-query>
+	
+	<!--资金账户查询总计 -->
+	<sql-query name="getTotalCountOfFundsAccounts">
+		<return class="cn.sf_soft.finance.funds.model.TotalCountOfFundsAccounts"/>
+			<![CDATA[
+			SELECT  SUM(h.beginning_balance) AS total_beginning_balance,
+					SUM(h.debit_amount) AS total_debit_amount,
+					SUM(h.credit_amount) AS total_credit_amount,
+					SUM(h.debit_count) AS total_debit_count,
+					SUM(h.credit_count)  AS total_credit_count      
+					FROM ( 	SELECT  a.* ,
+			        b.meaning AS account_type_meaning ,
+			        c.meaning AS account_kind_meaning ,
+			        ISNULL(d.amount, 0.00) AS beginning_balance ,
+			        ISNULL(e.debit_amount, 0.00) AS debit_amount ,
+			        ISNULL(e.debit_count, 0) AS debit_count ,
+			        ISNULL(e.credit_amount, 0.00) AS credit_amount ,
+			        ISNULL(e.credit_count, 0) AS credit_count
+			FROM    ( SELECT    account_id ,
+			                    account_no ,
+			                    account_name ,
+			                    bank_account_name ,
+			                    bank_name ,
+			                    bank_number ,
+			                    address ,
+			                    account_type ,
+			                    account_kind
+			          FROM      base_funds_accounts
+			          WHERE     (	 station_id IS NULL  
+			                    	  :station
+			                    )
+			                    AND status = 1
+			                    AND ( account_type < 40
+			                          OR account_type > 30
+			                          OR default_user = :userId
+			                        )
+			        ) a
+			        LEFT JOIN ( SELECT  code ,
+			                            meaning
+			                    FROM    sys_flags
+			                    WHERE   field_no = 'funds_account_type'
+			                  ) b ON a.account_type = b.code
+			        LEFT JOIN ( SELECT  code ,
+			                            meaning
+			                    FROM    sys_flags
+			                    WHERE   field_no = 'funds_account_kind'
+			                  ) c ON a.account_kind = c.code
+			        LEFT JOIN ( SELECT  account_id ,
+			                            SUM(CASE WHEN entry_type < 50
+			                                     THEN -document_amount
+			                                     ELSE document_amount
+			                                END) AS amount
+			                    FROM    finance_document_entries
+			                    WHERE   account_id IS NOT NULL
+			                            AND DATEDIFF(DAY, :beginTime, document_time) < 0
+			                    GROUP BY account_id
+			                  ) d ON a.account_id = d.account_id
+			        LEFT JOIN ( SELECT  account_id ,
+			                            SUM(CASE WHEN entry_type < 50 THEN document_amount
+			                                     ELSE 0.00
+			                                END) AS debit_amount ,
+			                            SUM(CASE WHEN entry_type < 50 THEN 1
+			                                     ELSE 0
+			                                END) AS debit_count ,
+			                            SUM(CASE WHEN entry_type < 50 THEN 0.00
+			                                     ELSE document_amount
+			                                END) AS credit_amount ,
+			                            SUM(CASE WHEN entry_type < 50 THEN 0
+			                                     ELSE 1
+			                                END) AS credit_count
+			                    FROM    finance_document_entries
+			                    WHERE   account_id IS NOT NULL
+			                            AND DATEDIFF(DAY, :beginTime, document_time) >= 0
+			                            AND DATEDIFF(DAY, :endTime, document_time) <= 0
+			                    GROUP BY account_id
+			                  ) e ON a.account_id = e.account_id where 1=1  :hql
+			) h
+       		]]>
+	</sql-query>
+	
+	
+	
+	
+	
+	
+	<!--出入明细  -->
+	
+	<sql-query name="getFinanceDocumentEntries">
+		<return class="cn.sf_soft.finance.funds.model.FinanceDocument"/>
+			<![CDATA[
+					SELECT 
+			        a.* ,
+			        b.account_no ,
+			        b.account_name ,
+			        c.station_name ,
+			        d.meaning AS amount_type_meaning ,
+			        e.meaning AS account_type_meaning ,
+			        CASE WHEN a.entry_type < 50 THEN a.document_amount
+			             ELSE 0.00
+			        END AS debit_amount ,
+			        CASE WHEN a.entry_type < 50 THEN 0.00
+			             ELSE a.document_amount
+			        END AS credit_amount ,
+			        ( SELECT    SUM(CASE WHEN entry_type < 50 THEN -document_amount
+			                             ELSE document_amount
+			                        END)
+			          FROM      finance_document_entries
+			          WHERE     account_id IS NOT NULL
+			                    AND account_id = a.account_id
+			                    AND document_time <= a.document_time
+			        ) AS account_balance
+					FROM    finance_document_entries a  
+			        LEFT  
+					JOIN ( SELECT   account_id ,
+			                account_no ,
+			                account_name ,
+			                account_type ,
+			                default_user
+			       FROM     base_funds_accounts
+			     ) b ON a.account_id = b.account_id
+			        LEFT JOIN ( SELECT  station_id ,
+			                            station_name
+			                    FROM    sys_stations
+			                  ) c ON a.station_id = c.station_id
+			        LEFT JOIN ( SELECT  code ,
+			                            meaning
+			                    FROM    sys_flags
+			                    WHERE   field_no = 'amount_type'
+			                  ) d ON a.amount_type = d.code
+			        LEFT JOIN ( SELECT  code ,
+			                            meaning
+			                    FROM    sys_flags
+			                    WHERE   field_no = 'funds_account_type'
+			                  ) e ON b.account_type = e.code
+			WHERE   a.account_id IS NOT NULL
+			        AND ( b.account_type < 40
+			              OR b.account_type > 30
+			              OR b.default_user = :userId
+			            )
+			        AND a.account_id = :accountId  
+			                :hql
+			ORDER BY a.document_time DESC
+       		]]>
+	</sql-query>
+	
+	<!--出入明细总记录数  -->
+	
+	<sql-query name="getFinanceDocumentEntriesCount">
+			<![CDATA[
+					SELECT COUNT(*) as total_count FROM ( SELECT 
+			        a.* ,
+			        b.account_no ,
+			        b.account_name ,
+			        c.station_name ,
+			        d.meaning AS amount_type_meaning ,
+			        e.meaning AS account_type_meaning ,
+			        CASE WHEN a.entry_type < 50 THEN a.document_amount
+			             ELSE 0.00
+			        END AS debit_amount ,
+			        CASE WHEN a.entry_type < 50 THEN 0.00
+			             ELSE a.document_amount
+			        END AS credit_amount ,
+			        ( SELECT    SUM(CASE WHEN entry_type < 50 THEN -document_amount
+			                             ELSE document_amount
+			                        END)
+			          FROM      finance_document_entries
+			          WHERE     account_id IS NOT NULL
+			                    AND account_id = a.account_id
+			                    AND document_time <= a.document_time
+			        ) AS account_balance
+					FROM    finance_document_entries a  
+			        LEFT  
+					JOIN ( SELECT   account_id ,
+			                account_no ,
+			                account_name ,
+			                account_type ,
+			                default_user
+			       FROM     base_funds_accounts
+			     ) b ON a.account_id = b.account_id
+			        LEFT JOIN ( SELECT  station_id ,
+			                            station_name
+			                    FROM    sys_stations
+			                  ) c ON a.station_id = c.station_id
+			        LEFT JOIN ( SELECT  code ,
+			                            meaning
+			                    FROM    sys_flags
+			                    WHERE   field_no = 'amount_type'
+			                  ) d ON a.amount_type = d.code
+			        LEFT JOIN ( SELECT  code ,
+			                            meaning
+			                    FROM    sys_flags
+			                    WHERE   field_no = 'funds_account_type'
+			                  ) e ON b.account_type = e.code
+			WHERE   a.account_id IS NOT NULL
+			        AND ( b.account_type < 40
+			              OR b.account_type > 30
+			              OR b.default_user = :userId
+			            )
+			        AND a.account_id = :accountId  
+			             :hql
+					  )g
+       		]]>
+	</sql-query>
+	
+	<!-- 出入明细总计  -->
+	
+	<sql-query name="getTotalCountOfFinance">
+		<return class="cn.sf_soft.finance.funds.model.TotalCountOfFinance"/>
+			<![CDATA[
+					SELECT  SUM(h.debit_amount) AS total_debit_amount,SUM(h.credit_amount)AS total_credit_amount FROM ( SELECT 
+			        a.* ,
+			        b.account_no ,
+			        b.account_name ,
+			        c.station_name ,
+			        d.meaning AS amount_type_meaning ,
+			        e.meaning AS account_type_meaning ,
+			        CASE WHEN a.entry_type < 50 THEN a.document_amount
+			             ELSE 0.00
+			        END AS debit_amount ,
+			        CASE WHEN a.entry_type < 50 THEN 0.00
+			             ELSE a.document_amount
+			        END AS credit_amount ,
+			        ( SELECT    SUM(CASE WHEN entry_type < 50 THEN -document_amount
+			                             ELSE document_amount
+			                        END)
+			          FROM      finance_document_entries
+			          WHERE     account_id IS NOT NULL
+			                    AND account_id = a.account_id
+			                    AND document_time <= a.document_time
+			        ) AS account_balance
+					FROM    finance_document_entries a  
+			        LEFT  
+					JOIN ( SELECT   account_id ,
+			                account_no ,
+			                account_name ,
+			                account_type ,
+			                default_user
+			       FROM     base_funds_accounts
+			     ) b ON a.account_id = b.account_id
+			        LEFT JOIN ( SELECT  station_id ,
+			                            station_name
+			                    FROM    sys_stations
+			                  ) c ON a.station_id = c.station_id
+			        LEFT JOIN ( SELECT  code ,
+			                            meaning
+			                    FROM    sys_flags
+			                    WHERE   field_no = 'amount_type'
+			                  ) d ON a.amount_type = d.code
+			        LEFT JOIN ( SELECT  code ,
+			                            meaning
+			                    FROM    sys_flags
+			                    WHERE   field_no = 'funds_account_type'
+			                  ) e ON b.account_type = e.code
+			WHERE   a.account_id IS NOT NULL
+			        AND ( b.account_type < 40
+			              OR b.account_type > 30
+			              OR b.default_user = :userId
+			            )
+			        AND a.account_id = :accountId  
+			             :hql
+					  )h
+       		]]>
+	</sql-query>
+	
+	<!-- 账户类型  -->
+	
+	<sql-query name="getfundsAccountType">
+			<![CDATA[
+					SELECT   meaning  
+                    FROM    sys_flags
+                    WHERE   field_no = 'funds_account_type'
+       		]]>
+	</sql-query>
+
+	<!-- 查询应付款统计 -->
+	<sql-query name="getReceivableByStationId">
+		<![CDATA[
+ SELECT a.station_id AS 站点ID, station_name 站点名称, business_type AS 业务名称, receive_amount_amount AS 应收总额,
+	   receive_amount AS 正常应收, receive_amount_over AS 逾期应收
+FROM ( SELECT a.*, b.receive_amount_amount, c.receive_amount_over, d.receive_amount
+	   FROM ( SELECT DISTINCT station_id, station_name, business_type
+			  FROM vw_finance_settlement
+			  WHERE (( entry_property & 2 = 2
+						 AND entry_type IN ( 10, 15 ))
+						OR ( entry_property & 1 = 1
+							   AND entry_type IN ( 70 )))
+				  AND left_amount <> 0
+				  AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+				  AND object_id IN ( SELECT object_id FROM base_related_objects )
+				  AND station_id :stationIds --站点ID 查询条件
+				  AND DATEDIFF (DAY, DATEADD(yy, -1, GETDATE()), document_time) >= 0  --单据日期 查询条年
+				  AND DATEDIFF (DAY, GETDATE(), document_time) <= 0 ) AS a
+	   LEFT JOIN ( SELECT station_id, business_type,
+						  SUM (CASE WHEN entry_type = 70 THEN 0 - left_amount
+							   ELSE left_amount END) / 10000 AS receive_amount_amount
+				   FROM vw_finance_settlement
+				   WHERE (( entry_property & 2 = 2
+							  AND entry_type IN ( 10, 15 ))
+							 OR ( entry_property & 1 = 1
+									AND entry_type IN ( 70 )))
+					   AND left_amount <> 0
+					   AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+					   AND object_id IN ( SELECT object_id FROM base_related_objects )
+					   AND station_id :stationIds --站点ID 查询条件
+					   AND DATEDIFF (DAY, DATEADD(yy, -1, GETDATE()), document_time) >= 0  --单据日期 查询条年
+					   AND DATEDIFF (DAY, GETDATE(), document_time) <= 0
+				   GROUP BY business_type, station_id ) AS b ON a.business_type = b.business_type
+																 AND a.station_id = b.station_id
+	   LEFT JOIN ( SELECT station_id, business_type,
+						  SUM (CASE WHEN entry_type = 70 THEN 0 - left_amount
+							   ELSE left_amount END) / 10000 AS receive_amount_over
+				   FROM vw_finance_settlement
+				   WHERE (( entry_property & 2 = 2
+							  AND entry_type IN ( 10, 15 ))
+							 OR ( entry_property & 1 = 1
+									AND entry_type IN ( 70 )))
+					   AND left_amount <> 0
+					   AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+					   AND object_id IN ( SELECT object_id FROM base_related_objects )
+					   AND DATEDIFF (DAY, ISNULL (arap_time, document_time), GETDATE ()) > 0
+					   AND station_id :stationIds --站点ID 查询条件
+					   AND DATEDIFF (DAY, DATEADD(yy, -1, GETDATE()), document_time) >= 0  --单据日期 查询条年
+					   AND DATEDIFF (DAY, GETDATE(), document_time) <= 0
+				   GROUP BY station_id, business_type ) AS c ON a.station_id = c.station_id
+																 AND a.business_type = c.business_type
+	   LEFT JOIN ( SELECT station_id, business_type, SUM (CASE WHEN entry_type = 70 THEN 0 - left_amount
+														  ELSE left_amount END) / 10000 AS receive_amount
+				   FROM vw_finance_settlement
+				   WHERE (( entry_property & 2 = 2
+							  AND entry_type IN ( 10, 15 ))
+							 OR ( entry_property & 1 = 1
+									AND entry_type IN ( 70 )))
+					   AND left_amount <> 0
+					   AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+					   AND object_id IN ( SELECT object_id FROM base_related_objects )
+					   AND DATEDIFF (DAY, ISNULL (arap_time, document_time), GETDATE ()) <= 0
+					   AND station_id :stationIds --站点ID 查询条件
+					   AND DATEDIFF (DAY, DATEADD(yy, -1, GETDATE()), document_time) >= 0  --单据日期 查询条年
+					   AND DATEDIFF (DAY, GETDATE(), document_time) <= 0
+				   GROUP BY station_id, business_type ) AS d ON a.station_id = d.station_id
+																 AND a.business_type = d.business_type ) AS a
+WHERE 1 = 1
+ORDER BY a.station_id, a.business_type, receive_amount DESC;
+       		]]>
+	</sql-query>
+	<sql-query name="getReceivableByStationIdAndObjectName">
+		<![CDATA[
+SELECT a.station_id AS 站点ID, station_name 站点名称, object_id AS 客户ID, object_name AS 客户名称,
+	   business_type AS 业务名称, receive_amount_amount AS 应收总额, receive_amount AS 正常应收,
+	   receive_amount_over AS 逾期应收
+FROM ( SELECT a.*, b.receive_amount_amount, c.receive_amount_over, d.receive_amount
+	   FROM ( SELECT DISTINCT station_id, station_name, object_id, object_name, business_type
+			  FROM vw_finance_settlement
+			  WHERE (( entry_property & 2 = 2
+						 AND entry_type IN ( 10, 15 ))
+						OR ( entry_property & 1 = 1
+							   AND entry_type IN ( 70 )))
+				  AND left_amount <> 0
+				  AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+				  AND object_id IN ( SELECT object_id FROM base_related_objects )
+				  AND station_id :stationIds --站点ID 查询条件
+				  AND object_name = :objectName --客户名称 查徇条件
+				  AND DATEDIFF (DAY, DATEADD(yy, -1, GETDATE()), document_time) >= 0  --单据日期 查询条年
+				  AND DATEDIFF (DAY, GETDATE(), document_time) <= 0 ) AS a
+	   LEFT JOIN ( SELECT object_id, station_id, business_type,
+						  SUM (CASE WHEN entry_type = 70 THEN 0 - left_amount
+							   ELSE left_amount END) / 10000 AS receive_amount_amount
+				   FROM vw_finance_settlement
+				   WHERE (( entry_property & 2 = 2
+							  AND entry_type IN ( 10, 15 ))
+							 OR ( entry_property & 1 = 1
+									AND entry_type IN ( 70 )))
+					   AND left_amount <> 0
+					   AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+					   AND object_id IN ( SELECT object_id FROM base_related_objects )
+					   AND station_id :stationIds --站点ID 查询条件
+					   AND object_name = :objectName --客户名称 查徇条件
+					   AND DATEDIFF (DAY, DATEADD(yy, -1, GETDATE()), document_time) >= 0  --单据日期 查询条年
+					   AND DATEDIFF (DAY, GETDATE(), document_time) <= 0
+				   GROUP BY object_id, station_id, business_type ) AS b ON a.object_id = b.object_id
+																			AND a.station_id = b.station_id
+																			AND a.business_type = b.business_type
+	   LEFT JOIN ( SELECT object_id, station_id, business_type,
+						  SUM (CASE WHEN entry_type = 70 THEN 0 - left_amount
+							   ELSE left_amount END) / 10000 AS receive_amount_over
+				   FROM vw_finance_settlement
+				   WHERE (( entry_property & 2 = 2
+							  AND entry_type IN ( 10, 15 ))
+							 OR ( entry_property & 1 = 1
+									AND entry_type IN ( 70 )))
+					   AND left_amount <> 0
+					   AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+					   AND object_id IN ( SELECT object_id FROM base_related_objects )
+					   AND DATEDIFF (DAY, ISNULL (arap_time, document_time), GETDATE ()) > 0
+					   AND station_id :stationIds --站点ID 查询条件
+					   AND object_name = :objectName --客户名称 查徇条件
+					   AND DATEDIFF (DAY, DATEADD(yy, -1, GETDATE()), document_time) >= 0  --单据日期 查询条年
+					   AND DATEDIFF (DAY, GETDATE(), document_time) <= 0
+				   GROUP BY object_id, station_id, business_type ) AS c ON a.object_id = c.object_id
+																			AND a.station_id = c.station_id
+																			AND a.business_type = c.business_type
+	   LEFT JOIN ( SELECT object_id, station_id, business_type,
+						  SUM (CASE WHEN entry_type = 70 THEN 0 - left_amount
+							   ELSE left_amount END) / 10000 AS receive_amount
+				   FROM vw_finance_settlement
+				   WHERE (( entry_property & 2 = 2
+							  AND entry_type IN ( 10, 15 ))
+							 OR ( entry_property & 1 = 1
+									AND entry_type IN ( 70 )))
+					   AND left_amount <> 0
+					   AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+					   AND object_id IN ( SELECT object_id FROM base_related_objects )
+					   AND DATEDIFF (DAY, ISNULL (arap_time, document_time), GETDATE ()) <= 0
+					   AND station_id :stationIds --站点ID 查询条件
+					   AND object_name = :objectName --客户名称 查徇条件
+					   AND DATEDIFF (DAY, DATEADD(yy, -1, GETDATE()), document_time) >= 0  --单据日期 查询条年
+					   AND DATEDIFF (DAY, GETDATE(), document_time) <= 0
+				   GROUP BY object_id, station_id, business_type ) AS d ON a.object_id = d.object_id
+				AND a.station_id = d.station_id
+				AND a.business_type = d.business_type ) AS a
+WHERE a.object_id IS NOT NULL
+ORDER BY a.station_id, a.object_id, a.business_type, receive_amount DESC;
+       		]]>
+	</sql-query>
+	<!-- 查询应付款统计 -->
+	<sql-query name="getPayableByStationId">
+		<![CDATA[
+SELECT a.station_id AS 站点ID, station_name 站点名称, business_type AS 业务名称, receive_amount_amount AS 应付总额,
+	   receive_amount AS 正常应付, receive_amount_over AS 逾期应付
+FROM ( SELECT a.*, b.receive_amount_amount, c.receive_amount_over, d.receive_amount
+	   FROM ( SELECT DISTINCT station_id, station_name, business_type
+			  FROM vw_finance_settlement
+			  WHERE ( entry_property & 1 = 1
+						OR entry_property & 2 = 2 )
+				  AND entry_type IN ( 60, 65 )
+				  AND left_amount <> 0
+				  AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+				  AND object_id IN ( SELECT object_id FROM base_related_objects )
+				  AND station_id :stationIds  --站点ID 查询条件
+				  AND DATEDIFF (DAY, DATEADD(yy, -1, GETDATE()), document_time) >= 0  --单据日期 查询条年
+				  AND DATEDIFF (DAY, GETDATE(), document_time) <= 0 ) AS a
+	   LEFT JOIN ( SELECT station_id, business_type,
+						  SUM (left_amount) / 10000 AS receive_amount_amount
+				   FROM vw_finance_settlement
+				   WHERE ( entry_property & 1 = 1
+							 OR entry_property & 2 = 2 )
+					   AND entry_type IN ( 60, 65 )
+					   AND left_amount <> 0
+					   AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+					   AND object_id IN ( SELECT object_id FROM base_related_objects )
+					   AND station_id :stationIds --站点ID 查询条件
+					   AND DATEDIFF (DAY, DATEADD(yy, -1, GETDATE()), document_time) >= 0  --单据日期 查询条年
+					   AND DATEDIFF (DAY, GETDATE(), document_time) <= 0
+				   GROUP BY business_type, station_id ) AS b ON a.business_type = b.business_type
+																 AND a.station_id = b.station_id
+	   LEFT JOIN ( SELECT station_id, business_type,
+						  SUM (left_amount) / 10000 AS receive_amount_over
+				   FROM vw_finance_settlement
+				   WHERE ( entry_property & 1 = 1
+							 OR entry_property & 2 = 2 )
+					   AND entry_type IN ( 60, 65 )
+					   AND left_amount <> 0
+					   AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+					   AND object_id IN ( SELECT object_id FROM base_related_objects )
+					   AND DATEDIFF (DAY, ISNULL (arap_time, document_time), GETDATE ()) > 0
+					   AND station_id :stationIds --站点ID 查询条件
+					   AND DATEDIFF (DAY, DATEADD(yy, -1, GETDATE()), document_time) >= 0  --单据日期 查询条年
+					   AND DATEDIFF (DAY, GETDATE(), document_time) <= 0
+				   GROUP BY station_id, business_type ) AS c ON a.station_id = c.station_id
+																 AND a.business_type = c.business_type
+	   LEFT JOIN ( SELECT station_id, business_type, SUM (left_amount ) / 10000 AS receive_amount
+				   FROM vw_finance_settlement
+				   WHERE ( entry_property & 1 = 1
+							 OR entry_property & 2 = 2 )
+					   AND entry_type IN ( 60, 65 )
+					   AND left_amount <> 0
+					   AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+					   AND object_id IN ( SELECT object_id FROM base_related_objects )
+					   AND DATEDIFF (DAY, ISNULL (arap_time, document_time), GETDATE ()) <= 0
+					   AND station_id :stationIds  --站点ID 查询条件
+					   AND DATEDIFF (DAY, DATEADD(yy, -1, GETDATE()), document_time) >= 0  --单据日期 查询条年
+					   AND DATEDIFF (DAY, GETDATE(), document_time) <= 0
+				   GROUP BY station_id, business_type ) AS d ON a.station_id = d.station_id
+																 AND a.business_type = d.business_type ) AS a
+WHERE 1 = 1
+ORDER BY a.station_id, a.business_type, receive_amount DESC;
+
+       		]]>
+	</sql-query>
+	<sql-query name="getPayableByStationIdAndObjectName">
+		<![CDATA[
+SELECT a.station_id AS 站点ID, station_name 站点名称, object_id AS 客户ID, object_name AS 客户名称,
+	   business_type AS 业务名称, receive_amount_amount AS 应付总额, receive_amount AS 正常应付,
+	   receive_amount_over AS 逾期应付
+FROM ( SELECT a.*, b.receive_amount_amount, c.receive_amount_over, d.receive_amount
+	   FROM ( SELECT DISTINCT station_id, station_name, object_id, object_name, business_type
+			  FROM vw_finance_settlement
+			  WHERE ( entry_property & 1 = 1
+						OR entry_property & 2 = 2 )
+				  AND entry_type IN ( 60, 65 )
+				  AND left_amount <> 0
+				  AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+				  AND object_id IN ( SELECT object_id FROM base_related_objects )
+				  AND station_id :stationIds --站点ID 查询条件
+				  AND object_name = :objectName --客户名称 查徇条件
+				  AND DATEDIFF (DAY, DATEADD(yy, -1, GETDATE()), document_time) >= 0
+				  AND DATEDIFF (DAY, GETDATE(), document_time) <= 0 ) AS a
+	   LEFT JOIN ( SELECT object_id, station_id, business_type,
+						  SUM (left_amount) / 10000 AS receive_amount_amount
+				   FROM vw_finance_settlement
+				   WHERE ( entry_property & 1 = 1
+							 OR entry_property & 2 = 2 )
+					   AND entry_type IN ( 60, 65 )
+					   AND left_amount <> 0
+					   AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+					   AND object_id IN ( SELECT object_id FROM base_related_objects )
+					   AND station_id :stationIds --站点ID 查询条件
+					   AND object_name = :objectName --客户名称 查徇条件
+					   AND DATEDIFF (DAY, DATEADD(yy, -1, GETDATE()), document_time) >= 0  --单据日期 查询条年
+					   AND DATEDIFF (DAY, GETDATE(), document_time) <= 0
+				   GROUP BY object_id, station_id, business_type ) AS b ON a.object_id = b.object_id
+					AND a.station_id = b.station_id
+					AND a.business_type = b.business_type
+	   LEFT JOIN ( SELECT object_id, station_id, business_type,
+						  SUM (left_amount) / 10000 AS receive_amount_over
+				   FROM vw_finance_settlement
+				   WHERE ( entry_property & 1 = 1
+							 OR entry_property & 2 = 2 )
+					   AND entry_type IN ( 60, 65 )
+					   AND left_amount <> 0
+					   AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+					   AND object_id IN ( SELECT object_id FROM base_related_objects )
+					   AND DATEDIFF (DAY, ISNULL (arap_time, document_time), GETDATE ()) > 0
+					   AND station_id :stationIds  --站点ID 查询条件
+					   AND object_name = :objectName --客户名称 查徇条件
+					   AND DATEDIFF (DAY, DATEADD(yy, -1, GETDATE()), document_time) >= 0  --单据日期 查询条年
+					   AND DATEDIFF (DAY, GETDATE(), document_time) <= 0
+				   GROUP BY object_id, station_id, business_type ) AS c ON a.object_id = c.object_id
+						AND a.station_id = c.station_id
+						AND a.business_type = c.business_type
+	   LEFT JOIN ( SELECT object_id, station_id, business_type,
+						  SUM (left_amount) / 10000 AS receive_amount
+				   FROM vw_finance_settlement
+				   WHERE ( entry_property & 1 = 1
+							 OR entry_property & 2 = 2 )
+					   AND entry_type IN ( 60, 65 )
+					   AND left_amount <> 0
+					   AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+					   AND object_id IN ( SELECT object_id FROM base_related_objects )
+					   AND DATEDIFF (DAY, ISNULL (arap_time, document_time), GETDATE ()) <= 0
+					   AND station_id :stationIds --站点ID 查询条件
+					   AND object_name = :objectName --客户名称 查徇条件
+					   AND DATEDIFF (DAY, DATEADD(yy, -1, GETDATE()), document_time) >= 0  --单据日期 查询条年
+					   AND DATEDIFF (DAY, GETDATE(), document_time) <= 0
+				   GROUP BY object_id, station_id, business_type ) AS d ON a.object_id = d.object_id
+						AND a.station_id = d.station_id
+						AND a.business_type = d.business_type ) AS a
+WHERE a.object_id IS NOT NULL
+ORDER BY a.station_id, a.object_id, a.business_type, receive_amount DESC;
+       		]]>
+	</sql-query>
+	<sql-query name="getReceivableTrendByStationId">
+		<![CDATA[
+	SELECT a.station_id AS 站点ID, station_name 站点名称, business_type AS 业务名称, business_year AS 年份,
+	   business_month AS 月份,  receive_amount AS 正常应收,
+	   receive_amount_over AS 逾期应收
+FROM ( SELECT a.*, c.receive_amount_over, d.receive_amount
+	   FROM ( SELECT DISTINCT station_id, station_name, business_type,
+					 LEFT(CONVERT (VARCHAR, document_time, 21), 4) AS business_year,
+					 LEFT(CONVERT (VARCHAR, document_time, 21), 7) AS business_month
+			  FROM vw_finance_settlement
+			  WHERE (( entry_property & 2 = 2
+						 AND entry_type IN ( 10, 15 ))
+						OR ( entry_property & 1 = 1
+							   AND entry_type IN ( 70 )))
+				  AND left_amount <> 0
+				  AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+				  AND object_id IN ( SELECT object_id FROM base_related_objects )
+				  AND station_id :stationIds --站点ID 查询条件
+				  AND DATEDIFF (YEAR, document_time, GETDATE ()) >= 0 --单据日期 查询条年
+				  AND DATEDIFF (YEAR, document_time, GETDATE ()) <= 1 ) AS a
+	   LEFT JOIN ( SELECT station_id, business_type,
+						  LEFT(CONVERT (VARCHAR, document_time, 21), 7) AS business_month,
+						  SUM (CASE WHEN entry_type = 70 THEN 0 - left_amount
+							   ELSE left_amount END) / 10000 AS receive_amount_over
+				   FROM vw_finance_settlement
+				   WHERE (( entry_property & 2 = 2
+							  AND entry_type IN ( 10, 15 ))
+							 OR ( entry_property & 1 = 1
+									AND entry_type IN ( 70 )))
+					   AND left_amount <> 0
+					   AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+					   AND object_id IN ( SELECT object_id FROM base_related_objects )
+					   AND DATEDIFF (DAY, ISNULL (arap_time, document_time), GETDATE ()) > 0
+					   AND station_id :stationIds --站点ID 查询条件
+					   AND DATEDIFF (YEAR, document_time, GETDATE ()) >= 0 --单据日期 查询条年
+					   AND DATEDIFF (YEAR, document_time, GETDATE ()) <= 1
+				   GROUP BY station_id, business_type, LEFT(CONVERT (VARCHAR, document_time, 21), 7)) AS c ON
+		   a.station_id = c.station_id
+				AND a.business_type = c.business_type
+				AND a.business_month = c.business_month
+	   LEFT JOIN ( SELECT station_id, business_type,
+						  LEFT(CONVERT (VARCHAR, document_time, 21), 7) AS business_month,
+						  SUM (CASE WHEN entry_type = 70 THEN 0 - left_amount
+							   ELSE left_amount END) / 10000 AS receive_amount
+				   FROM vw_finance_settlement
+				   WHERE (( entry_property & 2 = 2
+							  AND entry_type IN ( 10, 15 ))
+							 OR ( entry_property & 1 = 1
+									AND entry_type IN ( 70 )))
+					   AND left_amount <> 0
+					   AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+					   AND object_id IN ( SELECT object_id FROM base_related_objects )
+					   AND DATEDIFF (DAY, ISNULL (arap_time, document_time), GETDATE ()) <= 0
+					   AND station_id :stationIds --站点ID 查询条件
+					   AND DATEDIFF (YEAR, document_time, GETDATE ()) >= 0 --单据日期 查询条年
+					   AND DATEDIFF (YEAR, document_time, GETDATE ()) <= 1
+				   GROUP BY station_id, business_type, LEFT(CONVERT (VARCHAR, document_time, 21), 7)) AS d ON
+		   a.station_id = d.station_id
+				AND a.business_type = d.business_type
+				AND a.business_month = d.business_month ) AS a
+WHERE 1 = 1
+ORDER BY a.station_id, a.business_type, business_month, receive_amount DESC;
+		]]>
+	</sql-query>
+	<sql-query name="getReceivableTrendByStationIdAndObjectName">
+		<![CDATA[
+	SELECT a.station_id AS 站点ID, station_name 站点名称, object_id AS 客户ID, object_name AS 客户名称,business_type AS 业务类型, business_year AS 年份,
+	   business_month AS 月份, receive_amount AS 正常应收, receive_amount_over AS 逾期应收
+FROM ( SELECT a.*, c.receive_amount_over, d.receive_amount
+	   FROM ( SELECT DISTINCT station_id, station_name, object_id, object_name, business_type,
+					 LEFT(CONVERT (VARCHAR, document_time, 21), 4) AS business_year,
+					 LEFT(CONVERT (VARCHAR, document_time, 21), 7) AS business_month
+			  FROM vw_finance_settlement
+			  WHERE (( entry_property & 2 = 2
+						 AND entry_type IN ( 10, 15 ))
+						OR ( entry_property & 1 = 1
+							   AND entry_type IN ( 70 )))
+				  AND left_amount <> 0
+				  AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+				  AND object_id IN ( SELECT object_id FROM base_related_objects )
+				  AND station_id :stationIds --站点ID 查询条件
+				  AND object_name = :objectName --客户名称
+				  AND DATEDIFF (YEAR, document_time, GETDATE ()) >= 0 --单据日期 查询条年
+				  AND DATEDIFF (YEAR, document_time, GETDATE ()) <= 1 ) AS a
+	   LEFT JOIN ( SELECT station_id, object_id,business_type,
+						  LEFT(CONVERT (VARCHAR, document_time, 21), 7) AS business_month,
+						  SUM (CASE WHEN entry_type = 70 THEN 0 - left_amount
+							   ELSE left_amount END) / 10000 AS receive_amount_over
+				   FROM vw_finance_settlement
+				   WHERE (( entry_property & 2 = 2
+							  AND entry_type IN ( 10, 15 ))
+							 OR ( entry_property & 1 = 1
+									AND entry_type IN ( 70 )))
+					   AND left_amount <> 0
+					   AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+					   AND object_id IN ( SELECT object_id FROM base_related_objects )
+					   AND DATEDIFF (DAY, ISNULL (arap_time, document_time), GETDATE ()) > 0
+					   AND station_id :stationIds --站点ID 查询条件
+					   AND object_name = :objectName --客户名称
+					   AND DATEDIFF (YEAR, document_time, GETDATE ()) >= 0 --单据日期 查询条年
+					   AND DATEDIFF (YEAR, document_time, GETDATE ()) <= 1
+				   GROUP BY station_id, object_id,business_type, LEFT(CONVERT (VARCHAR, document_time, 21), 7)) AS c ON
+		   a.station_id = c.station_id
+					AND a.object_id = c.object_id
+					AND a.business_type=c.business_type
+					AND a.business_month = c.business_month
+	   LEFT JOIN ( SELECT station_id, object_id,business_type,
+						  LEFT(CONVERT (VARCHAR, document_time, 21), 7) AS business_month,
+						  SUM (CASE WHEN entry_type = 70 THEN 0 - left_amount
+							   ELSE left_amount END) / 10000 AS receive_amount
+				   FROM vw_finance_settlement
+				   WHERE (( entry_property & 2 = 2
+							  AND entry_type IN ( 10, 15 ))
+							 OR ( entry_property & 1 = 1
+									AND entry_type IN ( 70 )))
+					   AND left_amount <> 0
+					   AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+					   AND object_id IN ( SELECT object_id FROM base_related_objects )
+					   AND DATEDIFF (DAY, ISNULL (arap_time, document_time), GETDATE ()) <= 0
+					   AND station_id :stationIds --站点ID 查询条件
+					   AND object_name = :objectName --客户名称
+					   AND DATEDIFF (YEAR, document_time, GETDATE ()) >= 0 --单据日期 查询条年
+					   AND DATEDIFF (YEAR, document_time, GETDATE ()) <= 1
+				   GROUP BY station_id, object_id,business_type, LEFT(CONVERT (VARCHAR, document_time, 21), 7)) AS d ON
+		   a.station_id = d.station_id
+					AND a.object_id = d.object_id
+					AND a.business_type=d.business_type
+					AND a.business_month = d.business_month ) AS a
+WHERE 1 = 1
+ORDER BY a.station_id, a.object_name,business_type, business_month, receive_amount DESC;
+
+		]]>
+	</sql-query>
+
+
+
+	<sql-query name="getPayableTrendByStationId">
+		<![CDATA[
+	SELECT a.station_id AS 站点ID, station_name 站点名称, business_type AS 业务名称, business_year AS 年份,
+	   business_month AS 月份, receive_amount AS 正常应付, receive_amount_over AS 逾期应付
+FROM ( SELECT a.*, c.receive_amount_over, d.receive_amount
+	   FROM ( SELECT DISTINCT station_id, station_name, business_type,
+					 LEFT(CONVERT (VARCHAR, document_time, 21), 4) AS business_year,
+					 LEFT(CONVERT (VARCHAR, document_time, 21), 7) AS business_month
+			  FROM vw_finance_settlement
+			  WHERE ( entry_property & 1 = 1
+						OR entry_property & 2 = 2 )
+				  AND entry_type IN ( 60, 65 )
+				  AND left_amount <> 0
+				  AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+				  AND object_id IN ( SELECT object_id FROM base_related_objects )
+				  AND station_id :stationIds --站点ID 查询条件
+				  AND DATEDIFF (YEAR, document_time, GETDATE ()) >= 0 --单据日期 查询条年
+				  AND DATEDIFF (YEAR, document_time, GETDATE ()) <= 1 ) AS a
+	   LEFT JOIN ( SELECT station_id, business_type,
+						  LEFT(CONVERT (VARCHAR, document_time, 21), 7) AS business_month,
+						  SUM (left_amount) / 10000 AS receive_amount_over
+				   FROM vw_finance_settlement
+				   WHERE ( entry_property & 1 = 1
+							 OR entry_property & 2 = 2 )
+					   AND entry_type IN ( 60, 65 )
+					   AND left_amount <> 0
+					   AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+					   AND object_id IN ( SELECT object_id FROM base_related_objects )
+					   AND DATEDIFF (DAY, ISNULL (arap_time, document_time), GETDATE ()) > 0
+					   AND station_id :stationIds --站点ID 查询条件
+					   AND DATEDIFF (YEAR, document_time, GETDATE ()) >= 0 --单据日期 查询条年
+					   AND DATEDIFF (YEAR, document_time, GETDATE ()) <= 1
+				   GROUP BY station_id, business_type, LEFT(CONVERT (VARCHAR, document_time, 21), 7)) AS c ON
+		   a.station_id = c.station_id
+				AND a.business_type = c.business_type
+				AND a.business_month = c.business_month
+	   LEFT JOIN ( SELECT station_id, business_type,
+						  LEFT(CONVERT (VARCHAR, document_time, 21), 7) AS business_month,
+						  SUM (left_amount) / 10000 AS receive_amount
+				   FROM vw_finance_settlement
+				   WHERE ( entry_property & 1 = 1
+							 OR entry_property & 2 = 2 )
+					   AND entry_type IN ( 60, 65 )
+					   AND left_amount <> 0
+					   AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+					   AND object_id IN ( SELECT object_id FROM base_related_objects )
+					   AND DATEDIFF (DAY, ISNULL (arap_time, document_time), GETDATE ()) <= 0
+					   AND station_id :stationIds --站点ID 查询条件
+					   AND DATEDIFF (YEAR, document_time, GETDATE ()) >= 0 --单据日期 查询条年
+					   AND DATEDIFF (YEAR, document_time, GETDATE ()) <= 1
+				   GROUP BY station_id, business_type, LEFT(CONVERT (VARCHAR, document_time, 21), 7)) AS d ON
+		   a.station_id = d.station_id
+				AND a.business_type = d.business_type
+				AND a.business_month = d.business_month ) AS a
+WHERE 1 = 1
+ORDER BY a.station_id, a.business_type, business_month, receive_amount DESC;
+		]]>
+	</sql-query>
+	<sql-query name="getPayableTrendByStationIdAndObjectName">
+		<![CDATA[
+	SELECT a.station_id AS 站点ID, station_name 站点名称, object_id AS 客户ID, object_name AS 客户名称,business_type AS 业务类型, business_year AS 年份,
+	   business_month AS 月份, receive_amount AS 正常应付, receive_amount_over AS 逾期应付
+FROM ( SELECT a.*, c.receive_amount_over, d.receive_amount
+	   FROM ( SELECT DISTINCT station_id, station_name, object_id, object_name,business_type,
+					 LEFT(CONVERT (VARCHAR, document_time, 21), 4) AS business_year,
+					 LEFT(CONVERT (VARCHAR, document_time, 21), 7) AS business_month
+			  FROM vw_finance_settlement
+			  WHERE ( entry_property & 1 = 1
+						OR entry_property & 2 = 2 )
+				  AND entry_type IN ( 60, 65 )
+				  AND left_amount <> 0
+				  AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+				  AND object_id IN ( SELECT object_id FROM base_related_objects )
+				  AND station_id :stationIds --站点ID 查询条件
+				  AND object_name = :objectName --客户名称
+				  AND DATEDIFF (YEAR, document_time, GETDATE ()) >= 0 --单据日期 查询条年
+				  AND DATEDIFF (YEAR, document_time, GETDATE ()) <= 1 ) AS a
+	   LEFT JOIN ( SELECT station_id, object_id,business_type,
+						  LEFT(CONVERT (VARCHAR, document_time, 21), 7) AS business_month,
+						  SUM (left_amount) / 10000 AS receive_amount_over
+				   FROM vw_finance_settlement
+				   WHERE ( entry_property & 1 = 1
+							 OR entry_property & 2 = 2 )
+					   AND entry_type IN ( 60, 65 )
+					   AND left_amount <> 0
+					   AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+					   AND object_id IN ( SELECT object_id FROM base_related_objects )
+					   AND DATEDIFF (DAY, ISNULL (arap_time, document_time), GETDATE ()) > 0
+					   AND station_id :stationIds --站点ID 查询条件
+					   AND object_name = :objectName --客户名称
+					   AND DATEDIFF (YEAR, document_time, GETDATE ()) >= 0 --单据日期 查询条年
+					   AND DATEDIFF (YEAR, document_time, GETDATE ()) <= 1
+				   GROUP BY station_id, object_id,business_type, LEFT(CONVERT (VARCHAR, document_time, 21), 7)) AS c ON
+		   a.station_id = c.station_id
+					AND a.object_id = c.object_id
+					AND a.business_type=c.business_type
+					AND a.business_month = c.business_month
+	   LEFT JOIN ( SELECT station_id, object_id,business_type,
+						  LEFT(CONVERT (VARCHAR, document_time, 21), 7) AS business_month,
+						  SUM (left_amount) / 10000 AS receive_amount
+				   FROM vw_finance_settlement
+				   WHERE ( entry_property & 1 = 1
+							 OR entry_property & 2 = 2 )
+					   AND entry_type IN ( 60, 65 )
+					   AND left_amount <> 0
+					   AND object_id NOT IN ( SELECT station_id FROM sys_stations )
+					   AND object_id IN ( SELECT object_id FROM base_related_objects )
+					   AND DATEDIFF (DAY, ISNULL (arap_time, document_time), GETDATE ()) <= 0
+					   AND station_id :stationIds --站点ID 查询条件
+					   AND object_name = :objectName --客户名称
+					   AND DATEDIFF (YEAR, document_time, GETDATE ()) >= 0 --单据日期 查询条年
+					   AND DATEDIFF (YEAR, document_time, GETDATE ()) <= 1
+				   GROUP BY station_id, object_id,business_type, LEFT(CONVERT (VARCHAR, document_time, 21), 7)) AS d ON
+		   a.station_id = d.station_id
+					AND a.object_id = d.object_id
+					AND a.business_type=d.business_type
+					AND a.business_month = d.business_month ) AS a
+WHERE 1 = 1
+ORDER BY a.station_id, a.business_type, a.object_id, business_month, receive_amount DESC;
+
+		]]>
+	</sql-query>
+</hibernate-mapping>

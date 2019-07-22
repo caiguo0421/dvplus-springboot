@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.office.approval.model.VwVehicleSaleContractDetailGroups"
+           table="vw_vehicle_sale_contract_detail_groups">
+        <id name="groupId" column="group_id">
+            <generator class="assigned" />
+        </id>
+        <property name="groupNo" column="group_no"/>
+        <property name="contractNo" column="contract_no"/>
+        <property name="vnoId" column="vno_id"/>
+        <property name="vehicleVno" column="vehicle_vno"/>
+        <property name="shortNameVno" column="short_name_vno"/>
+        <property name="vehicleName" column="vehicle_name"/>
+        <property name="vehicleStrain" column="vehicle_strain"/>
+        <property name="vehicleColor" column="vehicle_color"/>
+        <property name="vehiclePriceTotal" column="vehicle_price_total"/>
+        <property name="vehiclePrice" column="vehicle_price"/>
+        <property name="deposit" column="deposit"/>
+        <property name="discountAmount" column="discount_amount"/>
+        <property name="vehicleQuantity" column="vehicle_quantity"/>
+        <property name="vnoIdNew" column="vno_id_new"/>
+        <property name="vehicleVnoNew" column="vehicle_vno_new"/>
+        <property name="vehicleNameNew" column="vehicle_name_new"/>
+        <property name="isContainInsuranceCost" column="is_contain_insurance_cost"/>
+        <property name="insuranceIncome" column="insurance_income"/>
+        <property name="insurancePf" column="insurance_pf"/>
+        <property name="presentIncome" column="present_income"/>
+        <property name="presentPf" column="present_pf"/>
+        <property name="conversionIncome" column="conversion_income"/>
+        <property name="conversionPf" column="conversion_pf"/>
+        <property name="chargeIncome" column="charge_income"/>
+        <property name="chargePf" column="charge_pf"/>
+        <property name="customerIdProfit" column="customer_id_profit"/>
+        <property name="customerNoProfit" column="customer_no_profit"/>
+        <property name="customerNameProfit" column="customer_name_profit"/>
+        <property name="vehicleProfit" column="vehicle_profit"/>
+        <property name="largessAmount" column="largess_amount"/>
+        <property name="belongToSupplierId" column="belong_to_supplier_id"/>
+        <property name="belongToSupplierNo" column="belong_to_supplier_no"/>
+        <property name="belongToSupplierName" column="belong_to_supplier_name"/>
+        <property name="subjectMatter" column="subject_matter"/>
+        <property name="startPoint" column="start_point"/>
+        <property name="waysPoint" column="ways_point"/>
+        <property name="endPoint" column="end_point"/>
+        <property name="vehicleOwnerId" column="vehicle_owner_id"/>
+        <property name="vehicleOwnerName" column="vehicle_owner_name"/>
+        <property name="visitorNo" column="visitor_no"/>
+        <property name="imagesUrls" column="images_urls"/>
+        <property name="vehicleComment" column="vehicle_comment"/>
+        <property name="groupNoRef" column="group_no_ref"/>
+        <property name="profession" column="profession"/>
+        <property name="containerSize" column="container_size"/>
+        <property name="vehicleSize" column="vehicle_size"/>
+        <property name="vehicleWeight" column="vehicle_weight"/>
+        <property name="curbWeight" column="curb_weight"/>
+        <property name="registrationTonnage" column="registration_tonnage"/>
+        <property name="registrationAddress" column="registration_address"/>
+        <property name="vehicleCostRef" column="vehicle_cost_ref"/>
+        <property name="minSalePrice" column="min_sale_price"/>
+        <property name="minProfit" column="min_profit"/>
+        <property name="objectProperty" column="object_property"/>
+        <property name="commissionMerchantName" column="commission_merchant_name"/>
+        <property name="matchQuantity" column="match_quantity"/>
+        <property name="vehicleCost" column="vehicle_cost"/>
+        <property name="profitMin" column="profit_min"/>
+        <property name="priceSale" column="price_sale"/>
+        <property name="priceSaleBase" column="price_sale_base"/>
+        <property name="referenceCost" column="reference_cost"/>
+        <property name="referenceCostGz" column="reference_cost_gz"/>
+        <property name="totInsuranceIncome" column="tot_insurance_income"/>
+        <property name="totPresentIncome" column="tot_present_income"/>
+        <property name="totItemIncome" column="tot_item_income"/>
+        <property name="totChargeIncome" column="tot_charge_income"/>
+        <property name="incomeTot" column="income_tot"/>
+        <property name="costTot" column="cost_tot"/>
+        <property name="transportRoutes" column="transportRoutes"/>
+        <property name="vehicleBrand" column="vehicle_brand"/>
+        <property name="vehicleKind" column="vehicle_kind"/>
+        <property name="vehicleKindMeaning" column="vehicle_kind_meaning"/>
+        <property name="invoiceAmountTot" column="invoice_amount_tot"/>
+        <property name="outStockQuantity" column="out_stock_quantity"/>
+        <property name="profitMinRef" column="profit_min_ref"/>
+        <property name="priceSaleRef" column="price_sale_ref"/>
+        <property name="itemCostOri" column="item_cost_ori"/>
+        <property name="loanChargeIncome" column="loan_charge_income"/>
+        <property name="loanChargeExpenditure" column="loan_charge_expenditure"/>
+        <property name="loanChargeProfit" column="loan_charge_profit"/>
+        <property name="priceDiff" column="price_diff"/>
+        <property name="profitDiff" column="profit_diff"/>
+        <property name="isBelowPrice" column="is_below_price"/>
+        <property name="isBelowProfit" column="is_below_profit"/>
+    </class>
+</hibernate-mapping>

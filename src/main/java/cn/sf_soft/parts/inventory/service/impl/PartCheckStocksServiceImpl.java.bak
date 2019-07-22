@@ -1,0 +1,755 @@
+package cn.sf_soft.parts.inventory.service.impl;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+
+import cn.sf_soft.basedata.service.SysCodeRulesService;
+import cn.sf_soft.common.ServiceException;
+import cn.sf_soft.common.dao.BaseDao;
+import cn.sf_soft.common.model.ResponseMessage;
+import cn.sf_soft.common.util.CheckPopedom;
+import cn.sf_soft.common.util.HttpSessionStore;
+import cn.sf_soft.finance.voucher.service.VoucherAuto;
+import cn.sf_soft.parts.inventory.dao.PartCheckStocksDao;
+import cn.sf_soft.parts.inventory.model.PartCheckStockInventoryInitData;
+import cn.sf_soft.parts.inventory.model.PartCheckStockPlanInitData;
+import cn.sf_soft.parts.inventory.model.PartCheckStockRandomInitData;
+import cn.sf_soft.parts.inventory.model.PartCheckStocks;
+import cn.sf_soft.parts.inventory.model.PartCheckStocksDetail;
+import cn.sf_soft.parts.inventory.model.PartCheckStoksAdjust;
+import cn.sf_soft.parts.inventory.model.PartInStockDetail;
+import cn.sf_soft.parts.inventory.model.PartInStocks;
+import cn.sf_soft.parts.inventory.model.PartOutStockDetail;
+import cn.sf_soft.parts.inventory.model.PartOutStocks;
+import cn.sf_soft.parts.inventory.model.PartsCheckCUDData;
+import cn.sf_soft.parts.inventory.model.ResponsibleDepartment;
+import cn.sf_soft.parts.inventory.model.Warehouse;
+import cn.sf_soft.parts.inventory.service.PartCheckStocksService;
+import cn.sf_soft.parts.stockborwse.model.PartStocks;
+import cn.sf_soft.user.model.SysUsers;
+
+/**
+ * 配件盘存调整
+ * 
+ * @author cw
+ * @date 2014-4-9 上午9:42:27
+ */
+@Service("partCheckStockService")
+public class PartCheckStocksServiceImpl implements PartCheckStocksService {
+	@Autowired
+	@Qualifier("baseDao")
+	private BaseDao baseDao;
+	@Autowired
+	private PartCheckStocksDao dao;
+	@Autowired
+	private VoucherAuto voucherAuto;
+	@Autowired
+	private SysCodeRulesService sysCodeService;
+	static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(PartCheckStocksServiceImpl.class);
+
+	public void setBaseDao(BaseDao baseDao) {
+		this.baseDao = baseDao;
+	}
+
+	public void setDao(PartCheckStocksDao dao) {
+		this.dao = dao;
+	}
+
+	public void setVoucherAuto(VoucherAuto voucherService) {
+		this.voucherAuto = voucherService;
+	}
+
+	/**
+	 * 获取盘存单
+	 */
+	public List<PartCheckStocks> getPartCheckStock(List<String> stationIds) {
+		return dao.getPartCheckStock(stationIds);
+	}
+
+	/**
+	 * 获取盘存单的明细
+	 */
+	public List<PartCheckStocksDetail> getPartCheckStockDetail(String pcsNo) {
+		return dao.getPartCheckStockDetail(pcsNo);
+	}
+
+	/**
+	 * 获取盘存单的明细的总数量
+	 */
+	public int getPartCheckStockDetailCount(String pcsNo, int pageNo,
+			int pageSize) {
+		List list = dao.getPartCheckStockDetailCount(pcsNo, pageNo, pageSize);
+		if (list.size() > 0) {
+			return Integer.parseInt(list.get(0).toString());
+		} else {
+			return 0;
+		}
+	}
+
+	/**
+	 * 抽盘界面基础数据
+	 * 
+	 * @param userId
+	 * @param stationId
+	 * @return
+	 */
+	public PartCheckStockRandomInitData getPartCheckStockRandomInitData(
+			String userId, String stationId) {
+		Map<String, String> warehouse = new LinkedHashMap<String, String>();
+		List<String> partPositionList = dao.getPartPosition(stationId);
+		List<Warehouse> list = dao
+				.getPartCheckStockWarehouse(userId, stationId);
+
+		String[] partPositions = new String[partPositionList.size()];
+
+		for (Warehouse w : list) {
+			warehouse.put(w.getWarehouseName(), w.getWarehouseId());
+		}
+		PartCheckStockRandomInitData initData = new PartCheckStockRandomInitData();
+		initData.setPartPosition(partPositionList.toArray(partPositions));
+		initData.setWarehouse(warehouse);
+		return initData;
+	}
+
+	/**
+	 * 按计划调整界面的基础数据
+	 */
+	public PartCheckStockPlanInitData getPartCheckStockPlanInitData(
+			String stationId) {
+		List<String> planNoList = dao.getPlanNos(stationId);
+		List<String> partPositionList = dao.getPartPosition(stationId);
+
+		String[] planNos = new String[planNoList.size()];
+		String[] partPositions = new String[partPositionList.size()];
+
+		PartCheckStockPlanInitData initData = new PartCheckStockPlanInitData();
+		initData.setPlanNos(planNoList.toArray(planNos));
+		initData.setPartPosition(partPositionList.toArray(partPositions));
+		return initData;
+	}
+
+	/**
+	 * 待调整的配件
+	 */
+	public List<PartCheckStoksAdjust> getPartCheckStoksAdjustData(
+			String planNo, String depositPosition, int pageNo, int pageSize) {
+		return dao.getPartCheckStoksAdjustData(planNo, depositPosition, pageNo,
+				pageSize);
+	}
+
+	/**
+	 * 待调整的配件总数
+	 */
+	public int getPartCheckStoksAdjustCount(String planNo,
+			String depositPosition) {
+		List list = dao.getPartCheckStoksAdjustCount(planNo, depositPosition);
+		if (list.size() > 0) {
+			return Integer.parseInt(list.get(0).toString());
+		} else {
+			return 0;
+		}
+	}
+
+	/**
+	 * 抽盘待调整的配件
+	 */
+	public List<PartCheckStoksAdjust> getPartCheckStoksAdjustForWarehouse(
+			String warehouseId, String depositPosition, String searchCondition,
+			int pageNo, int pageSize) {
+		return dao.getPartCheckStoksAdjustForWarehouse(warehouseId,
+				depositPosition, searchCondition, pageNo, pageSize);
+	}
+
+	/**
+	 * 抽盘待调整的配件总数
+	 */
+	public int getPartCheckStoksAdjustForWarehouseCount(String warehouseId,
+			String depositPosition, String searchCondition) {
+		List list = dao.getPartCheckStoksAdjustForWarehouseCount(warehouseId,
+				depositPosition, searchCondition);
+		if (list.size() > 0) {
+			return Integer.parseInt(list.get(0).toString());
+		} else {
+			return 0;
+		}
+	}
+
+	public PartCheckStockInventoryInitData getPartCheckStockInventoryInitData(
+			String stationId) {
+		List<ResponsibleDepartment> list = dao
+				.getResponsibleDepartment(stationId);
+		/*
+		 * Map<String,String> map = new LinkedHashMap<String, String>();
+		 * for(ResponsibleDepartment r : list){ map.put(r.getUnitName(),
+		 * r.getUnitId()); }
+		 */
+
+		PartCheckStockInventoryInitData initData = new PartCheckStockInventoryInitData();
+		initData.setResponsibleDepartment(list);
+		return initData;
+	}
+
+	/**
+	 * 新增盘存调整单
+	 */
+	// modify by shichunshan 新增配件账面量的校验
+	public ResponseMessage<List<PartCheckStocksDetail>> savePartCheckStocks(
+			PartCheckStocks document, Double pcsPrice,
+			List<PartCheckStocksDetail> details) {
+		ResponseMessage<List<PartCheckStocksDetail>> result = new ResponseMessage<List<PartCheckStocksDetail>>();
+		if (document != null) {
+
+			List<PartCheckStocksDetail> errPart = new ArrayList<PartCheckStocksDetail>();
+
+			for (PartCheckStocksDetail detail : details) {
+				PartStocks part = getPartStocksById(detail.getStockId());
+				double quantityStock = detail.getQuantityStock();
+				double quantity = part.getQuantity();
+				if (quantityStock != quantity) {
+					result.setRet(ResponseMessage.RET_PARAM_ERR);
+					result.setMsg("部分配件库存数量已发生变化，账面数量不等库存数量，请更新该配件信息！");
+					detail.setQuantityStockNow(quantity);
+					errPart.add(detail);
+					continue;
+				}
+			}
+			if (errPart.size() > 0) {
+				result.setData(errPart);
+				return result;
+			}
+
+			document.setPcsPrice(document.getPcsPrice() == null ? 0 : document
+					.getPcsPrice() + pcsPrice);
+			dao.saveOrUpdatePartCheckStocks(document);
+			/*
+			 * if(!"".equals(document.getModifier()) && document.getModifier()!=
+			 * null){ dao.updatePartCheckStocks(document); }else{
+			 * dao.saveOrUpdatePartCheckStocks(document); }
+			 */
+		}
+		if (details != null) {
+			for (PartCheckStocksDetail detail : details) {
+				dao.savePartCheckStocksDetail(detail);
+			}
+		}
+		result.setRet(ResponseMessage.RET_SUCC);
+		result.setMsg("保存成功！");
+		result.setData(null);
+		return result;
+	}
+
+	/**
+	 * 审批
+	 * 
+	 * @param document
+	 *            盘存单
+	 * @param user
+	 *            当前用户
+	 */
+	public ResponseMessage<List<PartCheckStocksDetail>> updatePartCheckStocksApproval(
+			PartCheckStocks document, SysUsers user) {
+
+		ResponseMessage<List<PartCheckStocksDetail>> result = new ResponseMessage<List<PartCheckStocksDetail>>();
+
+		String defaultStationId = user.getDefaulStationId();
+		Timestamp now = new Timestamp(System.currentTimeMillis());
+
+		List<PartCheckStocksDetail> details = getPartCheckStockDetail(document
+				.getPcsNo());
+
+		List<PartInStockDetail> partIn = new ArrayList<PartInStockDetail>();
+		List<PartOutStockDetail> partOut = new ArrayList<PartOutStockDetail>();
+		List<PartCheckStocksDetail> errPart = new ArrayList<PartCheckStocksDetail>();
+		double pis_totalPrice = 0;// 盘赢总金额
+		double pos_totalPrice = 0;// 盘亏总金额
+		boolean approveProfit = CheckPopedom.checkPopedom(user, "15858020");// 盘盈审批
+		boolean approveDeficit = CheckPopedom.checkPopedom(user, "15858030");// 盘亏审批
+
+		// 新建入库单
+		PartInStocks partInStocks = new PartInStocks();
+		// 新建出库单
+		PartOutStocks partOutStocks = new PartOutStocks();
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		for (PartCheckStocksDetail detail : details) {
+			PartStocks part = getPartStocksById(detail.getStockId());
+			Double resultQuantity = detail.getQuantityFact() - detail.getQuantityStock();
+			if (detail.getQuantityFact() - detail.getQuantityStock() > 0) {
+				if (approveProfit == false) {
+					result.setRet(ResponseMessage.RET_PARAM_ERR);
+					result.setMsg("盘存调整中存在盘盈情况，需要盘盈权限！");
+				} else {
+					// delete by shichunshan 账面量和库存数量不一致改到保存时校验
+
+					/*
+					 * double quantityStock = detail.getQuantityStock(); double
+					 * quantity = part.getQuantity(); if (quantityStock !=
+					 * quantity) {
+					 * 
+					 * result.setRet(ResponseMessage.RET_PARAM_ERR);
+					 * result.setMsg("部分配件库存数量已发生变化，账面数量不等库存数量，请更新该配件信息！");
+					 * detail.setQuantityStockNow(quantity);
+					 * errPart.add(detail); continue; }
+					 */
+					PartInStockDetail in = new PartInStockDetail();
+					// in.setPisNo(code);
+					in.setPisDetailId(UUID.randomUUID().toString());
+					in.setStockId(detail.getStockId());
+					in.setPartId(detail.getPartId());
+					in.setPartNo(detail.getPartNo());
+					in.setPartName(detail.getPartName());
+					in.setPartMnemonic(detail.getPartMnemonic());
+					in.setProducingArea(detail.getProducingArea());
+					in.setSpecModel(detail.getSpecModel());
+					in.setApplicableModel(detail.getApplicableModel());
+					in.setPartType(detail.getPartType());
+					in.setWarehouseName(detail.getWarehouseName());
+					in.setPisPrice(detail.getCost());
+					in.setPisCarriage(0.0);
+					in.setNoTaxPrice(detail.getCost());
+					in.setPisQuantity(detail.getQuantityFact()
+							- detail.getQuantityStock());
+					in.setQuantityRecord(detail.getQuantityFact());
+					in.setQuantitySab(0.0);
+					partIn.add(in);
+					pis_totalPrice += (detail.getQuantityFact() - detail
+							.getQuantityStock()) * detail.getCost();
+
+					if(part != null && part.getStockId() != null){
+						in.setInTotalCost( (new BigDecimal(in.getPisPrice() * resultQuantity)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+						in.setInTotalCostRecord(part.getStockTotalCost() + in.getInTotalCost());
+						part.setStockTotalCost(part.getStockTotalCost() + in.getInTotalCost());
+					}else{
+						in.setInTotalCost( (new BigDecimal(in.getPisPrice() * resultQuantity)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+						in.setInTotalCostRecord(in.getInTotalCost());
+						part.setStockTotalCost(in.getInTotalCost());
+					}
+				}
+			}
+			if (detail.getQuantityFact() - detail.getQuantityStock() < 0) {
+				if (approveDeficit == false) {
+					result.setRet(ResponseMessage.RET_PARAM_ERR);
+					result.setMsg("盘存调整中存在盘亏情况，需要盘亏权限！");
+				} else {
+					// delete by shichunshan 账面量和库存数量不一致改到保存时校验
+
+					/*
+					 * double quantityStock = detail.getQuantityStock(); double
+					 * quantity = part.getQuantity(); if (quantityStock !=
+					 * quantity) { result.setRet(ResponseMessage.RET_PARAM_ERR);
+					 * result.setMsg("部分配件库存数量已发生变化，账面数量不等库存数量，请更新该配件信息！");
+					 * detail.setQuantityStockNow(quantity);
+					 * errPart.add(detail); continue; }
+					 */
+					PartOutStockDetail out = new PartOutStockDetail();
+					// fix part.getCarriage()为空时报错，cagx 20160418
+					double carriage = (part.getCarriage() == null ? 0.00 : part
+							.getCarriage())
+							/ part.getQuantity()
+							* (detail.getQuantityStock() - detail
+									.getQuantityFact());
+					// out.setPosNo(posNo)
+					out.setPosDetailId(UUID.randomUUID().toString());
+					out.setStockId(detail.getStockId());
+					out.setPartNo(detail.getPartNo());
+					out.setPartName(detail.getPartName());
+					out.setPartMnemonic(detail.getPartMnemonic());
+					out.setProducingArea(detail.getProducingArea());
+					out.setSpecModel(detail.getSpecModel());
+					out.setApplicableModel(detail.getApplicableModel());
+					out.setPartType(detail.getPartType());
+					out.setWarehouseName(detail.getWarehouseName());
+					out.setPartId(detail.getPartId());
+					out.setPosPrice(detail.getCost() + carriage);
+					out.setCost(detail.getCost());
+					out.setCarriage(carriage);
+					out.setCostNoTax(part.getCostNoTax());
+					out.setPosAgio(1.0);
+					out.setLargessPrice(0.0);
+					out.setPosQuantity(0 - (detail.getQuantityFact() - detail
+							.getQuantityStock()));
+					out.setQuantitySab(0.0);
+					out.setQuantityRecord(detail.getQuantityFact());
+					partOut.add(out);
+					pos_totalPrice += (detail.getQuantityFact() - detail
+							.getQuantityStock())
+							* (detail.getCost() + carriage);
+
+					if(part.getQuantity() + resultQuantity == 0){
+						out.setOutTotalCost(part.getStockTotalCost());
+						out.setOutTotalCostRecord(part.getStockTotalCost() - out.getOutTotalCost());
+						part.setStockTotalCost(part.getStockTotalCost() - out.getOutTotalCost());
+					}else{
+						out.setOutTotalCost((new BigDecimal(part.getStockTotalCost()/part.getQuantity())).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue() * Math.abs(resultQuantity));
+						out.setOutTotalCostRecord(part.getStockTotalCost() - out.getOutTotalCost());
+						part.setStockTotalCost(part.getStockTotalCost() - out.getOutTotalCost());
+					}
+				}
+			}
+			if (detail.getQuantityFact() - detail.getQuantityStock() == 0) {
+				// delete by shichunshan 账面量和库存数量不一致改到保存时校验
+
+				/*
+				 * double quantityStock = detail.getQuantityStock(); double
+				 * quantity = part.getQuantity(); if (quantityStock != quantity)
+				 * { result.setRet(ResponseMessage.RET_PARAM_ERR);
+				 * result.setMsg("部分配件库存数量已发生变化，账面数量不等库存数量，请更新该配件信息！");
+				 * detail.setQuantityStockNow(quantity); errPart.add(detail);
+				 * continue; }
+				 */
+				if(part == null || part.getStockId() == null){
+					part.setStockTotalCost(0.0);
+				}
+			}
+		}
+		if (result.getRet() == ResponseMessage.RET_SUCC) {
+			if (partIn.size() > 0 && errPart.size() == 0) {
+				String code = sysCodeService.createSysCodeRules("PIC_NO",
+						defaultStationId);
+				partInStocks.setPisNo(code);
+				partInStocks.setStationId(defaultStationId);
+				partInStocks.setPisType((short) 15);
+				partInStocks.setCheckStatus((short) 0);
+				partInStocks.setIsSab(false);
+				partInStocks.setCreator(user.getUserFullName());
+				partInStocks.setCreateTime(now);
+				partInStocks.setApproveStatus((short) 1);
+				partInStocks.setApprover(user.getUserFullName());
+				partInStocks.setApproveTime(now);
+				partInStocks.setPisPrice(pis_totalPrice);
+				partInStocks.setPisCarriage(0.0);
+				partInStocks.setTax(0.0);
+				partInStocks.setTaxPrice(0.0);
+				partInStocks.setSabCarriage(false);
+				partInStocks.setPartFrom("配件盘盈入库");
+				partInStocks.setSupplierName("配件盘盈入库");
+				for (PartInStockDetail in : partIn) {
+					in.setPisNo(code);
+				}
+			}
+			if (partOut.size() > 0 && errPart.size() == 0) {
+				String code = sysCodeService.createSysCodeRules("POC_NO",
+						defaultStationId);
+				partOutStocks.setPosNo(code);
+				partOutStocks.setStationId(defaultStationId);
+				partOutStocks.setPosType((short) 19);
+				partOutStocks.setCheckStatus((short) 0);
+				partOutStocks.setIsSab(false);
+				partOutStocks.setCreator(user.getUserFullName());
+				partOutStocks.setCreateTime(now);
+				partOutStocks.setApproveStatus((short) 1);
+				partOutStocks.setApprover(user.getUserFullName());
+				partOutStocks.setApproveTime(now);
+				partOutStocks.setPosPrice(pos_totalPrice);
+				partOutStocks.setFactPrice(pos_totalPrice);
+				partOutStocks.setCost(pos_totalPrice);
+				partOutStocks.setCarriage(0.0);
+				partOutStocks.setPartTo("配件盘亏出库");
+				partOutStocks.setCustomerName("配件盘亏出库");
+				for (PartOutStockDetail in : partOut) {
+					in.setPosNo(code);
+				}
+			}
+			if (errPart.size() == 0) {
+				document.setModifier(user.getUserName() + "("
+						+ user.getUserNo() + ")");
+				document.setModifyTime(Timestamp.valueOf(df.format(new Date())));
+				document.setApprover(user.getUserName() + "("
+						+ user.getUserNo() + ")");
+				document.setApproveTime(Timestamp.valueOf(df.format(new Date())));
+				document.setApproveStatus((short) 1);
+				document.setApproverNo(user.getUserNo());
+				document.setApproverUnitNo(user.getInstitution().getUnitNo());
+				document.setApproverUnitName(user.getInstitution()
+						.getUnitName());
+			}
+		}
+
+		if (partIn.size() > 0) {
+			dao.savePartInStocks(partInStocks);
+			for (PartInStockDetail p : partIn) {
+				logger.info("入库单：");
+				logger.info(p.getPosNo());
+				dao.savePartInStockDetail(p);
+
+			}
+		}
+		if (partOut.size() > 0) {
+			dao.savePartOutStocks(partOutStocks);
+			for (PartOutStockDetail p : partOut) {
+				logger.info("出库单：");
+				logger.info(p.getPosNo());
+				dao.savePartOutStockDetail(p);
+			}
+		}
+		// 修改库存中的最后盘点时间 与盘点数量
+		if (details.size() > 0) {
+			for (PartCheckStocksDetail p : details) {
+				PartStocks part = dao.getPartStocksById(p.getStockId());
+				part.setInventoryTime(Timestamp.valueOf(df.format(new Date())));
+				//part.setQuantity(p.getQuantityFact());
+				if((part.getQuantity()+p.getQuantityFact()-p.getQuantityStock())<-0.000001){
+					throw new ServiceException("审批失败：【"+p.getPartName()+"】调整后库存数量不能为负数");
+				}
+				part.setQuantity(part.getQuantity()+p.getQuantityFact()-p.getQuantityStock());
+				
+				if(Math.abs(part.getQuantity())<0.000001){
+					part.setCost(p.getCost());
+				}else if(Math.abs(part.getQuantity())>0.000001){
+					part.setCost((part.getQuantity()*part.getCost()+(p.getQuantityFact()-p.getQuantityStock())*p.getCost())/part.getQuantity());
+				}
+				
+				for (PartOutStockDetail out : partOut) {
+					if (p.getStockId().equals(out.getStockId())) {
+						// fix part.getCarriage()为空时报错，cagx 20160418
+						part.setCarriage((part.getCarriage()==null?0.00:part.getCarriage()) - (out.getCarriage()==null?0.00:out.getCarriage()));
+						break;
+					}
+				}
+				dao.updatePartStocks(part);
+			}
+		}
+		dao.updatePartCheckStocks(document);
+
+		if (!createVoucher(document.getPcsNo(), partInStocks.getPisNo(),
+				partOutStocks.getPosNo())) {
+			throw new ServiceException("审批失败:生成凭证模板出错");
+		} else {
+			// result.setMsg("审批成功！");
+		}
+		result.setData(errPart);
+		return result;
+
+	}
+
+	public boolean createVoucher(String documentNo, String pisNo, String posNo) {
+		String sql = baseDao.getQueryStringByName("partCheckStockDS",
+				new String[] { "pisNo", "posNo" }, new String[] {
+						"'" + pisNo + "'", "'" + posNo + "'" });
+		// logger.info("凭证SQL:");
+		// logger.info(sql);
+		return voucherAuto.generateVoucherByProc(sql, "15858000", false,
+				HttpSessionStore.getSessionUser().getUserId(), documentNo);
+	}
+
+	public PartStocks getPartStocksById(String id) {
+		return dao.getPartStocksById(id);
+	}
+
+	public List<PartCheckStocks> getPartCheckStocksById(String id) {
+		return dao.getPartCheckStocksById(id);
+	}
+
+	/**
+	 * 根据Id查找该条明细
+	 * 
+	 * @param id
+	 * @return
+	 */
+	public List<PartCheckStocksDetail> getPartCheckStockDetailById(String id) {
+		return dao.getPartCheckStockDetailById(id);
+	}
+
+	public void updatePartCheckStockDetail(PartCheckStocks document,
+			PartCheckStocksDetail detail) {
+		dao.updatePartCheckStockDetail(detail);
+		dao.updatePartCheckStocks(document);
+	}
+
+	// =========================Create By LiuJin===========================
+	// modify by shichunshan 新增返回值
+	/**
+	 * 创建盘存单
+	 * 
+	 * @param document
+	 *            盘存单
+	 */
+	public ResponseMessage<List<PartCheckStocksDetail>> createPartsCheckDoc(
+			PartCheckStocks document) {
+		List<PartCheckStocksDetail> partsCheckDetails = document
+				.getPartsCheckDetails();
+		ResponseMessage<List<PartCheckStocksDetail>> result = new ResponseMessage<List<PartCheckStocksDetail>>();
+
+		if (partsCheckDetails == null || partsCheckDetails.size() == 0) {
+			throw new ServiceException("盘存明细不能为空!");
+		}
+		// 新增账面量是否改变校验
+		List<PartCheckStocksDetail> errpartResult = checkQuantityChanged(partsCheckDetails);
+		if (null != errpartResult && errpartResult.size() > 0) {
+			result.setData(errpartResult);
+			result.setRet(ResponseMessage.RET_PARAM_ERR);
+			result.setMsg("部分配件库存数量已发生变化，账面数量不等库存数量，请更新该配件信息！");
+			return result;
+		}
+
+		SysUsers user = HttpSessionStore.getSessionUser();
+		String pcsNo = sysCodeService.createSysCodeRules("PCS_NO",
+				user.getDefaulStationId());
+		document.setPcsNo(pcsNo);
+		document.setStationId(user.getDefaulStationId());
+		document.setCreateTime(new Timestamp(System.currentTimeMillis()));
+		document.setCreator(user.getUserFullName());
+		document.setCreatorNo(user.getUserNo());
+		document.setCreatorUnitName(user.getInstitution().getUnitName());
+		document.setCreatorUnitNo(user.getInstitution().getUnitNo());
+		document.setApproveStatus((short) 0);
+
+		double amount = 0;
+		for (PartCheckStocksDetail d : partsCheckDetails) {
+			d.setPcsNo(pcsNo);
+			d.setPcsDetailId(UUID.randomUUID().toString());
+			dao.save(d);
+			amount += (d.getQuantityFact() - d.getQuantityStock())
+					* d.getCost();
+		}
+
+		document.setPcsPrice(amount);
+
+		dao.save(document);
+
+		result.setData(null);
+		result.setRet(ResponseMessage.RET_SUCC);
+		result.setMsg("保存成功！");
+
+		return result;
+	}
+
+	private List<PartCheckStocksDetail> checkQuantityChanged(
+			List<PartCheckStocksDetail> details) {
+		ResponseMessage<List<PartCheckStocksDetail>> result = new ResponseMessage<List<PartCheckStocksDetail>>();
+		List<PartCheckStocksDetail> errPart = new ArrayList<PartCheckStocksDetail>();
+
+		for (PartCheckStocksDetail detail : details) {
+			PartStocks part = getPartStocksById(detail.getStockId());
+			double quantityStock = detail.getQuantityStock();
+			double quantity = part.getQuantity();
+			if (quantityStock != quantity) {
+				detail.setQuantityStockNow(quantity);
+				errPart.add(detail);
+				continue;
+			}
+		}
+
+		return errPart;
+	}
+
+	// =========================Create By YPZ
+	// 2015.06.05===========================
+	/**
+	 * 创建盘存单
+	 * 
+	 * @param document
+	 *            盘存单
+	 */
+	public PartCheckStocks createPartsCheckDocByPC(PartCheckStocks document) {
+		List<PartCheckStocksDetail> partsCheckDetails = document
+				.getPartsCheckDetails();
+		if (partsCheckDetails == null || partsCheckDetails.size() == 0) {
+			throw new ServiceException("盘存明细不能为空!");
+		}
+
+		SysUsers user = HttpSessionStore.getSessionUser();
+		String pcsNo = sysCodeService.createSysCodeRules("PCS_NO",
+				user.getDefaulStationId());
+		document.setPcsNo(pcsNo);
+		document.setStationId(user.getDefaulStationId());
+		document.setCreateTime(new Timestamp(System.currentTimeMillis()));
+		document.setCreator(user.getUserFullName());
+		document.setCreatorNo(user.getUserNo());
+		document.setCreatorUnitName(user.getInstitution().getUnitName());
+		document.setCreatorUnitNo(user.getInstitution().getUnitNo());
+		document.setApproveStatus((short) 0);
+
+		double amount = 0;
+		for (PartCheckStocksDetail d : partsCheckDetails) {
+			d.setPcsNo(pcsNo);
+			dao.save(d);
+			amount += (d.getQuantityFact() - d.getQuantityStock())
+					* d.getCost();
+		}
+
+		document.setPcsPrice(amount);
+
+		dao.save(document);
+		return document;
+	}
+
+	/**
+	 * 更新盘存单
+	 * 
+	 * @param cudData
+	 * @return
+	 */
+	// modify by shichunshan 新增返回值
+	public ResponseMessage<List<PartCheckStocksDetail>> updatePartsCheckDoc(
+			PartsCheckCUDData cudData) {
+		ResponseMessage<List<PartCheckStocksDetail>> result = new ResponseMessage<List<PartCheckStocksDetail>>();
+		SysUsers user = HttpSessionStore.getSessionUser();
+
+		PartCheckStocks document = cudData.getPartsCheckDoc();
+		document.setModifier(user.getUserFullName());
+		document.setModifyTime(new Timestamp(System.currentTimeMillis()));
+
+		// 新增的数据
+		List<PartCheckStocksDetail> createData = cudData.getCreateData();
+		List<PartCheckStocksDetail> updateData = cudData.getUpdateData();
+		List<String> deleteData = cudData.getDeleteData();
+
+		List<PartCheckStocksDetail> tempData = cudData.getCreateData();
+
+		// 新增账面量是否改变校验
+		List<PartCheckStocksDetail> errpartResult = new ArrayList<PartCheckStocksDetail>();
+		if (null != createData && createData.size() > 0) {
+			errpartResult = checkQuantityChanged(createData);
+		}
+		if (null != updateData && updateData.size() > 0) {
+			errpartResult.addAll(checkQuantityChanged(updateData));
+		}
+
+		if (errpartResult.size() > 0) {
+			result.setData(errpartResult);
+			result.setRet(ResponseMessage.RET_PARAM_ERR);
+			result.setMsg("部分配件库存数量已发生变化，账面数量不等库存数量，请更新该配件信息！");
+			return result;
+		}
+
+		if (createData != null) {
+			for (PartCheckStocksDetail d : createData) {
+				d.setPcsNo(document.getPcsNo());
+				d.setPcsDetailId(UUID.randomUUID().toString());
+				dao.save(d);
+			}
+		}
+
+		// 修改的数据
+
+		if (updateData != null) {
+			for (PartCheckStocksDetail d : updateData) {
+				dao.update(d);
+			}
+		}
+
+		// 删除的数据
+
+		if (deleteData != null) {
+			dao.deletePartCheckStockDetailByIds(cudData.getDeleteData());
+		}
+
+		dao.update(document);
+		result.setData(null);
+		result.setRet(ResponseMessage.RET_SUCC);
+		result.setMsg("保存成功！");
+		return result;
+	}
+}

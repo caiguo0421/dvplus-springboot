@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+	<!-- =======================================车辆库存相关======================================= -->
+	<!-- 车辆出入库历史 -->
+	<sql-query name="vehicleStockHistory">
+			<return class="cn.sf_soft.vehicle.stockbrowse.model.VehicleStockHistory"/>
+			<![CDATA[  
+			  SELECT  a.vehicle_id ,
+			        a.in_stock_no ,
+			        a.vehicle_cost ,
+			        a.vehicle_carriage ,
+			        b.in_stock_time ,
+			        b.supplier_name ,
+			        b.station_id ,
+			        b.warehouse_name ,
+			        b.creator ,
+			        b.create_time ,
+			        b.approver ,
+			        b.approve_time ,
+			        c.meaning ,
+			        d.station_name
+			FROM    vehicle_in_stock_detail AS a ,
+			        vehicle_in_stocks AS b
+			        LEFT JOIN ( SELECT  code ,
+			                            meaning
+			                    FROM    sys_flags
+			                    WHERE   field_no = 'vis_type'
+			                  ) AS c ON b.in_stock_type = c.code
+			        LEFT JOIN ( SELECT  station_id ,
+			                            station_name
+			                    FROM    sys_stations
+			                  ) AS d ON b.station_id = d.station_id
+			WHERE   a.vehicle_id = :vehicleId
+			        AND a.in_stock_no = b.in_stock_no
+			        AND b.approve_status = 1
+			UNION
+			SELECT  a.vehicle_id ,
+			        a.out_stock_no AS in_stock_no ,
+			        a.vehicle_price AS vehicle_cost ,
+			        0 AS vehicle_carriage ,
+			        b.out_stock_time AS in_stock_time ,
+			        b.customer_name AS supplier_name ,
+			        b.station_id ,
+			        a.warehouse_name ,
+			        b.creator ,
+			        b.create_time ,
+			        b.approver ,
+			        b.approve_time ,
+			        c.meaning ,
+			        d.station_name
+			FROM    vehicle_out_stock_detail AS a ,
+			        vehicle_out_stocks AS b
+			        LEFT JOIN ( SELECT  code ,
+			                            meaning
+			                    FROM    sys_flags
+			                    WHERE   field_no = 'vos_type'
+			                  ) AS c ON b.out_stock_type = c.code
+			        LEFT JOIN ( SELECT  station_id ,
+			                            station_name
+			                    FROM    sys_stations
+			                  ) AS d ON b.station_id = d.station_id
+			WHERE   a.vehicle_id = :vehicleId
+			        AND a.out_stock_no = b.out_stock_no
+			        AND b.approve_status = 1
+			ORDER BY in_stock_time DESC
+        ]]>
+	</sql-query>
+	
+	
+	
+	<!-- 车辆改装明细 -->
+	<sql-query name="vehicleConversionDetail">
+			<![CDATA[  
+				SELECT
+				a.conversion_detail_id AS conversionDetailId,
+				a.in_detail_id AS inDetailId,
+				a.vehicle_vin AS vehicleVin,
+				a.vehicle_kind AS vehicleKind,
+				a.conversion_no AS conversionNo,
+				a.conversion_type AS conversionType,
+				a.status AS status,
+				a.item_id AS itemId,
+				a.item_no AS itemNo,
+				a.item_name AS itemName,
+				a.supplier_id AS supplierId,
+				a.supplier_no AS supplierNo,
+				a.supplier_name AS supplierName,
+				a.item_cost AS itemCost,
+				a.remark AS remark,
+				a.payment_status AS paymentStatus,
+				a.vary_flag AS varyFlag,
+				a.confirm_man AS confirmMan,
+				a.confirm_time AS confirmTime,
+				a.item_cost_ori AS itemCostOri,
+				a.confirm_price_date AS confirmPriceDate,
+				a.confirmer_price AS confirmerPrice,
+				a.vehicle_id AS vehicleId,
+				a.future_pay_date AS futurePayDate,
+				a.sale_contract_item_id AS saleContractItemId,
+				a.confirm_unit_no AS confirmUnitNo,
+				a.confirm_unit_name AS confirmUnitName,
+				a.confirm_man_no AS confirmManNo,
+				a.tax_money AS taxMoney,
+				a.no_tax_money AS noTaxMoney,
+				a.tax as tax,
+				a.tax_rate as taxRate,
+				a.conversion_time as conversionTime,
+				a.is_auto_relation as isAutoRelation,
+				a.conversion_id as conversionId,
+				a.group_id as groupId,
+				a.vocd_id as vocdId,
+		        b.meaning AS vehicleKindMeaning ,
+		        c.meaning AS conversionTypeMeaning ,
+		        d.is_exists as isExists
+		FROM    vehicle_conversion_detail AS a
+		        LEFT JOIN ( SELECT  *
+		                    FROM    sys_flags
+		                    WHERE   field_no = 'vehicle_kind'
+		                  ) AS b ON a.vehicle_kind = b.code
+		        LEFT JOIN ( SELECT  *
+		                    FROM    sys_flags
+		                    WHERE   field_no = 'conversion_type'
+		                  ) AS c ON a.conversion_type = c.code
+		        LEFT JOIN ( SELECT  conversion_no ,
+		                            is_exists
+		                    FROM    vehicle_conversion
+		                  ) AS d ON a.conversion_no = d.conversion_no
+		WHERE   ( ( status = 2
+		            AND d.is_exists = 0
+		          )
+		          OR ( ( status = 1
+		                 OR status = 2
+		                 OR status = 30
+		               )
+		               AND ( d.is_exists = 1
+		                     OR a.conversion_type = 0
+		                   )
+		             )
+		        )
+		        AND vehicle_id = :vehicleId
+        ]]>
+	</sql-query>
+
+	<!--获取在途车辆和订单车辆-->
+	<sql-query name="getOnWayVehicle">
+		<![CDATA[
+			SELECT *
+				FROM (
+					SELECT '在途' AS realStatus, vmc.vehicle_strain, d.station_id, st.station_name
+						, ISNULL(NULLIF(b.color, ''), b.color_name) AS vehicle_color
+						, b.color, b.color_name, c.vehicle_vno_id, c.vehicle_vno
+						, ISNULL(vmcp.price_sale, vmc.price_sale) AS price_sale, a.*
+						, e.apply_type, e.sap_order_no, c.transport_to
+						, (
+							SELECT STUFF((
+									SELECT DISTINCT ',' + lv.underpan_no
+									FROM (
+										SELECT b.sap_contract_no, a.underpan_no
+										FROM dbo.vehicle_DF_sap_delivery a
+											INNER JOIN dbo.vehicle_DF_sap_order b ON b.sap_order_no = a.sap_order_no
+										WHERE ISNULL(a.finish_status, 0) = 0
+											AND a.underpan_no NOT LIKE 'DEL_%'
+									) lv
+									WHERE a.contract_no = lv.sap_contract_no
+									FOR XML PATH('')
+								), 1, 1, '')
+						) AS underpan_no
+						, CASE
+							WHEN ISNULL(a.quantity, 0) <= ISNULL(f1.qty, 0) THEN 0
+							ELSE
+								CASE
+									WHEN ISNULL(a.quantity, 0) - ISNULL(g.invoice_qty, 0) >= 0 THEN ISNULL(a.quantity, 0) - ISNULL(g.invoice_qty, 0)
+									ELSE 0
+								END
+						END AS unbilled_qty
+						, CASE
+							WHEN CASE
+								WHEN ISNULL(g.invoice_qty, 0) > ISNULL(a.quantity, 0) THEN ISNULL(a.quantity, 0)
+								ELSE ISNULL(g.invoice_qty, 0)
+							END - ISNULL(f.qty, 0) > 0 THEN CASE
+								WHEN ISNULL(g.invoice_qty, 0) > ISNULL(a.quantity, 0) THEN ISNULL(a.quantity, 0)
+								ELSE ISNULL(g.invoice_qty, 0)
+							END - ISNULL(f.qty, 0)
+							ELSE 0
+						END AS invoiced_onway_qty,
+						(SELECT STUFF( (
+						SELECT ','+CONVERT(VARCHAR(10), CASE WHEN v2.invoice_date IS NULL THEN v1.invoice_date ELSE v2.invoice_date END ,120) FROM vehicle_DF_sap_delivery v1
+						INNER JOIN dbo.vehicle_DF_sap_order b ON b.sap_order_no = v1.sap_order_no
+						LEFT JOIN vehicle_stocks v2 ON v2.vehicle_id=v1.vehicle_id
+						WHERE b.sap_contract_no=a.contract_no
+						FOR XML PATH('')), 1, 1,'')) AS invoice_date --开票日期
+					FROM dbo.vehicle_DF_sap_contract a
+						LEFT JOIN dbo.vehicle_DF_purchase_order b ON b.purchase_order_no = a.purchase_order_no
+						LEFT JOIN dbo.vehicle_demand_apply_detail c
+						ON b.apply_order_no = c.order_no
+							AND b.work_state_audit = c.work_state_audit
+							AND ISNULL(c.detail_status, '') <> 'CRM删除'
+						LEFT JOIN dbo.vehicle_demand_apply d ON c.order_no = d.order_no
+						LEFT JOIN dbo.sys_stations st ON d.station_id = st.station_id
+						LEFT JOIN dbo.base_vehicle_model_catalog vmc ON c.vehicle_vno_id = vmc.self_id
+						LEFT JOIN dbo.base_vehicle_model_catalog_price vmcp
+						ON c.vehicle_vno_id = vmcp.parent_id
+							AND vmcp.station_id = d.station_id
+						LEFT JOIN (
+							SELECT *
+							FROM (
+								SELECT a.sap_contract_no, a.sap_order_no, b.create_date AS sap_create_date
+									, CASE
+										WHEN a.apply_type IN ('监控车', '一次性监控') THEN '监控'
+										ELSE '现款'
+									END AS apply_type, ROW_NUMBER() OVER (PARTITION BY a.sap_contract_no ORDER BY a.sap_contract_no) AS rowNum
+								FROM dbo.vehicle_DF_invoice_apply a
+									LEFT JOIN vehicle_DF_sap_order b ON a.sap_order_no = b.sap_order_no
+								WHERE a.status NOT LIKE '%拒绝%'
+									AND a.status NOT LIKE '%作废%'
+							) a
+							WHERE rowNum = 1
+						) e
+						ON e.sap_contract_no = a.contract_no
+						LEFT JOIN (
+							SELECT b.sap_contract_no, COUNT(*) AS qty
+							FROM dbo.vehicle_DF_sap_delivery a
+								INNER JOIN dbo.vehicle_DF_sap_order b ON b.sap_order_no = a.sap_order_no
+							WHERE a.finish_status = 1
+								OR a.underpan_no LIKE 'DEL_%'
+							GROUP BY b.sap_contract_no
+						) f
+						ON f.sap_contract_no = a.contract_no
+						LEFT JOIN (
+							SELECT b.sap_contract_no, COUNT(*) AS qty
+							FROM dbo.vehicle_DF_sap_delivery a
+								INNER JOIN dbo.vehicle_DF_sap_order b ON b.sap_order_no = a.sap_order_no
+							WHERE a.underpan_no LIKE 'DEL_%'
+							GROUP BY b.sap_contract_no
+						) f1
+						ON f1.sap_contract_no = a.contract_no
+						LEFT JOIN (
+							SELECT a.sap_contract_no, COUNT(*) AS invoice_qty
+							FROM dbo.vehicle_DF_invoice_apply a
+							WHERE a.status IN ('开票完成')
+							GROUP BY a.sap_contract_no
+						) g
+						ON g.sap_contract_no = a.contract_no
+					WHERE d.station_id IS NOT NULL
+						AND a.refuse_reason = '有效'
+						AND (CASE
+								WHEN ISNULL(a.quantity, 0) <= ISNULL(f1.qty, 0) THEN 0
+								ELSE
+									CASE
+										WHEN ISNULL(a.quantity, 0) - ISNULL(g.invoice_qty, 0) >= 0 THEN ISNULL(a.quantity, 0) - ISNULL(g.invoice_qty, 0)
+										ELSE 0
+									END
+							END > 0
+							OR CASE
+								WHEN CASE
+									WHEN ISNULL(g.invoice_qty, 0) > ISNULL(a.quantity, 0) THEN ISNULL(a.quantity, 0)
+									ELSE ISNULL(g.invoice_qty, 0)
+								END - ISNULL(f.qty, 0) > 0 THEN CASE
+									WHEN ISNULL(g.invoice_qty, 0) > ISNULL(a.quantity, 0) THEN ISNULL(a.quantity, 0)
+									ELSE ISNULL(g.invoice_qty, 0)
+								END - ISNULL(f.qty, 0)
+								ELSE 0
+							END > 0)
+						AND b.status NOT LIKE '%作废%'
+						AND b.status NOT LIKE '%终止%'
+						AND b.status NOT LIKE '%拒绝%'
+				) a
+		]]>
+	</sql-query>
+	<!--获取在库车辆-->
+	<sql-query name="getVehicleStock">
+		<![CDATA[
+			SELECT *
+						FROM   (SELECT a.status,--库存状态0 未订购 1 已订购 3 已出库
+										a.realStatus,--库存状态
+										a.stock_age,--库龄
+										a.invoice_age,--开票库龄
+										a.invoice_date, --开票日期
+										a.vehicle_id,--车辆ID
+										a.vehicle_vin,--VIN码
+										a.vno_id,--车型ID
+										a.vehicle_sales_code,--销售代号
+										a.vehicle_vno,--车型
+										a.vehicle_name,--车辆名称
+										a.vehicle_strain,--车辆品系
+										a.vehicle_color,--车型颜色
+										a.vehicle_engine_type,--发动机型号
+										a.vehicle_engine_no,--发动机编码
+										a.vehicle_eligible_no,--合格证号
+										a.vehicle_out_factory_time,--出厂时间
+										a.vehicle_cost,--车辆成本
+										a.vehicle_carriage,--车辆运费
+										a.vi_pay_type,
+										a.vi_pay_type_meaning,--付款类型
+										a.in_stock_no,--入库单号
+										a.in_stock_time,--入库时间
+										a.in_stock_type,--入库类型
+										a.inStockType,--入库类型
+										a.warehouse_name,--仓库名称
+										a.warehouse_id,--仓库ID
+										a.station_id,--站点ID
+										a.station_name,--站点名称
+										a.supplier_id,--供应商ID
+										a.supplier_name,--供应商名称
+										a.carry_no,--运输单号
+										a.sale_contract_no,--销售单号
+										a.sale_contract_code,--合同单号
+										a.customer_id,--客户ID
+										a.customer_name,--客户名称
+										a.seller_id,--销售员ID
+										a.seller,--销售员
+										a.out_stock_no,--出库单号
+										a.out_stock_time,--出库时间
+										a.out_stock_type,--出库类型
+										a.outStockType,--出库类型
+										a.vehicle_price,--销售价格
+										a.vehicle_quantity,--车辆数量
+										a.delivery_locus,--销售网点
+										a.conversion_status,--改装状态
+										a.conversion_status_meaning,--改装状态
+										a.vehicle_vno_new,--新车辆型号
+										a.vehicle_vin_new,--新VIN码
+										a.profit_return,--返利金额
+										a.modified_fee,--改装费用
+										a.move_stock_charge,--移调费用
+										a.other_cost,--其他成本
+										a.invoice_no,--发票号码
+										a.invoice_amount,--发票金额
+										a.drive_room_no,--驾驶室号
+										a.future_pay_date,--预计付款日期
+										a.write_off_date,--销账日期
+										a.write_off_flag,--是否已销账
+										a.write_off_flag_meaning,--是否已销账meaning
+										a.write_off_no,--销账单号
+										a.scanning_out_stocks,--GPS出库日期
+										a.vehicle_sale_documents,--SAP订单号
+										a.sap_contract_no,--SAP合同号
+										a.speed_ratio,--速比
+										a.tire_type,--轮胎型号
+										a.underpan_no,--底盘号
+										a.gps_location,--GPS位置信息
+										a.container_spec,--货箱规格
+										a.vehicle_kind,--车型类型
+										a.vehicle_kind_meaning,
+										( CASE
+											WHEN a.min_sale_price IS NOT NULL
+												AND a.min_sale_price > 0 THEN a.min_sale_price
+											ELSE Isnull(f.price_sale, c.price_sale)
+										END )      AS vehicle_sale_price_reference,--最低限价
+										b.buy_type_meaning,--购车方式
+										b.plan_deliver_time,--计划交车日期
+										c.short_name AS vehice_catalog_short_name,--车型简称
+										vcs.certificate_time,
+										b.real_deliver_time,--实际交车日期
+										CASE WHEN vcs1.is_upload IS NULL OR vcs1.is_upload=0 THEN '未上传' ELSE '已上传' END AS certificate_upload_status,
+										vcs1.stock_name as certificate_stock_name,--合格证仓库名称
+										a.pay_status_meaning, --付款状态
+										CASE WHEN a.pay_status_meaning='已付' OR a.pay_status_meaning='已清' THEN 1 ELSE 0 END AS payStatus, --0 未付，1 已付
+										DATEDIFF(day,(SELECT TOP 1 v1.invoice_time FROM vehicle_DF_invoice_apply v1 WHERE v1.sap_order_no=e.sap_order_no AND v1.invoice_time IS NOT NULL ),getdate()) AS monitor_days, --监控天数
+										CASE WHEN g.vehicle_id IS NOT NULL THEN g.reference_cost ELSE Isnull(NULLIF(f.reference_cost, 0), c.reference_cost) END AS reference_cost --参考成本
+								FROM   dbo.vw_vehicle_stock a
+										LEFT JOIN vehicle_DF_sap_delivery e ON a.vehicle_id=e.vehicle_id
+										LEFT JOIN vehicle_certificate_stocks vcs1 ON a.vehicle_id=vcs1.vehicle_id
+										LEFT JOIN (SELECT vehicle_id,
+														Max(certificate_time) AS certificate_time
+													FROM   dbo.vehicle_certificate_stocks
+													GROUP  BY vehicle_id) vcs
+												ON vcs.vehicle_id = a.vehicle_id
+										LEFT JOIN base_vehicle_model_catalog c
+												ON a.vno_id = c.self_id
+										LEFT JOIN base_vehicle_model_catalog_price AS f
+												ON a.vno_id = f.parent_id
+												AND ( f.station_id IS NULL
+														OR a.station_id = f.station_id )
+										LEFT JOIN (SELECT a.contract_no,
+														b.vehicle_id,
+														a.buy_type,
+														c.meaning AS buy_type_meaning,
+														b.plan_deliver_time,
+														b.real_deliver_time
+													FROM   dbo.vehicle_sale_contracts a
+														LEFT JOIN dbo.vehicle_sale_contract_detail b
+																ON a.contract_no = b.contract_no
+														LEFT JOIN (SELECT code,
+																			meaning
+																	FROM   sys_flags
+																	WHERE  field_no = 'vs_buy_type') AS c
+																ON a.buy_type = c.code
+													WHERE  a.contract_status <> 3
+														AND a.contract_status <> 4
+														AND b.approve_status IN ( 0, 1, 2 )) b
+												ON a.sale_contract_no = b.contract_no
+												AND a.vehicle_id = b.vehicle_id
+												
+											LEFT JOIN (SELECT a.vehicle_id,
+																	b.contract_no,
+																	CASE
+																		WHEN Isnull(c.vehicle_kind, 0) = 2 THEN ( CASE
+																																								WHEN so1.option_value = '销售价' THEN Isnull(a.vehicle_price, 0)
+																																								ELSE Isnull(Isnull(NULLIF(e.vehicle_cost, 0), Isnull(NULLIF(d.reference_cost, 0), c.reference_cost)), 0)
+																																							END )
+																		ELSE
+																			CASE
+																				WHEN Isnull(e.min_sale_price, 0) > 0 THEN Isnull(e.min_sale_price, 0)
+																				ELSE Isnull(NULLIF(a.vehicle_cost_ref, 0), ( Isnull(NULLIF(d.reference_cost, 0), c.reference_cost) ))
+																			END
+																	END AS reference_cost
+														FROM   dbo.vehicle_sale_contract_detail a
+																	LEFT JOIN dbo.vehicle_sale_contracts b
+																					ON a.contract_no = b.contract_no
+																	LEFT JOIN dbo.base_vehicle_model_catalog c
+																					ON a.vno_id = c.self_id
+																	LEFT JOIN dbo.base_vehicle_model_catalog_price d
+																					ON d.parent_id = c.self_id
+																						AND d.station_id = b.station_id
+																	LEFT JOIN dbo.vehicle_stocks e
+																					ON a.vehicle_id = e.vehicle_id
+																	LEFT JOIN dbo.sys_options so1
+																					ON so1.option_no = 'VEHICLE_SALE_GC_COST_CONFIG'
+																						AND so1.station_id = b.station_id
+														WHERE  a.vehicle_id IS NOT NULL) g
+												ON g.vehicle_id = a.vehicle_id
+													AND a.sale_contract_no = g.contract_no
+								WHERE  a.in_stock_no IS NOT NULL AND a.in_stock_no<>'') a
+						WHERE  vehicle_vin NOT LIKE '$%'
+		]]>
+	</sql-query>
+	
+</hibernate-mapping>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class name="cn.sf_soft.office.approval.model.VehicleSaleContractInsuranceVary" table="vehicle_sale_contract_insurance_vary" >
+        <id name="saleContractInsuranceVaryId" type="java.lang.String">
+            <column name="sale_contract_insurance_vary_id" length="40" />
+            <generator class="assigned" />
+        </id>
+        <property name="detailVaryId" type="java.lang.String">
+            <column name="detail_vary_id" />
+        </property>
+        <property name="saleContractInsuranceId" type="java.lang.String">
+            <column name="sale_contract_insurance_id" />
+        </property>
+        <property name="contractDetailId" type="java.lang.String">
+            <column name="contract_detail_id" />
+        </property>
+        <property name="insuranceYear" type="java.lang.Integer">
+            <column name="insurance_year" />
+        </property>
+        <property name="categoryId" type="java.lang.String">
+            <column name="category_id" />
+        </property>
+        <property name="categoryName" type="java.lang.String">
+            <column name="category_name" />
+        </property>
+        <property name="categoryType" type="java.lang.String">
+            <column name="category_type" />
+        </property>
+        <property name="categoryIncome" type="java.lang.Double">
+            <column name="category_income" precision="9" />
+        </property>
+        <property name="categoryScale" type="java.lang.Double">
+            <column name="category_scale" precision="9" />
+        </property>
+        <property name="categoryCost" type="java.lang.Double">
+            <column name="category_cost" precision="9" />
+        </property>
+        <property name="costStatus" type="java.lang.Short">
+            <column name="cost_status" />
+        </property>
+        <property name="abortStatus" type="java.lang.Short">
+            <column name="abort_status" />
+        </property>
+        <property name="abortComment" type="java.lang.String">
+            <column name="abort_comment" />
+        </property>
+        <property name="remark" type="java.lang.String">
+            <column name="remark" />
+        </property>
+        <property name="supplierId" type="java.lang.String">
+            <column name="supplier_id" />
+        </property>
+        <property name="purchaseSort" type="java.lang.Integer">
+            <column name="purchase_sort" />
+        </property>
+        <property name="isFree" type="java.lang.Boolean">
+            <column name="is_free" />
+        </property>
+        <property name="contractNo" type="java.lang.String">
+            <column name="contract_no" />
+        </property>
+        <property name="oriCategoryIncome" type="java.lang.Double">
+            <column name="ori_category_income" precision="9" />
+        </property>
+    </class>
+</hibernate-mapping>

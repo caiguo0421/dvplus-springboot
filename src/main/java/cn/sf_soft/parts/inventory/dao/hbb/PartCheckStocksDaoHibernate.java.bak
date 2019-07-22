@@ -1,0 +1,477 @@
+package cn.sf_soft.parts.inventory.dao.hbb;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
+import org.springframework.orm.hibernate3.HibernateCallback;
+import org.springframework.stereotype.Repository;
+
+import cn.sf_soft.common.dao.hbb.BaseDaoHibernateImpl;
+import cn.sf_soft.parts.inventory.dao.PartCheckStocksDao;
+import cn.sf_soft.parts.inventory.model.PartCheckStocks;
+import cn.sf_soft.parts.inventory.model.PartCheckStocksDetail;
+import cn.sf_soft.parts.inventory.model.PartCheckStoksAdjust;
+import cn.sf_soft.parts.inventory.model.PartInStockDetail;
+import cn.sf_soft.parts.inventory.model.PartInStocks;
+import cn.sf_soft.parts.inventory.model.PartOutStockDetail;
+import cn.sf_soft.parts.inventory.model.PartOutStocks;
+import cn.sf_soft.parts.inventory.model.ResponsibleDepartment;
+import cn.sf_soft.parts.inventory.model.Warehouse;
+import cn.sf_soft.parts.stockborwse.model.PartStocks;
+
+@Repository("partCheckStocksDao")
+public class PartCheckStocksDaoHibernate extends BaseDaoHibernateImpl implements PartCheckStocksDao {
+
+	static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(PartCheckStocksDaoHibernate.class);
+
+	/**
+	 * 获取首页未审批的盘存调整单
+	 * 
+	 * @param stationId
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<PartCheckStocks> getPartCheckStock(List<String> stationIds) {
+		if (stationIds == null || stationIds.size() == 0) {
+			return new ArrayList<PartCheckStocks>();
+		}
+		List<PartCheckStocks> list = findByNamedQueryAndNamedParam("getPartCheckStock", new String[] { "stationIds" },
+				new Object[] { stationIds });
+		return list;
+	}
+
+	/**
+	 * 获取盘存调整单对应的明细
+	 * 
+	 * @param pcsNo
+	 *            盘存调整单号
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<PartCheckStocksDetail> getPartCheckStockDetail(String pcsNo) {
+		List<PartCheckStocksDetail> list = findByNamedQueryAndNamedParam("getPartCheckStockDetail",
+				new String[] { "pcsNo" }, new String[] { pcsNo });
+		return list;
+	}
+
+	/*
+	 * @SuppressWarnings("unchecked") public List<PartCheckStocksDetail>
+	 * getPartCheckStockDetail(final String pcsNo,final int pageNo,final int
+	 * pageSize) { return (List<PartCheckStocksDetail>)
+	 * getHibernateTemplate().execute(new HibernateCallback() {
+	 * 
+	 * public Object doInHibernate(Session session) throws HibernateException,
+	 * SQLException { String sql = null; try { sql =
+	 * getQueryStringByName("getPartCheckStockDetail", new String[]{"pcsNo"},
+	 * new String[]{pcsNo}); } catch (Exception e) { e.printStackTrace(); throw
+	 * new HibernateException(e.getMessage()); } return
+	 * session.createSQLQuery(sql) .addEntity(PartCheckStocksDetail.class)
+	 * .setString("pcsNo", pcsNo) .setFirstResult((pageNo-1)*pageSize)
+	 * .setMaxResults(pageSize) .list(); } }); }
+	 */
+
+	/**
+	 * 获取盘存调整单对应的明细数量
+	 * 
+	 * @param pcsNo
+	 * @param pageNo
+	 * @param pageSize
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<Integer> getPartCheckStockDetailCount(final String pcsNo, final int pageNo, final int pageSize) {
+		return (List<Integer>) getHibernateTemplate().execute(new HibernateCallback() {
+
+			public Object doInHibernate(Session session) throws HibernateException, SQLException {
+				String sql = null;
+				try {
+					sql = getQueryStringByName("getPartCheckStockDetailCount", new String[] { "pcsNo" },
+							new String[] { pcsNo });
+				} catch (Exception e) {
+					e.printStackTrace();
+					throw new HibernateException(e.getMessage());
+				}
+				return session.createSQLQuery(sql).setString("pcsNo", pcsNo).list();
+			}
+		});
+	}
+
+	/**
+	 * 获取计划单号
+	 * 
+	 * @param pcsNo
+	 *            当前调整单单号
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<String> getPlanNos(String stationId) {
+		List<String> list = findByNamedQueryAndNamedParam("getPlanNos", new String[] { "stationId" },
+				new String[] { "%" + stationId + "%" });
+		return list;
+	}
+
+	/**
+	 * 查询库位基础数据
+	 * 
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<String> getPartPosition(String stationId) {
+		List<String> list = findByNamedQueryAndNamedParam("getPartPosition", new String[] { "stationId" },
+				new String[] { "%" + stationId + "%" });
+		return list;
+	}
+
+	/**
+	 * 查询当前用户是否被为指定某仓库操作员
+	 * 
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<Warehouse> getPartCheckStockWarehouseUser(String userId, String stationId) {
+		List<Warehouse> list = findByNamedQueryAndNamedParam("getPartCheckStockWarehouseUser", new String[] { "userId",
+				"stationId" }, new String[] { "%" + userId + "%", "%" + stationId + "%" });
+		return list;
+	}
+
+	/**
+	 * 获取仓库的基础数据
+	 * 
+	 * @param userId
+	 * @param stationId
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<Warehouse> getPartCheckStockWarehouse(final String userId, final String stationId) {
+		List<Warehouse> list = getPartCheckStockWarehouseUser(userId, stationId);
+		if (list.size() > 0) {
+			return list;
+		} else {
+			return findByNamedQueryAndNamedParam("getPartCheckStockWarehouse", new String[] { "stationId" },
+					new String[] { "%" + stationId + "%" });
+		}
+	}
+
+	/**
+	 * 查询负责部门基础数据
+	 * 
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<ResponsibleDepartment> getResponsibleDepartment(String stationId) {
+		List<ResponsibleDepartment> list = findByNamedQueryAndNamedParam("getResponsibleDepartment",
+				new String[] { "stationId" }, new String[] { stationId });
+		return list;
+	}
+
+	/**
+	 * 获取待调整的配件信息
+	 * 
+	 * @param planNo
+	 *            计划单号
+	 * @param depositPosition
+	 *            库位
+	 * @param pcsNo
+	 *            当前调整单号
+	 * @param pageNo
+	 * @param pageSize
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<PartCheckStoksAdjust> getPartCheckStoksAdjustData(final String planNo, final String depositPosition,
+			final int pageNo, final int pageSize) {
+		return (List<PartCheckStoksAdjust>) getHibernateTemplate().execute(new HibernateCallback() {
+
+			public Object doInHibernate(Session session) throws HibernateException, SQLException {
+				String sql = null;
+				try {
+					StringBuffer condition = new StringBuffer("");
+					if (!"".equals(planNo) && planNo != null) {
+						condition.append(" AND h.plan_no= '" + planNo + "' ");
+					}
+					if (!"".equals(depositPosition) && depositPosition != null) {
+						condition.append("AND  a.deposit_position = '" + depositPosition + "' ");
+					}
+					/*
+					 * if(!"".equals(warehouseId) && warehouseId != null){
+					 * condition
+					 * .append("AND  a.warehouse_id = '"+warehouseId+"' "); }
+					 */
+					sql = getQueryStringByName("getPartCheckStoksAdjust", new String[] { "condition" },
+							new String[] { condition.toString() });
+				} catch (Exception e) {
+					e.printStackTrace();
+					throw new HibernateException(e.getMessage());
+				}
+				return session.createSQLQuery(sql).addEntity(PartCheckStoksAdjust.class)
+						.setFirstResult((pageNo - 1) * pageSize).setMaxResults(pageSize).list();
+			}
+		});
+	}
+
+	/**
+	 * 获取待调整的配件信息的总记录数
+	 * 
+	 * @param planNo
+	 *            计划单号
+	 * @param depositPosition
+	 *            库位
+	 * @param pcsNo
+	 *            当前调整单号
+	 * @param pageNo
+	 * @param pageSize
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<Integer> getPartCheckStoksAdjustCount(final String planNo, final String depositPosition) {
+		return (List<Integer>) getHibernateTemplate().execute(new HibernateCallback() {
+
+			public Object doInHibernate(Session session) throws HibernateException, SQLException {
+				String sql = null;
+				try {
+					StringBuffer condition = new StringBuffer("");
+					if (!"".equals(planNo) && planNo != null) {
+						condition.append(" AND h.plan_no= '" + planNo + "' ");
+					}
+					if (!"".equals(depositPosition) && depositPosition != null) {
+						condition.append("AND  a.deposit_position = '" + depositPosition + "' ");
+					}
+					/*
+					 * if(!"".equals(warehouseId) && warehouseId != null){
+					 * condition
+					 * .append("AND  a.warehouse_id = '"+warehouseId+"' "); }
+					 */
+					sql = getQueryStringByName("getPartCheckStoksAdjustCount", new String[] { "condition" },
+							new String[] { condition.toString() });
+				} catch (Exception e) {
+					e.printStackTrace();
+					throw new HibernateException(e.getMessage());
+				}
+				return session.createSQLQuery(sql).list();
+			}
+		});
+	}
+
+	/**
+	 * 获取抽盘待调整的配件信息
+	 * 
+	 * @param warehouseId
+	 *            仓库ID
+	 * @param pageNo
+	 * @param pageSize
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<PartCheckStoksAdjust> getPartCheckStoksAdjustForWarehouse(final String warehouseId,
+			final String depositPosition, final String searchCondition, final int pageNo, final int pageSize) {
+		return (List<PartCheckStoksAdjust>) getHibernateTemplate().execute(new HibernateCallback() {
+
+			public Object doInHibernate(Session session) throws HibernateException, SQLException {
+				String sql = null;
+				try {
+					StringBuffer condition = new StringBuffer("");
+
+					if (!"".equals(depositPosition) && depositPosition != null) {
+						String position = depositPosition.replaceAll("'", "").replaceAll("%", "");
+
+						condition.append("AND  a.deposit_position = '" + position + "' ");
+					}
+					if (!"".equals(searchCondition) && searchCondition != null) {
+						String keyword = searchCondition.replaceAll("'", "").replaceAll("%", "");
+
+						condition.append("AND (c.part_name LIKE '%" + keyword + "%' " + "OR c.part_no LIKE '%"
+								+ keyword + "%' " + "OR c.part_mnemonic LIKE '%" + keyword + "%')");
+					}
+					sql = getQueryStringByName("getPartCheckStoksAdjustForWarehouse", new String[] { "condition" },
+							new String[] { condition.toString() });
+					logger.debug(String.format("配件抽盘查询明细sql: %s", sql));
+
+				} catch (Exception e) {
+					e.printStackTrace();
+					throw new HibernateException(e.getMessage());
+				}
+				return session.createSQLQuery(sql).addEntity(PartCheckStoksAdjust.class)
+						.setString("warehouseId", warehouseId).setFirstResult((pageNo - 1) * pageSize)
+						.setMaxResults(pageSize).list();
+			}
+		});
+	}
+
+	/**
+	 * 获取抽盘待调整的配件总数
+	 * 
+	 * @param warehouseId
+	 *            仓库ID
+	 * @param pageNo
+	 * @param pageSize
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<Integer> getPartCheckStoksAdjustForWarehouseCount(final String warehouseId,
+			final String depositPosition, final String searchCondition) {
+		return (List<Integer>) getHibernateTemplate().execute(new HibernateCallback() {
+
+			public Object doInHibernate(Session session) throws HibernateException, SQLException {
+				String sql = null;
+				try {
+					StringBuffer condition = new StringBuffer("");
+
+					if (!"".equals(depositPosition) && depositPosition != null) {
+						condition.append("AND  a.deposit_position = '" + depositPosition + "' ");
+					}
+					if (!"".equals(searchCondition) && searchCondition != null) {
+						condition.append("AND (c.part_name LIKE '%" + searchCondition.replaceAll("'", "''") + "%' "
+								+ "OR c.part_no LIKE '%" + searchCondition.replaceAll("'", "''") + "%' "
+								+ "OR c.part_mnemonic LIKE '%" + searchCondition.replaceAll("'", "''") + "%')");
+					}
+					sql = getQueryStringByName("getPartCheckStoksAdjustForWarehouseCount",
+							new String[] { "condition" }, new String[] { condition.toString() });
+					logger.debug(String.format("配件抽盘查询记录数sql: %s", sql));
+				} catch (Exception e) {
+					e.printStackTrace();
+					throw new HibernateException(e.getMessage());
+				}
+				return session.createSQLQuery(sql).setString("warehouseId", warehouseId).list();
+			}
+		});
+	}
+
+	/**
+	 * 新增盘存调整单
+	 * 
+	 * @param PartCheckStocks
+	 */
+	public void saveOrUpdatePartCheckStocks(PartCheckStocks part) {
+		this.getHibernateTemplate().saveOrUpdate(part);
+	}
+
+	/**
+	 * 新增盘存调整单明细
+	 * 
+	 * @param PartCheckStocksDetail
+	 */
+	public void savePartCheckStocksDetail(PartCheckStocksDetail part) {
+		this.getHibernateTemplate().save(part);
+	}
+
+	/**
+	 * 新增入库单
+	 * 
+	 * @param partInStocks
+	 */
+	public void savePartInStocks(PartInStocks partInStocks) {
+		this.getHibernateTemplate().save(partInStocks);
+	}
+
+	/**
+	 * 新增入库单明细
+	 * 
+	 * @param detail
+	 */
+	public void savePartInStockDetail(PartInStockDetail detail) {
+		this.getHibernateTemplate().save(detail);
+	}
+
+	/**
+	 * 新增出库单
+	 * 
+	 * @param partOutStocks
+	 */
+	public void savePartOutStocks(PartOutStocks partOutStocks) {
+		this.getHibernateTemplate().save(partOutStocks);
+	}
+
+	/**
+	 * 新增出库单明细
+	 * 
+	 * @param detail
+	 */
+	public void savePartOutStockDetail(PartOutStockDetail detail) {
+		this.getHibernateTemplate().save(detail);
+	}
+
+	/**
+	 * 更新配件库存盘整时间
+	 * 
+	 * @param part
+	 */
+	public void updatePartStocks(PartStocks part) {
+		this.getHibernateTemplate().update(part);
+	}
+
+	/**
+	 * 获取配件的库存信息
+	 * 
+	 * @param id
+	 * @return
+	 */
+	public PartStocks getPartStocksById(String id) {
+		return (PartStocks) this.getHibernateTemplate().get(PartStocks.class, id);
+	}
+
+	/**
+	 * 根据ID获取的盘存单
+	 * 
+	 * @param id
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<PartCheckStocks> getPartCheckStocksById(String id) {
+
+		List<PartCheckStocks> list = (List<PartCheckStocks>) getHibernateTemplate().find(
+				"SELECT new PartCheckStocks(u.pcsNo,u.pcsPrice) from PartCheckStocks u where u.pcsNo=?", id);
+		// return (PartCheckStocks)
+		// this.getHibernateTemplate().get(PartCheckStocks.class, id);
+		return list;
+	}
+
+	/**
+	 * 更新配件盘存单
+	 * 
+	 * @param partCheckStocks
+	 */
+	public void updatePartCheckStocks(PartCheckStocks partCheckStocks) {
+		this.getHibernateTemplate().update(partCheckStocks);
+	}
+
+	/**
+	 * 判断盘点明细是否存在
+	 * 
+	 * @param id
+	 * @return
+	 */
+	public List<PartCheckStocksDetail> getPartCheckStockDetailById(String id) {
+		// return (PartCheckStocksDetail)
+		// this.getHibernateTemplate().get(PartCheckStocksDetail.class, id);
+		@SuppressWarnings("unchecked")
+		List<PartCheckStocksDetail> list = (List<PartCheckStocksDetail>) getHibernateTemplate()
+				.find("SELECT new PartCheckStocksDetail(u.pcsDetailId,u.quantityFact,u.quantityStock) from PartCheckStocksDetail u where u.pcsDetailId=?",
+						id);
+		return list;
+	}
+
+	/**
+	 * 修改盘点明细
+	 * 
+	 * @param detail
+	 */
+	public void updatePartCheckStockDetail(PartCheckStocksDetail detail) {
+		this.getHibernateTemplate().update(detail);
+	}
+
+	// ========================Create By LiuJin===========================
+	/**
+	 * 批量删除指定ID的配件盘存明细
+	 * 
+	 * @param ids
+	 */
+	public void deletePartCheckStockDetailByIds(List<String> ids) {
+		String sql = "DELETE FROM part_check_stocks_detail WHERE pcs_detail_id IN :ids";
+		getHibernateTemplate().getSessionFactory().getCurrentSession().createSQLQuery(sql)
+				.setParameterList("ids", ids.toArray(new String[ids.size()])).executeUpdate();
+	}
+}

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="cn.sf_soft.report.model.FinanaceGatheringReport" abstract="true">
+    	<id name="id">
+    		<column name="id"></column>
+    		<generator class="assigned"/>
+    	</id>
+    	<property name="accountId">
+    		<column name="account_id"></column>
+    	</property>
+    	<property name="settleStationId">
+    		<column name="settle_station_id"></column>
+    	</property>
+    	<property name="payMentMode">
+    		<column name="payment_mode"></column>
+    	</property>
+    	<property name="stationName">
+    		<column name="station_name"></column>
+    	</property>
+    	<property name="settleAmount">
+    		<column name="settle_amount"></column>
+    	</property>
+    	<property name="payMentModeMeaning">
+    		<column name="payment_mode_meaning"></column>
+    	</property>
+    	<property name="accountNo">
+    		<column name="account_no"></column>
+    	</property>
+    	<property name="accountName">
+    		<column name="account_name"></column>
+    	</property>
+    	<property name="bankName">
+    		<column name="bank_name"></column>
+    	</property>
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- 索赔报表(日) -->
+<hibernate-mapping>
+    <class name="cn.sf_soft.report.model.MaintainClaimDailyReport" abstract="true">
+    	<id column="supplier_name" name="supplierName">
+    		<generator class="native"/>
+    	</id>
+    	<property name="appraisalQty">
+    		<column name="appraisal_qty"></column>
+    	</property>
+    	<property name="appraisalMoney">
+    		<column name="appraisal_money"></column>
+    	</property>
+    	<property name="monthAppraisalQty">
+    		<column name="month_appraisal_qty"></column>
+    	</property>
+    	<property name="monthAppraisalMoney">
+    		<column name="month_appraisal_money"></column>
+    	</property>
+    	<property name="date">
+    		<column name="date"></column>
+    	</property>
+    </class>
+</hibernate-mapping>

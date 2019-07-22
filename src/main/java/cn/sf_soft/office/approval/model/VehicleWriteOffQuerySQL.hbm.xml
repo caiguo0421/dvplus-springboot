@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- 定义各报表统计的 SQL语句； 注意name属性的值不能重复 -->
+<hibernate-mapping>
+	<sql-query name="vehicleInStockDetailView">
+		<!-- 根据documentNo分组查找SAP单号和记录数量 -->
+			<![CDATA[		
+SELECT a.*,
+ISNULL(b.vehicle_name,j.common_name) AS vehicle_name,ISNULL(f.vehicle_strain, k.common_name) AS vehicle_strain,
+ISNULL(f.vehicle_brand,l.common_name) as vehicle_brand,
+ISNULL(b.vehicle_color,r.color) AS vehicle_color ,e.status AS stock_status,b.vehicle_engine_type,
+ISNULL(b.vehicle_engine_no,i.engine) AS vehicle_engine_no,b.vehicle_eligible_no,b.vehicle_out_factory_time,
+b.in_stock_no,c.in_stock_time,b.invoice_no,e.warehouse_name,e.seller, 
+ISNULL(b.vehicle_sale_documents,m.sap_order_no) AS vehicle_sale_documents,ISNULL(b.vehicle_sales_code,a.vehicle_vno) AS vehicle_sales_code,
+ISNULL(e.tax_rate,0.17) AS tax_rate,f.full_no,f.full_name,g.station_id,h.station_name,
+bb.upload_status_meaning,bb.invoice_process
+FROM vehicle_write_off_details AS a
+LEFT JOIN vehicle_in_stock_detail b ON b.in_stock_detail_id=a.in_stock_detail_id
+LEFT JOIN vehicle_in_stocks c ON b.in_stock_no=c.in_stock_no
+LEFT JOIN vehicle_stocks e ON a.vehicle_id=e.vehicle_id
+LEFT JOIN vw_vehicle_type f ON b.vno_id=f.vno_id
+LEFT JOIN vehicle_write_off g ON a.document_no=g.document_no
+LEFT JOIN sys_stations h ON g.station_id=h.station_id
+LEFT JOIN ( SELECT  a.vehicle_id ,
+                    b.vwa_no,
+					k.meaning AS upload_status_meaning,
+					b.invoice_process
+            FROM    dbo.vehicle_DF_write_off_apply_detail a
+            LEFT JOIN dbo.vehicle_DF_write_off_apply b ON b.document_no = a.document_no
+			LEFT JOIN sys_flags k ON k.field_no = 'DF_upload_status' AND b.upload_status = k.code
+          ) bb ON a.vehicle_id = bb.vehicle_id AND a.document_no = bb.vwa_no
+LEFT JOIN vehicle_DF_sap_delivery AS m ON a.underpan_no = m.underpan_no
+LEFT JOIN vehicle_DF_sap_order AS n ON m.sap_order_no = n.sap_order_no
+LEFT JOIN base_vehicle_model_catalog AS i ON a.vehicle_vno = i.product_model
+LEFT JOIN base_vehicle_name AS j ON i.vehicle_name_id = j.self_id AND j.common_type = '车辆名称'
+LEFT JOIN base_vehicle_name AS k ON j.parent_id = k.self_id AND k.common_type = '车辆品系'
+LEFT JOIN base_vehicle_name AS l ON k.parent_id = n.self_id AND l.common_type = '车辆品牌'
+LEFT JOIN vehicle_DF_sap_contract q ON n.sap_contract_no=q.contract_no
+LEFT JOIN vehicle_DF_purchase_order r ON q.purchase_order_no=r.purchase_order_no	
+WHERE 1=1 	
+       		]]>
+	</sql-query>
+
+
+
+
+</hibernate-mapping>

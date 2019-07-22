@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.vehicle.customer.model.CustomerOrganizationalStructure"
+           table="customer_organizational_structure" schema="dbo">
+        <id name="selfId" column="self_id"/>
+        <property name="customerId" column="customer_id"/>
+        <property name="hierarchy" column="hierarchy"/>
+        <property name="name" column="name"/>
+        <property name="position" column="position"/>
+        <property name="phone" column="phone"/>
+        <property name="mobile" column="mobile"/>
+        <property name="demands" column="demands"/>
+        <property name="remark" column="remark"/>
+    </class>
+</hibernate-mapping>

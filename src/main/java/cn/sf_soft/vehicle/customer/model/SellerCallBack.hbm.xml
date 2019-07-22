@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.vehicle.customer.model.SellerCallBack" table="seller_call_back" schema="dbo">
+        <id name="backId">
+            <column name="back_id"></column>
+            <generator class="assigned"/>
+        </id>
+        <property name="customerId" column="customer_id"/>
+        <property name="backPurpose" column="back_purpose"/>
+        <property name="backWay" column="back_way"/>
+        <property name="backer" column="backer"/>
+        <property name="planBackTime" column="plan_back_time"/>
+        <property name="realBackTime" column="real_back_time"/>
+        <property name="backContent" column="back_content"/>
+        <property name="checker" column="checker"/>
+        <property name="checkTime" column="check_time"/>
+        <property name="checkContent" column="check_content"/>
+        <property name="outStockNo" column="out_stock_no"/>
+        <property name="backFlag" column="back_flag"/>
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,471 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+	
+	<!-- ======================================自动产生凭证的获取数据源的SQL语句======================================= -->
+	<!-- 费用报销 凭证模板号:35551000 -->
+	<sql-query name="expenseReimbursementVoucherDS">
+		<![CDATA[
+		SELECT  a.user_no,
+				a.user_name,
+				
+				
+				b.expense_no ,
+		        b.expense_name ,
+		        c.*
+		FROM    dbo.office_expense_reimbursements a
+		        LEFT JOIN dbo.office_expense_reimbursements_details b ON a.document_no = b.document_no
+		        LEFT JOIN dbo.office_expense_reimbursements_apportionments c ON b.document_no = c.document_no
+		                                                              AND b.oerd_id = c.oerd_id
+		WHERE   a.document_no = @documentNo
+   		]]>
+	</sql-query>
+	
+		<!--车辆费用报销冲暂估 凭证模板编号:35552000  -->
+	<sql-query name="chargeReimbursementOffsetVoucherDS">
+		<![CDATA[
+		
+SELECT  a.ocrd_id ,
+        a.document_no ,
+        a.contract_no ,
+        a.vscv_id ,
+        a.vehicle_vno ,
+        a.vehicle_name ,
+        a.vehicle_vin ,
+        a.vscc_id ,
+        a.charge_id ,
+        a.charge_name ,
+        b.user_no ,
+        b.user_name ,
+        b.department_no ,
+        b.department_name ,
+        c.* ,
+        c.charge_pf AS charge_amount ,
+        (c.income - c.charge_pf) AS profit,
+        '冲暂估' AS prefix_name,
+        '' AS mark,
+        NULL AS costs_transfer,
+        NULL AS profit_transfer
+FROM    office_charge_reimbursements_details a
+        LEFT JOIN office_charge_reimbursements b ON b.document_no = a.document_no
+        LEFT JOIN ( SELECT  c.sale_contract_charge_id ,
+                            a.customer_no AS object_no ,
+                            a.customer_name AS customer_name ,
+                            d.full_no AS vno_no ,
+                            d.full_name AS vno_name ,
+                            -ISNULL(c.charge_pf, 0) AS charge_pf ,
+                            -ISNULL(c.income, 0) AS income ,
+                            c.paid_by_bill ,
+                            e.status AS stock_status
+                    FROM    vehicle_sale_contracts a
+                            LEFT JOIN vehicle_sale_contract_detail b ON a.contract_no = b.contract_no
+                            LEFT JOIN vehicle_sale_contract_charge c ON b.contract_detail_id = c.contract_detail_id
+                            LEFT JOIN vw_vehicle_type d ON b.vno_id = d.vno_id
+                            LEFT JOIN vehicle_stocks e ON b.vehicle_id = e.vehicle_id
+                  ) c ON a.vscc_id = c.sale_contract_charge_id
+WHERE   c.sale_contract_charge_id IS NOT NULL
+        AND a.document_no = @documentNo
+        AND a.ocrd_id IN (
+        SELECT  a.ocrd_id
+        FROM    office_charge_reimbursements_details a
+                LEFT JOIN vehicle_stocks b ON a.vehicle_vin = b.vehicle_vin
+        WHERE   b.status = 3
+                AND a.document_no = @documentNo )   
+   		]]>
+	</sql-query>
+		<!--车辆费用报销 凭证模板编号:35552000  -->
+	<sql-query name="chargeReimbursementVoucherDS">
+		<![CDATA[
+		 SELECT a.* ,
+        b.user_no ,
+        b.user_name ,
+        b.department_no ,
+        b.department_name ,
+        c.* ,
+        c.income - a.charge_amount AS profit,
+        '' AS prefix_name,
+        '' AS mark,
+        NULL AS costs_transfer,
+        NULL AS profit_transfer
+ FROM   office_charge_reimbursements_details a
+        LEFT JOIN office_charge_reimbursements b ON b.document_no = a.document_no
+        LEFT JOIN ( SELECT  c.sale_contract_charge_id ,
+                            a.customer_no AS object_no ,
+                            a.customer_name AS customer_name ,
+                            d.full_no AS vno_no ,
+                            d.full_name AS vno_name ,
+                            ISNULL(c.charge_pf, 0) AS charge_pf ,
+                            ISNULL(c.income, 0) AS income ,
+                            c.paid_by_bill ,
+                            e.status AS stock_status
+                    FROM    vehicle_sale_contracts a
+                            LEFT JOIN vehicle_sale_contract_detail b ON a.contract_no = b.contract_no
+                            LEFT JOIN vehicle_sale_contract_charge c ON b.contract_detail_id = c.contract_detail_id
+                            LEFT JOIN vw_vehicle_type d ON b.vno_id = d.vno_id
+                            LEFT JOIN vehicle_stocks e ON b.vehicle_id = e.vehicle_id
+                  ) c ON a.vscc_id = c.sale_contract_charge_id
+ WHERE  a.document_no = @documentNo
+   		]]>
+	</sql-query>
+	
+	<!--维修费用报销 凭证模板编号:35553000  -->
+	<sql-query name="serviceReimbursementVoucherDS">
+		<![CDATA[
+		SELECT    a.document_no ,
+            a.charge_amount ,
+            b.charge_pf ,
+            '' as resume_prefix , 
+            b.charge_name ,
+            b.account_type,
+            e.user_no ,
+            e.user_name ,
+            e.department_name ,
+            e.department_no,
+            c.customer_no ,
+            c.customer_name,
+            d.supplier_no,
+            d.supplier_name
+  FROM      office_service_reimbursements_details a
+            INNER JOIN service_work_lists_charge b ON a.task_no = b.task_no
+                                                      AND a.swlc_id = b.self_id
+            INNER JOIN service_work_lists c ON b.task_no = c.task_no
+            LEFT JOIN base_service_account AS d ON ( b.account_id = d.account_id
+                                                     AND c.station_id = d.station_id
+                                                   )
+            INNER JOIN office_service_reimbursements e ON a.document_no = e.document_no
+  WHERE     a.document_no = @documentNo		
+   		]]>
+	</sql-query>
+	<!--维修费用报销冲暂估 凭证模板编号:35553000  -->
+	<sql-query name="serviceReimbursementOffsetVoucherDS">
+		<![CDATA[
+		SELECT    a.document_no ,           
+            -b.charge_pf  as charge_amount , 
+            b.charge_name ,
+             b.account_type,
+            '冲暂估' as resume_prefix ,
+            e.user_no ,
+            e.user_name ,
+            e.department_name ,
+            e.department_no,
+            c.customer_no ,
+            c.customer_name,
+             d.supplier_no,
+            d.supplier_name
+  FROM      office_service_reimbursements_details a
+            INNER JOIN service_work_lists_charge b ON a.task_no = b.task_no
+                                                      AND a.swlc_id = b.self_id
+            INNER JOIN service_work_lists c ON b.task_no = c.task_no
+            LEFT JOIN base_service_account AS d ON ( b.account_id = d.account_id
+                                                     AND c.station_id = d.station_id
+                                                   )
+            INNER JOIN office_service_reimbursements e ON a.document_no = e.document_no
+  WHERE     a.document_no = @documentNo
+   		]]>
+	</sql-query>
+	
+	<!--资产费用报销 凭证模板编号:35554000  -->
+	<sql-query name="assetsReimbursementVoucherDS">
+		<![CDATA[
+		SELECT  a.user_no ,
+		        a.user_name ,
+		        c.*
+		FROM    dbo.office_assets_reimbursements a
+		        LEFT JOIN dbo.office_assets_reimbursements_apportionments c ON a.document_no = c.document_no
+		WHERE   a.document_no = @documentNo
+   		]]>
+	</sql-query>
+	
+	<!--销账处理  凭证模板编号:40233000  -->
+	<sql-query name="accountWriteOffVoucherDS">
+		<![CDATA[
+		SELECT  
+        a.document_no ,
+        a.write_off_type ,
+        ( SELECT    f.meaning
+          FROM      sys_flags f
+          WHERE     f.field_no = 'entry_type'
+                    AND f.code = a.write_off_type
+        ) AS write_off_type_meaning ,
+        a.object_no ,
+        a.object_name ,
+        entry.department_no ,
+        entry.department_name ,
+        b.write_off_amount ,
+        CASE WHEN b.document_type LIKE '结算%款'
+             THEN ( SELECT  
+                            CASE WHEN d.document_type IS NULL
+                                 THEN ( SELECT  full_no
+                                        FROM    base_settlement_types
+                                        WHERE   type_id = c.detail_type
+                                      )
+                                 WHEN d.document_type = '请款-业务请款'
+                                 THEN ( SELECT  CASE WHEN y.document_type IS NULL
+                                                     THEN ( SELECT
+                                                              full_no
+                                                            FROM
+                                                              base_settlement_types
+                                                            WHERE
+                                                              type_id = x.detail_type
+                                                          )
+                                                     ELSE y.document_type
+                                                END
+                                        FROM    finance_payment_requests x
+                                                LEFT JOIN ( SELECT
+                                                              document_no ,
+                                                              MAX(document_type) AS document_type
+                                                            FROM
+                                                              finance_payment_requests_details
+                                                            GROUP BY document_no
+                                                          ) y ON x.document_no = y.document_no
+                                        WHERE   x.document_no = d.document_no
+                                      )
+                                 ELSE d.document_type
+                            END AS document_type
+                    FROM    finance_settlements c
+                            LEFT JOIN ( SELECT  *
+                                        FROM    ( SELECT    settlement_no ,
+                                                            document_type ,
+                                                            document_no ,
+                                                            ROW_NUMBER() OVER ( PARTITION BY settlement_no ORDER BY settle_amount DESC ) AS rno
+                                                  FROM      finance_settlements_details
+                                                ) t
+                                        WHERE   rno = 1
+                                      ) d ON c.settlement_no = d.settlement_no
+										WHERE c.settlement_no like b.document_no_entry
+                  )
+             ELSE b.document_type
+        END document_type ,
+        entry.user_no ,
+        entry.user_name
+FROM    dbo.finance_account_write_offs a
+        LEFT JOIN dbo.finance_account_write_offs_details b ON a.document_no = b.document_no
+        LEFT JOIN dbo.finance_document_entries entry ON b.entry_id = entry.entry_id
+WHERE   a.document_no = @documentNo
+UNION all
+( SELECT  
+            a.document_no ,
+            a.write_off_type ,
+            ( SELECT    f.meaning
+              FROM      sys_flags f
+              WHERE     f.field_no = 'entry_type'
+                        AND f.code = a.write_off_type
+            ) AS write_off_type_meaning ,
+            a.object_no ,
+            a.object_name ,
+            c.department_no ,
+            c.department_name ,
+            c.apportion_amount AS write_off_amount ,
+            NULL document_type ,
+            NULL AS user_no ,
+            NULL AS user_name
+  FROM      dbo.finance_account_write_offs a
+            LEFT JOIN dbo.finance_account_write_offs_apportionments c ON a.document_no = c.document_no
+  WHERE     a.document_no = @documentNo
+)
+
+   		]]>
+	</sql-query>
+	
+		<!--配件盘存调整  凭证模板编号:15858000  -->
+	<sql-query name="partCheckStockDS">
+		<![CDATA[
+		SELECT a.creator,
+		       a.creator_no,
+		       a.creator_unit_name,
+		       a.creator_unit_no,
+		       a.approver,
+		       a.approver_no,
+		       a.approver_unit_name,
+		       a.approver_unit_no,
+		       c.tno                                             AS part_full_code,
+		       c.tname                                           AS part_full_name,
+		       Isnull(Isnull(e.result_price, f.result_price), 0) AS result_price_abs,
+		       Isnull(Isnull(e.pis_quantity, -f.pos_quantity), 0) AS result_quantity_abs,
+		       Isnull(Isnull(e.pis_quantity, -f.pos_quantity), 0) AS result_quantity,
+		       b.*
+		FROM   dbo.part_check_stocks a
+		       LEFT JOIN dbo.part_check_stocks_detail b
+		              ON a.pcs_no = b.pcs_no
+		       LEFT JOIN (SELECT b.stock_id,
+		                         b.pis_price * b.pis_quantity AS result_price,
+		                         b.pis_quantity
+		                  FROM   part_in_stocks a
+		                         LEFT JOIN part_in_stock_detail b
+		                                ON a.pis_no = b.pis_no
+		                  WHERE  a.pis_no = :pisNo)e
+		              ON b.stock_id = e.stock_id
+		       LEFT JOIN (SELECT d.stock_id,
+		                         d.pos_price * d.pos_quantity AS result_price,
+		                         d.pos_quantity
+		                  FROM   dbo.part_out_stocks c
+		                         LEFT JOIN dbo.part_out_stock_detail d
+		                                ON c.pos_no = d.pos_no
+		                  WHERE  c.pos_no = :posNo)f
+		              ON b.stock_id = f.stock_id
+		       LEFT JOIN dbo.base_part_catalogs c
+		              ON b.part_id = c.part_id
+		WHERE  a.pcs_no = @documentNo
+   		]]>
+	</sql-query>
+		<!--配件运费报销 凭证模板编号:35552700 -->
+	<sql-query name="partCarriageReimbursementVoucherDS">
+		<![CDATA[
+SELECT  a.* ,
+        b.user_no ,
+        b.user_name ,
+        b.department_no ,
+        b.department_name ,
+        b.user_no AS object_no ,
+        b.user_name AS object_name
+FROM    dbo.office_part_carriage_reimbursements_details a
+        LEFT JOIN dbo.office_part_carriage_reimbursements b ON b.document_no = a.document_no
+		WHERE   a.document_no = @documentNo
+   		]]>
+	</sql-query>
+		<!--资产报废出库 凭证模板编号:351530  -->
+	<sql-query name="assetsScrapOutStockVoucherDS">
+		<![CDATA[
+		SELECT  a.* ,
+        b.creator_no ,
+        b.creator ,
+        b.creator_unit_no ,
+        b.creator_unit_name ,
+        b.approver ,
+        b.approver_no ,
+        b.approver_unit_no ,
+        b.approver_unit_name ,
+        '' AS gift_department_no ,
+        '' AS gift_department_name ,
+        b.tot_pos_price ,
+        0 AS years ,
+        0 AS months ,
+        d.acct_account_tno, 
+        d.acct_account_tname,
+        d.acct_account_tfullname,
+        ISNULL(a.original_value, 0) - ISNULL(a.acc_depr_init, 0)
+        - ISNULL(a.acc_depr, 0) AS net_worth ,
+        ISNULL(a.original_value, 0) - ISNULL(a.acc_depr_init, 0) AS original_value_2
+		FROM    dbo.assets_out_stock_detail a
+        LEFT JOIN dbo.assets_out_stocks b ON b.document_no = a.document_no 
+        LEFT JOIN assets_stocks AS d ON a.assets_no = d.assets_no   
+        WHERE   a.document_no = @documentNo     
+   		]]>
+	</sql-query>
+	<!--车辆移调费用报销 凭证模板编号:35552500  -->
+	<sql-query name="vehicleMoveChargeReimbursementDS">
+		<![CDATA[
+		SELECT  a.user_name,
+		a.user_no,
+		a.department_no,a.department_name,a.approver_no,a.approver_name,
+		b.*
+FROM    office_vehicle_move_charge_reimbursements a
+        LEFT JOIN dbo.office_vehicle_move_charge_reimbursements_details b ON a.document_no = b.document_no
+        WHERE a.document_no=@documentNo     
+   		]]>
+	</sql-query>
+	<!--应收账款分期 凭证模板编号:40901000  -->
+	<sql-query name="accountsReceivableInstalmentDS">
+		<![CDATA[
+		SELECT  a.object_no ,
+        a.object_name ,
+        a.user_no AS creator_no ,
+        a.user_name AS creator_name ,
+        a.department_no AS creator_unit_no ,
+        a.department_name AS creator_unit_name ,
+        a.approver_no ,
+        a.approver_name ,
+        a.approver_id ,
+        e.approver_unit_no ,
+        e.approver_unit_name ,
+        b.document_type ,
+        b.document_no ,
+        b.ar_principal AS ar_principal_detail ,
+        0 AS ar_principal_master ,
+        0 AS ar_amount_compute_master ,
+        0 AS ar_principal_detail_tot ,
+        0 AS md_amount_diff ,
+        0 AS dm_amount_diff ,
+        0 AS ar_amount_compute_master_abs ,
+        0 AS ar_principal_detail_tot_abs ,
+        '明细' AS MARK ,
+        '' AS prefix_name ,
+        dbo.fn_getVinFromStr(b.receivable_no) AS vehicle_vin
+FROM    accounts_receivable_instalment a
+        LEFT JOIN accounts_receivable_instalment_document b ON a.document_no = b.document_no
+        LEFT JOIN ( SELECT  d.unit_no AS approver_unit_no ,
+                            d.unit_name AS approver_unit_name ,
+                            c.user_id
+                    FROM    dbo.sys_users c
+                            INNER JOIN dbo.sys_units d ON c.department = d.unit_id
+                  ) AS e ON e.user_id = a.approver_id
+WHERE   a.document_no = @documentNo 
+UNION ALL
+SELECT  a.object_no ,
+        a.object_name ,
+        a.user_no AS creator_no ,
+        a.user_name AS creator_name ,
+        a.department_no AS creator_unit_no ,
+        a.department_name AS creator_unit_name ,
+        a.approver_no ,
+        a.approver_name ,
+        a.approver_id ,
+        NULL AS approver_unit_no ,
+        NULL AS approver_unit_name ,
+        NULL AS document_type ,
+        NULL AS document_no ,
+        0 AS ar_principal_detail ,
+        a.ar_principal AS ar_principal_master ,
+        a.ar_principal + a.ar_interest AS ar_amount_compute_master ,
+        dPdt AS ar_principal_detail_tot ,
+        a.ar_principal + a.ar_interest-dPdt AS md_amount_diff ,
+        dPdt-(a.ar_principal + a.ar_interest) AS dm_amount_diff ,
+        a.ar_principal + a.ar_interest AS ar_amount_compute_master_abs ,
+        ABS(dPdt) AS ar_principal_detail_tot_abs ,
+        '主单' AS MARK ,
+        '' AS prefix_name ,
+        NULL AS vehicle_vin
+FROM    accounts_receivable_instalment a,( SELECT SUM(ar_principal) AS dPdt
+          FROM      accounts_receivable_instalment_document 
+			WHERE document_no = @documentNo 
+        )AS b 
+WHERE   a.document_no = @documentNo      
+   		]]>
+	</sql-query>
+	<!--消贷费用报销  凭证模板编号:355522  -->
+	<sql-query name="afLoanChargeReimbursementsDS">
+		<![CDATA[
+		 SELECT a.olcrd_id ,
+        a.document_no ,
+        a.vehicle_vin ,
+        ISNULL(b.amount, 0) * 1 AS charge_amount_pf ,
+        ISNULL(a.charge_amount, 0) * 1 AS charge_amount ,
+        ISNULL(f.user_no, h.user_no) AS seller_no ,
+        ISNULL(f.user_name, h.user_name) AS seller_name ,
+        h.user_no ,
+        h.user_name ,
+        ISNULL(i.status, 255) AS stock_status ,
+        h.department_no ,
+        h.department_name ,
+        j.meaning AS voucher_type ,
+        '' prefix_name
+ FROM   dbo.office_loan_charge_reimbursements_details a
+        LEFT JOIN dbo.vw_vehicle_loan_budget_charge b ON a.budget_charge_id = b.self_id
+        LEFT JOIN dbo.vw_vehicle_loan_budget_details c ON b.budget_detail_id = c.self_id
+        LEFT JOIN dbo.vw_vehicle_loan_budget d ON d.document_no = c.document_no
+        LEFT JOIN dbo.vehicle_sale_contracts e ON d.sale_contract_no = e.contract_no
+        LEFT JOIN dbo.sys_users f ON e.seller_id = f.user_id
+        LEFT JOIN dbo.vehicle_sale_contract_detail g ON c.sale_contract_detail_id = g.contract_detail_id
+        LEFT JOIN dbo.office_loan_charge_reimbursements h ON a.document_no = h.document_no
+        LEFT JOIN dbo.vehicle_stocks i ON i.vehicle_id = g.vehicle_id
+        LEFT JOIN ( SELECT  code ,
+                            meaning
+                    FROM    dbo.sys_flags
+                    WHERE   field_no = 'loan_mode'
+                  ) j ON j.code = d.loan_mode 
+  WHERE     a.document_no = @documentNo
+   		]]>
+	</sql-query>
+</hibernate-mapping>

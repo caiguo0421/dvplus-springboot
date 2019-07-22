@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.vehicle.apply.model.VehicleApplyTranslate" table="vehicle_apply_translate" schema="dbo">
+        <id name="documentNo" column="document_no"/>
+        <property name="stationId" column="station_id"/>
+        <property name="status" column="status"/>
+        <property name="applyTime" column="apply_time"/>
+        <property name="outStationId" column="out_station_id"/>
+        <property name="warehouseId" column="warehouse_id"/>
+        <property name="warehouseName" column="warehouse_name"/>
+        <property name="userId" column="user_id"/>
+        <property name="userNo" column="user_no"/>
+        <property name="userName" column="user_name"/>
+        <property name="departmentId" column="department_id"/>
+        <property name="departmentNo" column="department_no"/>
+        <property name="departmentName" column="department_name"/>
+        <property name="submitStationId" column="submit_station_id"/>
+        <property name="submitStationName" column="submit_station_name"/>
+        <property name="remark" column="remark"/>
+        <property name="creator" column="creator"/>
+        <property name="createTime" column="create_time"/>
+        <property name="modifier" column="modifier"/>
+        <property name="modifyTime" column="modify_time"/>
+        <property name="submitTime" column="submit_time"/>
+        <property name="approverId" column="approver_id"/>
+        <property name="approverNo" column="approver_no"/>
+        <property name="approverName" column="approver_name"/>
+        <property name="approveTime" column="approve_time"/>
+        <property name="errorCode" column="error_code"/>
+        <property name="errorMsg" column="error_msg"/>
+
+        <set name="chargeDetail" table="vehicle_apply_translate_detail"  fetch="join">
+            <key column="document_no" />
+            <one-to-many class="cn.sf_soft.vehicle.apply.model.VehicleApplyTranslateDetail" />
+        </set>
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class name="cn.sf_soft.office.approval.model.VehicleSaleContractPresentVary" table="vehicle_sale_contract_present_vary" >
+        <id name="saleContractPresentVaryId" type="java.lang.String">
+            <column name="sale_contract_present_vary_id" length="40" />
+            <generator class="assigned" />
+        </id>
+        <property name="detailVaryId" type="java.lang.String">
+            <column name="detail_vary_id" />
+        </property>
+        <property name="saleContractPresentId" type="java.lang.String">
+            <column name="sale_contract_present_id" />
+        </property>
+        <property name="contractDetailId" type="java.lang.String">
+            <column name="contract_detail_id" />
+        </property>
+        <property name="oriPlanQuantity" type="java.lang.Double">
+            <column name="ori_plan_quantity" precision="9" />
+        </property>
+        <property name="planQuantity" type="java.lang.Double">
+            <column name="plan_quantity" precision="9" />
+        </property>
+        <property name="getQuantity" type="java.lang.Double">
+            <column name="get_quantity" precision="9" />
+        </property>
+        <property name="posPrice" type="java.lang.Double">
+            <column name="pos_price" precision="9" />
+        </property>
+        <property name="posAgio" type="java.lang.Double">
+            <column name="pos_agio" precision="9" />
+        </property>
+        <property name="stockId" type="java.lang.String">
+            <column name="stock_id" />
+        </property>
+        <property name="depositPosition" type="java.lang.String">
+            <column name="deposit_position" />
+        </property>
+        <property name="partName" type="java.lang.String">
+            <column name="part_name" />
+        </property>
+        <property name="partNo" type="java.lang.String">
+            <column name="part_no" />
+        </property>
+        <property name="partMnemonic" type="java.lang.String">
+            <column name="part_mnemonic" />
+        </property>
+        <property name="producingArea" type="java.lang.String">
+            <column name="producing_area" />
+        </property>
+        <property name="partType" type="java.lang.String">
+            <column name="part_type" />
+        </property>
+        <property name="specModel" type="java.lang.String">
+            <column name="spec_model" />
+        </property>
+        <property name="applicableModel" type="java.lang.String">
+            <column name="applicable_model" />
+        </property>
+        <property name="unit" type="java.lang.String">
+            <column name="unit" />
+        </property>
+        <property name="warehouseName" type="java.lang.String">
+            <column name="warehouse_name" />
+        </property>
+        <property name="costRecord" type="java.lang.Double">
+            <column name="cost_record" precision="9" />
+        </property>
+        <property name="carriageRecord" type="java.lang.Double">
+            <column name="carriage_record" precision="9" />
+        </property>
+        <property name="abortStatus" type="java.lang.Short">
+            <column name="abort_status" />
+        </property>
+        <property name="abortComment" type="java.lang.String">
+            <column name="abort_comment" />
+        </property>
+        <property name="oriIncome" type="java.lang.Double">
+            <column name="ori_income" precision="9" />
+        </property>
+        <property name="income" type="java.lang.Double">
+            <column name="income" precision="9" />
+        </property>
+        <property name="remark" type="java.lang.String">
+            <column name="remark" />
+        </property>
+        <property name="contractNo" type="java.lang.String">
+            <column name="contract_no" />
+        </property>
+    </class>
+</hibernate-mapping>

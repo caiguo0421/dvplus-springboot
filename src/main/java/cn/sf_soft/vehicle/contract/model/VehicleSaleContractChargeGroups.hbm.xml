@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.vehicle.contract.model.VehicleSaleContractChargeGroups"
+           table="vehicle_sale_contract_charge_groups" schema="dbo" >
+        <id name="chargeGroupId" column="charge_group_id"/>
+        <property name="groupId" column="group_id"/>
+        <property name="chargeId" column="charge_id"/>
+        <property name="chargeName" column="charge_name"/>
+        <property name="income" column="income"/>
+        <property name="chargePf" column="charge_pf"/>
+        <property name="chargeComment" column="charge_comment"/>
+        <property name="remark" column="remark"/>
+        <property name="paidByBill" column="paid_by_bill"/>
+        <property name="contractNo" column="contract_no"/>
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.office.approval.model.VehicleConversionMaster" table="vehicle_conversion_master"
+           schema="dbo">
+        <id name="documentNo" column="document_no"/>
+        <property name="vnoId" column="vno_id"/>
+        <property name="vehicleVno" column="vehicle_vno"/>
+        <property name="vehicleName" column="vehicle_name"/>
+        <property name="vehicleStrain" column="vehicle_strain"/>
+        <property name="vehicleKind" column="vehicle_kind"/>
+        <property name="status" column="status"/>
+        <property name="saleContractNo" column="sale_contract_no"/>
+        <property name="isExists" column="is_exists"/>
+        <property name="stationId" column="station_id"/>
+        <property name="submitDate" column="submit_date"/>
+        <property name="endDate" column="end_date"/>
+        <property name="approverName" column="approver_name"/>
+        <property name="approveTime" column="approve_time"/>
+        <property name="remark" column="remark"/>
+        <property name="confirmMan" column="confirm_man"/>
+        <property name="confirmTime" column="confirm_time"/>
+        <property name="creator" column="creator"/>
+        <property name="createTime" column="create_time"/>
+        <property name="modifier" column="modifier"/>
+        <property name="modifyTime" column="modify_time"/>
+        <property name="userId" column="user_id"/>
+        <property name="userNo" column="user_no"/>
+        <property name="userName" column="user_name"/>
+        <property name="departmentId" column="department_id"/>
+        <property name="departmentNo" column="department_no"/>
+        <property name="departmentName" column="department_name"/>
+        <property name="submitStationId" column="submit_station_id"/>
+        <property name="submitStationName" column="submit_station_name"/>
+        <property name="approverId" column="approver_id"/>
+        <property name="approverNo" column="approver_no"/>
+        <property name="submitTime" column="submit_time"/>
+        <property name="refDocumentNo" column="ref_document_no"/>
+        <property name="fileUrls" type="java.lang.String">
+            <column name="file_urls" />
+        </property>
+    </class>
+</hibernate-mapping>

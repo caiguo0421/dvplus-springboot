@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.vehicle.contract.model.BaseServiceConsigns" table="base_service_consigns" schema="dbo">
+        <id name="consignId" column="consign_id"/>
+        <property name="consignName" column="consign_name"/>
+        <property name="consignPinyin" column="consign_pinyin"/>
+        <property name="consignNo" column="consign_no"/>
+        <property name="consignCategory" column="consign_category"/>
+        <property name="remark" column="remark"/>
+        <property name="creator" column="creator"/>
+        <property name="createTime" column="create_time"/>
+        <property name="modifier" column="modifier"/>
+        <property name="modifyTime" column="modify_time"/>
+        <property name="consignType" column="consign_type"/>
+        <property name="errorCode" column="error_code"/>
+        <property name="errorMsg" column="error_msg"/>
+    </class>
+</hibernate-mapping>

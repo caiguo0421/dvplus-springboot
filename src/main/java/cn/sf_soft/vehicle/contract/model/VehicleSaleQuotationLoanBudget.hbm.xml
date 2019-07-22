@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.vehicle.contract.model.VehicleSaleQuotationLoanBudget"
+           table="vehicle_sale_quotation_loan_budget" schema="dbo">
+        <id name="selfId" column="self_id"/>
+        <property name="stationId" column="station_id"/>
+        <property name="status" column="status"/>
+        <property name="loanMode" column="loan_mode"/>
+        <property name="customerId" column="customer_id"/>
+        <property name="loanObjectId" column="loan_object_id"/>
+        <property name="agentId" column="agent_id"/>
+        <property name="quotationId" column="quotation_id"/>
+        <property name="remark" column="remark"/>
+        <property name="creatorId" column="creator_id"/>
+        <property name="createTime" column="create_time"/>
+        <property name="modifierId" column="modifier_id"/>
+        <property name="modifyTime" column="modify_time"/>
+        <property name="approverId" column="approver_id"/>
+        <property name="approveTime" column="approve_time"/>
+        <property name="loanType" column="loan_type"/>
+        <property name="flowStatus" column="flow_status"/>
+        <property name="userId" column="user_id"/>
+        <property name="departmentId" column="department_id"/>
+        <property name="submitStationId" column="submit_station_id"/>
+        <property name="submitTime" column="submit_time"/>
+        <property name="approverNo" column="approver_no"/>
+        <property name="approverName" column="approver_name"/>
+        <property name="fileUrls" column="file_urls"/>
+        <property name="vehiclePriceTotal" column="vehicle_price_total"/>
+        <property name="superstructureAmount" column="superstructure_amount"/>
+        <property name="loanAmount" column="loan_amount"/>
+        <property name="interestRate" column="interest_rate"/>
+        <property name="periodNumber" column="period_number"/>
+        <property name="monthPay" column="month_pay"/>
+        <property name="loanRatio" column="loan_ratio"/>
+        <property name="paymentRatio" column="payment_ratio"/>
+    </class>
+</hibernate-mapping>

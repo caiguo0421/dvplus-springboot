@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- 配件库存浏览 -->
+<hibernate-mapping>
+	<sql-query name="partWarehouse">
+		<return class="cn.sf_soft.parts.stockborwse.model.PartWarehouse"/>
+		<![CDATA[  
+		SELECT  a.warehouse_id ,
+		        a.warehouse_name ,
+		        b.station_id,
+		        b.station_name
+		FROM    dbo.base_part_warehouses a
+		        INNER JOIN dbo.sys_stations b on a.station_id IN(:stationIds) 
+			        AND warehouse_name IS NOT NULL 
+		            AND a.station_id = b.station_id
+		            AND warehouse_property & 512 = 512
+		ORDER BY station_id
+        ]]>
+	</sql-query>
+</hibernate-mapping>

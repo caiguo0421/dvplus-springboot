@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<class name="cn.sf_soft.office.approval.model.VehicleWriteOffDetails" table="vehicle_write_off_details">
+		<id name="applyDetailId" type="java.lang.String">
+			<column name="apply_detail_id" length="40" />
+			<generator class="assigned" />
+		</id>
+		<property name="applyNo" type="java.lang.String">
+			<column name="apply_no" length="40" not-null="true" />
+		</property>
+		<property name="offsetSequence" type="java.lang.Integer">
+			<column name="offset_sequence" />
+		</property>
+		<property name="vehicleVno" type="java.lang.String">
+			<column name="vehicle_vno" length="100" />
+		</property>
+		<property name="underpanNo" type="java.lang.String">
+			<column name="underpan_no" length="50" />
+		</property>
+		<property name="offsetComment" type="java.lang.String">
+			<column name="offset_comment" length="250" />
+		</property>
+		<property name="vehicleId" type="java.lang.String">
+			<column name="vehicle_id" length="40" />
+		</property>
+		<property name="vehicleVin" type="java.lang.String">
+			<column name="vehicle_vin" length="40" />
+		</property>
+		<property name="writeOffAmount" type="java.lang.Double">
+			<column name="write_off_amount" precision="18" />
+		</property>
+		<property name="writeOffAmountDfs" type="java.lang.Double">
+			<column name="write_off_amount_DFS" precision="18" />
+		</property>
+		<property name="documentNo" type="java.lang.String">
+			<column name="document_no" length="40" />
+		</property>
+		<property name="inStockDetailId" type="java.lang.String">
+			<column name="in_stock_detail_id" length="40" />
+		</property>
+		<property name="invoiceNum" type="java.lang.String">
+			<column name="invoice_num" length="15" />
+		</property>
+		<property name="errorCode" type="java.lang.String">
+			<column name="error_code" length="20" />
+		</property>
+		<property name="errorMsg" type="java.lang.String">
+			<column name="error_msg" />
+		</property>
+		<property name="dfObjId" type="java.lang.String">
+			<column name="DF_objId" />
+		</property>
+		<property name="crmWriteOffId" type="java.lang.String">
+			<column name="crm_write_off_id" length="50" />
+		</property>
+		<property name="crmWriteOffDetailId" type="java.lang.String">
+			<column name="crm_write_off_detail_id" length="50" />
+		</property>
+		<property name="detailStatus" type="java.lang.String">
+			<column name="detail_status" />
+		</property>
+		
+		 <property name="vehicleOutFactoryTime" type="java.sql.Timestamp" insert="false" update="false">
+        	<formula>(select v.vehicle_out_factory_time from  vehicle_stocks v  where  v.vehicle_id=vehicle_id)</formula>
+        </property>
+	</class>
+</hibernate-mapping>

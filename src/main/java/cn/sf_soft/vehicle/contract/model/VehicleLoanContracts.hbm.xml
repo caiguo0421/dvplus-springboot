@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.vehicle.contract.model.VehicleLoanContracts" table="vehicle_loan_contracts">
+        <id name="slcNo" column="slc_no"/>
+        <property name="slcCode" column="slc_code"/>
+        <property name="stationId" column="station_id"/>
+        <property name="customerId" column="customer_id"/>
+        <property name="loanObjectId" column="loan_object_id"/>
+        <property name="agentId" column="agent_id"/>
+        <property name="loanMode" column="loan_mode"/>
+        <property name="loanUnitId" column="loan_unit_id"/>
+        <property name="loanAmount4s" column="loan_amount_4s"/>
+        <property name="loanType" column="loan_type"/>
+        <property name="payType" column="pay_type"/>
+        <property name="warranter1Id" column="warranter1_id"/>
+        <property name="warranter2Id" column="warranter2_id"/>
+        <property name="dunningPeopleId" column="dunning_people_id"/>
+        <property name="status" column="status"/>
+        <property name="arPeriodNumber" column="ar_period_number"/>
+        <property name="arRateTypeUsed" column="ar_rate_type_used"/>
+        <property name="arInterestRate" column="ar_interest_rate"/>
+        <property name="arRateType" column="ar_rate_type"/>
+        <property name="arFirstPayDate" column="ar_first_pay_date"/>
+        <property name="arConfirmStatus" column="ar_confirm_status"/>
+        <property name="arConfirmerId" column="ar_confirmer_id"/>
+        <property name="arConfirmerDepartmentId" column="ar_confirmer_department_id"/>
+        <property name="arConfirmDate" column="ar_confirm_date"/>
+        <property name="arAppropriationDate" column="ar_appropriation_date"/>
+        <property name="apLoanAmount" column="ap_loan_amount"/>
+        <property name="apPeriodNumber" column="ap_period_number"/>
+        <property name="apRateTypeUsed" column="ap_rate_type_used"/>
+        <property name="apInterestRate" column="ap_interest_rate"/>
+        <property name="apRateType" column="ap_rate_type"/>
+        <property name="apFirstPayDate" column="ap_first_pay_date"/>
+        <property name="apConfirmStatus" column="ap_confirm_status"/>
+        <property name="apConfirmerId" column="ap_confirmer_id"/>
+        <property name="apConfirmerDepartmentId" column="ap_confirmer_department_id"/>
+        <property name="apConfirmDate" column="ap_confirm_date"/>
+        <property name="apAppropriationDate" column="ap_appropriation_date"/>
+        <property name="remark" column="remark"/>
+        <property name="relationNo" column="relation_no"/>
+        <property name="creatorId" column="creator_id"/>
+        <property name="createTime" column="create_time"/>
+        <property name="modifierId" column="modifier_id"/>
+        <property name="modifyTime" column="modify_time"/>
+        <property name="approverId" column="approver_id"/>
+        <property name="approverDepartmentId" column="approver_department_id"/>
+        <property name="approveTime" column="approve_time"/>
+        <property name="abortTime" column="abort_time"/>
+        <property name="abortPersonId" column="abort_person_id"/>
+        <property name="errorCode" column="error_code"/>
+        <property name="errorMsg" column="error_msg"/>
+        <property name="affiliatedCompanyId" column="affiliated_company_id"/>
+        <property name="saleContractNo" column="sale_contract_no"/>
+        <property name="creditNo" column="credit_no"/>
+        <property name="budgetNo" column="budget_no"/>
+        <property name="vehicleVin" column="vehicle_vin"/>
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.vehicle.out.model.VehicleOutStockDetail" table="vehicle_out_stock_detail" schema="dbo">
+        <id name="outStockDetailId" column="out_stock_detail_id"/>
+        <property name="outStockNo" column="out_stock_no"/>
+        <property name="warehouseName" column="warehouse_name"/>
+        <property name="warehouseId" column="warehouse_id"/>
+        <property name="vehicleId" column="vehicle_id"/>
+        <property name="vnoId" column="vno_id"/>
+        <property name="vehicleSalesCode" column="vehicle_sales_code"/>
+        <property name="vehicleVno" column="vehicle_vno"/>
+        <property name="vehicleName" column="vehicle_name"/>
+        <property name="vehicleStrain" column="vehicle_strain"/>
+        <property name="vehicleColor" column="vehicle_color"/>
+        <property name="vehicleVin" column="vehicle_vin"/>
+        <property name="vehicleKind" column="vehicle_kind"/>
+        <property name="vehicleEngineType" column="vehicle_engine_type"/>
+        <property name="vehicleEngineNo" column="vehicle_engine_no"/>
+        <property name="vehicleEligibleNo" column="vehicle_eligible_no"/>
+        <property name="vehicleOutFactoryTime" column="vehicle_out_factory_time"/>
+        <property name="vehiclePrice" column="vehicle_price"/>
+        <property name="vehicleCost" column="vehicle_cost"/>
+        <property name="vehicleCarriage" column="vehicle_carriage"/>
+        <property name="vehicleQuantity" column="vehicle_quantity"/>
+        <property name="modifiedFee" column="modified_fee"/>
+        <property name="errorFlag" column="error_flag"/>
+        <property name="insuranceCost" column="insurance_cost"/>
+        <property name="presentCost" column="present_cost"/>
+        <property name="chargeCost" column="charge_cost"/>
+        <property name="driveRoomNo" column="drive_room_no"/>
+        <property name="carriage" column="carriage"/>
+        <property name="oriDetailId" column="ori_detail_id"/>
+        <property name="conversionStatus" column="conversion_status"/>
+        <property name="vehicleSelfNo" column="vehicle_self_no"/>
+        <property name="sellerBackFlag" column="seller_back_flag"/>
+        <property name="saleBackFlag" column="sale_back_flag"/>
+        <property name="scanningOutStocks" column="scanning_out_stocks"/>
+        <property name="gpsLocation" column="gps_location"/>
+        <property name="vehicleComment" column="vehicle_comment"/>
+        <property name="customerIntegral" column="customer_integral"/>
+        <property name="vatdId" column="vatd_id"/>
+    </class>
+</hibernate-mapping>

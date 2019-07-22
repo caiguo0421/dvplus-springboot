@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class name="cn.sf_soft.office.approval.model.VehicleInvoicesVary" table="vehicle_invoices_vary">
+        <id name="invoicesDetailVaryId" type="java.lang.String">
+            <column name="invoices_detail_vary_id" length="40" />
+            <generator class="assigned" />
+        </id>
+        <property name="detailVaryId" type="java.lang.String">
+            <column name="detail_vary_id" />
+        </property>
+        <property name="invoicesDetailId" type="java.lang.String">
+            <column name="invoices_detail_id" />
+        </property>
+        <property name="contractDetailId" type="java.lang.String">
+            <column name="contract_detail_id" />
+        </property>
+        <property name="invoiceType" type="java.lang.String">
+            <column name="invoice_type" />
+        </property>
+        <property name="invoiceAmount" type="java.lang.Double">
+            <column name="invoice_amount" />
+        </property>
+        <property name="objectId" type="java.lang.String">
+            <column name="object_id" />
+        </property>
+        <property name="objectNo" type="java.lang.String">
+            <column name="object_no" />
+        </property>
+        <property name="objectName" type="java.lang.String">
+            <column name="object_name" not-null="true" />
+        </property>
+        <property name="remark" type="java.lang.String">
+            <column name="remark" />
+        </property>
+        <property name="creator" type="java.lang.String">
+            <column name="creator" />
+        </property>
+        <property name="createTime" type="java.sql.Timestamp">
+            <column name="create_time" length="23" />
+        </property>
+        <property name="abortStatus" type="java.lang.Short">
+            <column name="abort_status" />
+        </property>
+        <property name="abortComment" type="java.lang.String">
+            <column name="abort_comment" />
+        </property>
+        <property name="oriInvoiceType" type="java.lang.String">
+            <column name="ori_invoice_type" />
+        </property>
+        <property name="oriInvoiceAmount" type="java.lang.Double">
+            <column name="ori_invoice_amount" precision="9" />
+        </property>
+        <property name="oriObjectId" type="java.lang.String">
+            <column name="ori_object_id" />
+        </property>
+        <property name="oriObjectNo" type="java.lang.String">
+            <column name="ori_object_no" />
+        </property>
+        <property name="oriObjectName" type="java.lang.String">
+            <column name="ori_object_name" />
+        </property>
+    </class>
+</hibernate-mapping>

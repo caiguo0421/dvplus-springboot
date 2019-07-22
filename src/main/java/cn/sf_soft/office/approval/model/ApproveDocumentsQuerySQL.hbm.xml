@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- 定义各报表统计的 SQL语句； 注意name属性的值不能重复 -->
+<hibernate-mapping>
+	<sql-query name="findApprovedMatters">
+		<!-- 审批-已审事宜 -->
+			<![CDATA[
+				SELECT  a.document_id ,
+				        a.station_id ,
+				        a.status ,
+				        a.module_id ,
+				        a.module_name ,
+				        a.document_no ,
+				        a.user_id ,
+				        a.user_no ,
+				        a.user_name ,
+				        a.department_id ,
+						a.department_no,
+				        a.department_name ,
+				        a.submit_station_id ,
+				        a.submit_station_name ,
+				        a.submit_time ,
+				        a.approve_level ,
+				        a.approve_name ,
+				        a.approver_id ,
+				        a.approver_no ,
+				        a.approver_name ,
+				        a.revoke_time ,
+						a.invalid_time,
+				        a.document_amount,
+				        a.customer_name,
+				        a.vehicle_vin,
+				        a.contract_code,
+				        tmp.approver_id AS point_approver_id ,
+				        tmp.last_approve_time
+				FROM    vw_office_approve_documents_mobile AS a
+				        INNER JOIN ( SELECT approver_id ,
+				                            document_id ,
+				                            MAX(approve_time) AS last_approve_time
+				                     FROM   office_approve_documents_points
+				                     WHERE approve_time IS NOT NULL AND status <> 20
+				                     AND approver_id = :approverId
+				                     GROUP BY approver_id ,
+				                            document_id
+				                   ) AS tmp ON a.document_id = tmp.document_id
+				
+       		]]>
+	</sql-query>
+
+	<sql-query name="findMyApprovedMatters">
+		<!-- 审批-我的已审 -->
+			<![CDATA[
+	SELECT  a.document_id ,
+        a.station_id ,
+        a.status ,
+        a.module_id ,
+        a.module_name ,
+        a.document_no ,
+        a.user_id ,
+        a.user_no ,
+        a.user_name ,
+        a.department_id ,
+        a.department_no ,
+        a.department_name ,
+        a.submit_station_id ,
+        a.submit_station_name ,
+        a.submit_time ,
+        a.approve_level ,
+        a.approve_name ,
+        a.approver_id ,
+        a.approver_no ,
+        a.approver_name ,
+        a.revoke_time ,
+        a.invalid_time ,
+        a.document_amount ,
+        a.customer_name ,
+        a.vehicle_vin,
+        a.contract_code,
+        tmp.last_approve_time
+FROM    vw_office_approve_documents_mobile AS a
+        LEFT JOIN ( SELECT   document_id ,
+                            MAX(approve_time) AS last_approve_time
+                    FROM    office_approve_documents_points
+                    GROUP BY  document_id
+                  ) AS tmp ON a.document_id = tmp.document_id
+WHERE   ( status = 50
+          OR status = 5
+        ) 
+       		]]>
+	</sql-query>
+
+
+</hibernate-mapping>

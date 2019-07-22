@@ -1,0 +1,136 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.parts.inventory.model.PartPurchaseUrgentOrder" table="part_purchase_urgent_order"
+           schema="dbo">
+        <id name="urgentOrderId">
+            <column name="urgent_order_id" sql-type="varchar(40)" length="40"/>
+        </id>
+        <property name="purchaseId">
+            <column name="purchase_id" sql-type="varchar(40)" length="40"/>
+        </property>
+        <property name="appraisalNo">
+            <column name="appraisal_no" sql-type="nvarchar(50)" length="50" />
+        </property>
+        <property name="vehicleVno">
+            <column name="vehicle_vno" sql-type="nvarchar(100)" length="100" />
+        </property>
+        <property name="saleOrderType">
+            <column name="sale_order_type" sql-type="nvarchar(20)" length="20" />
+        </property>
+        <property name="faultDate">
+            <column name="fault_date" sql-type="datetime" />
+        </property>
+        <property name="receivingUnitsName">
+            <column name="receiving_units_name" sql-type="varchar(500)" length="500"/>
+        </property>
+        <property name="stationId">
+            <column name="station_id" sql-type="nvarchar(40)" length="40" />
+        </property>
+        <property name="stationLinkman">
+            <column name="station_linkman" sql-type="varchar(100)" length="100"/>
+        </property>
+        <property name="stationFax">
+            <column name="station_fax" sql-type="varchar(100)" length="100"/>
+        </property>
+        <property name="vehiclePurchaseTime">
+            <column name="vehicle_purchase_time" sql-type="datetime" />
+        </property>
+        <property name="serviceCode">
+            <column name="service_code" sql-type="nvarchar(15)" length="15" />
+        </property>
+        <property name="serviceName">
+            <column name="service_name" sql-type="nvarchar(200)" length="200" />
+        </property>
+        <property name="orgId">
+            <column name="org_id" sql-type="nvarchar(30)" length="30" />
+        </property>
+        <property name="customerPhone">
+            <column name="customer_phone" sql-type="nvarchar(100)" length="100" />
+        </property>
+        <property name="zipCode">
+            <column name="zip_code" sql-type="varchar(20)" length="20"/>
+        </property>
+        <property name="customerDept">
+            <column name="customer_dept" sql-type="nvarchar(500)" length="500" />
+        </property>
+        <property name="faultDescription">
+            <column name="fault_description" sql-type="varchar(1000)" length="1000"/>
+        </property>
+        <property name="reportingDate">
+            <column name="reporting_date" sql-type="datetime" />
+        </property>
+        <property name="shippingAddress">
+            <column name="shipping_address" sql-type="varchar(500)" length="500"/>
+        </property>
+        <property name="vehicleLinkmanPhone">
+            <column name="vehicle_linkman_phone" sql-type="varchar(100)" length="100"/>
+        </property>
+        <property name="vehicleEngineNo">
+            <column name="vehicle_engine_no" sql-type="varchar(50)" length="50"/>
+        </property>
+        <property name="urgentOrderDate">
+            <column name="urgent_order_date" sql-type="datetime" />
+        </property>
+        <property name="isClaimsPart">
+            <column name="is_claims_part" sql-type="nvarchar(1)" length="1" />
+        </property>
+        <property name="urgentOrderStatus">
+            <column name="urgent_order_status" sql-type="varchar(20)" length="20"/>
+        </property>
+        <property name="faultLocation">
+            <column name="fault_location" sql-type="varchar(500)" length="500"/>
+        </property>
+        <property name="shippingType">
+            <column name="shipping_type" sql-type="varchar(20)" length="20"/>
+        </property>
+        <property name="drivenDistance">
+            <column name="driven_distance" sql-type="varchar(50)" length="50"/>
+        </property>
+        <property name="userName">
+            <column name="user_name" sql-type="varchar(100)" length="100"/>
+        </property>
+        <property name="failureReceivingStation">
+            <column name="failure_receiving_station" sql-type="varchar(500)" length="500"/>
+        </property>
+        <property name="vehicleChassisNumber">
+            <column name="vehicle_chassis_number" sql-type="varchar(50)" length="50"/>
+        </property>
+        <property name="urgentCustomerNo">
+            <column name="urgent_customer_no" sql-type="varchar(15)" length="15"/>
+        </property>
+        <property name="urgentCustomerName">
+            <column name="urgent_customer_name" sql-type="varchar(200)" length="200"/>
+        </property>
+        <property name="stopWaiting">
+            <column name="stop_waiting" sql-type="nvarchar(1)" length="1" />
+        </property>
+        <property name="errorCode">
+            <column name="error_code" sql-type="nvarchar(20)" length="20" />
+        </property>
+        <property name="errorMsg">
+            <column name="error_msg" sql-type="nvarchar(max)" length="2147483647" />
+        </property>
+        <property name="crmPurchaseId">
+            <column name="crm_purchase_id" sql-type="nvarchar(40)" length="40" />
+        </property>
+        <property name="crmPurchaseNo">
+            <column name="crm_purchase_no" sql-type="nvarchar(40)" length="40" />
+        </property>
+        <property name="orderDate">
+            <column name="order_date" sql-type="datetime" />
+        </property>
+        <property name="orderStatus">
+            <column name="order_status" sql-type="nvarchar(40)" length="40" />
+        </property>
+        <property name="underpaNo">
+            <column name="underpa_no" sql-type="nvarchar(50)" length="50" />
+        </property>
+        <property name="purchaseNo">
+            <column name="purchase_no" sql-type="nvarchar(40)" length="40" />
+        </property>
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="cn.sf_soft.finance.funds.model.FinanceDocument" abstract="true">
+    	<id name="entryId">
+    		<column name="entry_id"></column>
+    		<generator class="assigned"/>
+    	</id>
+    	<property name="accountNo">
+    		<column name="account_no"></column>
+    	</property>
+    	<property name="accountName">
+    		<column name="account_name"></column>
+    	</property>
+    	<property name="stationId">
+    		<column name="station_id"></column>
+    	</property>
+    	<property name="stationName">
+    		<column name="station_name"></column>
+    	</property>
+    	<property name="amountTypeMeaning">
+    		<column name="amount_type_meaning"/>
+    	</property>
+    	<property name="accountTypeMeaning">
+    		<column name="account_type_meaning"/>
+    	</property>
+    	<property name="debitAmount">
+    		<column name="debit_amount"/>
+    	</property>
+    	<property name="creditAmount">
+    		<column name="credit_amount"/>
+    	</property>
+    	<property name="accountBalance">
+    		<column name="account_balance"/>
+    	</property>
+    	<property name="documentType">
+    		<column name="document_type"/>
+    	</property>
+    	<property name="documentNo">
+    		<column name="document_no"/>
+    	</property>
+    	<property name="objectName">
+    		<column name="object_name"/>
+    	</property>
+    	<property name="documentTime">
+    		<column name="document_time"/>
+    	</property>
+    	
+   		 <property name="summary">
+    		<column name="summary"/>
+    	</property>
+    </class>
+</hibernate-mapping>

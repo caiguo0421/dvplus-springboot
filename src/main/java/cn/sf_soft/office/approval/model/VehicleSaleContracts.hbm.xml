@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="cn.sf_soft.office.approval.model.VehicleSaleContracts" table="vehicle_sale_contracts">
+        <id name="contractNo" type="java.lang.String">
+            <column name="contract_no" length="20"/>
+            <generator class="assigned"/>
+        </id>
+        <property name="contractCode" type="java.lang.String">
+            <column name="contract_code" length="20"/>
+        </property>
+        <property name="stationId" type="java.lang.String">
+            <column name="station_id" length="10"/>
+        </property>
+        <property name="signTime" type="java.sql.Timestamp">
+            <column name="sign_time" length="23"/>
+        </property>
+        <property name="planFinishTime" type="java.sql.Timestamp">
+            <column name="plan_finish_time" length="23"/>
+        </property>
+        <property name="realFinishTime" type="java.sql.Timestamp">
+            <column name="real_finish_time" length="23"/>
+        </property>
+        <property name="saleMode" type="java.lang.Short">
+            <column name="sale_mode" sql-type="tinyint"/>
+        </property>
+        <property name="seller" type="java.lang.String">
+            <column name="seller"/>
+        </property>
+        <property name="contractMoney" type="java.lang.Double">
+            <column name="contract_money" precision="11"/>
+        </property>
+        <property name="contractCost" type="java.lang.Double">
+            <column name="contract_cost" precision="11"/>
+        </property>
+        <property name="contractQuantity" type="java.lang.Integer">
+            <column name="contract_quantity"/>
+        </property>
+        <property name="arrivedMoney" type="java.lang.Double">
+            <column name="arrived_money" precision="11"/>
+        </property>
+        <property name="arrivedQuantity" type="java.lang.Integer">
+            <column name="arrived_quantity"/>
+        </property>
+        <property name="deposit" type="java.lang.Double">
+            <column name="deposit" precision="11"/>
+        </property>
+        <property name="vehicleAmt" type="java.lang.Double">
+            <column name="vehicle_amt" precision="11"/>
+        </property>
+        <property name="presentAmt" type="java.lang.Double">
+            <column name="present_amt" precision="11"/>
+        </property>
+        <property name="insuranceAmt" type="java.lang.Double">
+            <column name="insurance_amt" precision="11"/>
+        </property>
+        <property name="conversionAmt" type="java.lang.Double">
+            <column name="conversion_amt" precision="11"/>
+        </property>
+        <property name="expenseAmt" type="java.lang.Double">
+            <column name="expense_amt" precision="11"/>
+        </property>
+        <property name="commissionAmt" type="java.lang.Double">
+            <column name="commission_amt" precision="11"/>
+        </property>
+        <property name="contractStatus" type="java.lang.Short">
+            <column name="contract_status" sql-type="tinyint"/>
+        </property>
+        <property name="contractComment" type="java.lang.String">
+            <column name="contract_comment"/>
+        </property>
+        <property name="deliveryLocus" type="java.lang.String">
+            <column name="delivery_locus"/>
+        </property>
+        <property name="customerId" type="java.lang.String">
+            <column name="customer_id"/>
+        </property>
+        <property name="customerNo" type="java.lang.String">
+            <column name="customer_no" length="40"/>
+        </property>
+        <property name="customerName" type="java.lang.String">
+            <column name="customer_name"/>
+        </property>
+        <property name="cusotmerSex" type="java.lang.String">
+            <column name="cusotmer_sex"/>
+        </property>
+        <property name="customerBirthday" type="java.sql.Timestamp">
+            <column name="customer_birthday" length="23"/>
+        </property>
+        <property name="customerCertificateType" type="java.lang.String">
+            <column name="customer_certificate_type"/>
+        </property>
+        <property name="customerCertificateNo" type="java.lang.String">
+            <column name="customer_certificate_no" length="20"/>
+        </property>
+        <property name="customerAddress" type="java.lang.String">
+            <column name="customer_address"/>
+        </property>
+        <property name="customerEducation" type="java.lang.String">
+            <column name="customer_education"/>
+        </property>
+        <property name="customerOccupation" type="java.lang.String">
+            <column name="customer_occupation"/>
+        </property>
+        <property name="customerArea" type="java.lang.String">
+            <column name="customer_area"/>
+        </property>
+        <property name="customerPhone" type="java.lang.String">
+            <column name="customer_phone" length="40"/>
+        </property>
+        <property name="customerMobile" type="java.lang.String">
+            <column name="customer_mobile" length="20"/>
+        </property>
+        <property name="customerFax" type="java.lang.String">
+            <column name="customer_fax" length="40"/>
+        </property>
+        <property name="customerEmail" type="java.lang.String">
+            <column name="customer_email" length="40"/>
+        </property>
+        <property name="customerPostcode" type="java.lang.String">
+            <column name="customer_postcode" length="10"/>
+        </property>
+        <property name="linkman" type="java.lang.String">
+            <column name="linkman"/>
+        </property>
+        <property name="payMode" type="java.lang.Short">
+            <column name="pay_mode"/>
+        </property>
+        <property name="payTerm" type="java.lang.String">
+            <column name="pay_term"/>
+        </property>
+        <property name="clubCallBackResult" type="java.lang.Short">
+            <column name="club_call_back_result"/>
+        </property>
+        <property name="clubCallBackFinalResult" type="java.lang.Short">
+            <column name="club_call_back_final_result"/>
+        </property>
+        <property name="clubCallBackRemark" type="java.lang.String">
+            <column name="club_call_back_remark"/>
+        </property>
+        <property name="clubCallBackFlag" type="java.lang.Boolean">
+            <column name="club_call_back_flag"/>
+        </property>
+        <property name="clubCallBackDealRemark" type="java.lang.String">
+            <column name="club_call_back_deal_remark"/>
+        </property>
+        <property name="clubCallBackAbstract" type="java.lang.String">
+            <column name="club_call_back_abstract"/>
+        </property>
+        <property name="clubCallBackAbstractFinal" type="java.lang.String">
+            <column name="club_call_back_abstract_final"/>
+        </property>
+        <property name="clubCallBackSuccess" type="java.lang.Short">
+            <column name="club_call_back_success"/>
+        </property>
+        <property name="clubCallBackFailReason" type="java.lang.String">
+            <column name="club_call_back_fail_reason"/>
+        </property>
+        <property name="unitNo" type="java.lang.String">
+            <column name="unit_no" length="40"/>
+        </property>
+        <property name="unitName" type="java.lang.String">
+            <column name="unit_name" length="40"/>
+        </property>
+        <property name="creator" type="java.lang.String">
+            <column name="creator"/>
+        </property>
+        <property name="createTime" type="java.sql.Timestamp">
+            <column name="create_time" length="23"/>
+        </property>
+        <property name="modifier" type="java.lang.String">
+            <column name="modifier"/>
+        </property>
+        <property name="modifyTime" type="java.sql.Timestamp">
+            <column name="modify_time" length="23"/>
+        </property>
+        <property name="backTime" type="java.sql.Timestamp">
+            <column name="back_time" length="23"/>
+        </property>
+        <property name="belongToSupplierId" type="java.lang.String">
+            <column name="belong_to_supplier_id" length="40"/>
+        </property>
+        <property name="belongToSupplierNo" type="java.lang.String">
+            <column name="belong_to_supplier_no" length="30"/>
+        </property>
+        <property name="belongToSupplierName" type="java.lang.String">
+            <column name="belong_to_supplier_name"/>
+        </property>
+        <property name="visitorId" type="java.lang.String">
+            <column name="visitor_id" length="40"/>
+        </property>
+        <property name="visitorNo" type="java.lang.String">
+            <column name="visitor_no" length="40"/>
+        </property>
+        <property name="commissionMerchantId" type="java.lang.String">
+            <column name="commission_merchant_id" length="40"/>
+        </property>
+        <property name="commissionMerchantNo" type="java.lang.String">
+            <column name="commission_merchant_no" length="20"/>
+        </property>
+        <property name="commissionMerchantName" type="java.lang.String">
+            <column name="commission_merchant_name" length="60"/>
+        </property>
+        <property name="introducerId" type="java.lang.String">
+            <column name="introducer_id" length="40"/>
+        </property>
+        <property name="introducer" type="java.lang.String">
+            <column name="introducer" length="40"/>
+        </property>
+        <property name="introducerMobile" type="java.lang.String">
+            <column name="introducer_mobile" length="30"/>
+        </property>
+        <property name="varyCount" type="java.lang.Integer">
+            <column name="vary_count"/>
+        </property>
+        <property name="callBackHandleDepartment" type="java.lang.String">
+            <column name="call_back_handle_department"/>
+        </property>
+        <property name="callBackEmpId" type="java.lang.String">
+            <column name="call_back_emp_id" length="40"/>
+        </property>
+        <property name="callBackEmpName" type="java.lang.String">
+            <column name="call_back_emp_name" length="40"/>
+        </property>
+        <property name="firstPayLoanAmount" type="java.lang.Double">
+            <column name="first_pay_loan_amount"/>
+        </property>
+        <property name="version" type="java.lang.String">
+            <column name="version" length="20"/>
+        </property>
+        <property name="sellerId" type="java.lang.String">
+            <column name="seller_id" length="40"/>
+        </property>
+        <property name="customerProvince" type="java.lang.String">
+            <column name="customer_province"/>
+        </property>
+        <property name="customerProfession" type="java.lang.String">
+            <column name="customer_profession"/>
+        </property>
+        <property name="customerCity" type="java.lang.String">
+            <column name="customer_city"/>
+        </property>
+        <property name="isSecondhand" type="java.lang.Boolean">
+            <column name="is_secondhand"/>
+        </property>
+        <property name="buyType" type="java.lang.Short">
+            <column name="buy_type"/>
+        </property>
+        <property name="isChanging" type="java.lang.Boolean">
+            <column name="is_changing"/>
+        </property>
+
+        <property name="status" type="java.lang.Short">
+            <column name="status" not-null="true" sql-type="tinyint"/>
+        </property>
+        <property name="documentNo" type="java.lang.String">
+            <column name="document_no" length="40"/>
+        </property>
+        <property name="userId" type="java.lang.String">
+            <column name="user_id" length="40"/>
+        </property>
+        <property name="userNo" type="java.lang.String">
+            <column name="user_no" length="10"/>
+        </property>
+        <property name="userName" type="java.lang.String">
+            <column name="user_name" sql-type="nvarchar(10)"/>
+        </property>
+        <property name="departmentId" type="java.lang.String">
+            <column name="department_id"/>
+        </property>
+        <property name="departmentNo" type="java.lang.String">
+            <column name="department_no"/>
+        </property>
+        <property name="departmentName" type="java.lang.String">
+            <column name="department_name" sql-type="nvarchar(40)"/>
+        </property>
+        <property name="submitStationId" type="java.lang.String">
+            <column name="submit_station_id" length="10"/>
+        </property>
+        <property name="submitStationName" type="java.lang.String">
+            <column name="submit_station_name" sql-type="nvarchar(10)"/>
+        </property>
+        <property name="submitTime" type="java.sql.Timestamp">
+            <column name="submit_time" length="23"/>
+        </property>
+        <!--<property name="approveLevel" type="java.lang.Integer">-->
+        <!--<column name="approve_level" />-->
+        <!--</property>-->
+        <!--<property name="approveName" type="java.lang.String">-->
+        <!--<column name="approve_name" sql-type="nvarchar(40)"/>-->
+        <!--</property>-->
+        <property name="approverId" type="java.lang.String">
+            <column name="approver_id" length="40"/>
+        </property>
+        <property name="approverNo" type="java.lang.String">
+            <column name="approver_no" length="10"/>
+        </property>
+        <property name="approverName" type="java.lang.String">
+            <column name="approver_name" sql-type="nvarchar(10)"/>
+        </property>
+
+        <property name="buyTypeName" type="java.lang.String" insert="false" update="false">
+            <formula>(SELECT f.meaning from sys_flags f WHERE f.field_no = 'vs_buy_type' AND f.code =buy_type)</formula>
+        </property>
+
+        <property generated="never" lazy="false" name="pics" type="java.lang.String">
+            <column name="pics" sql-type="nvarchar(MAX)"/>
+        </property>
+        <property generated="never" lazy="false" name="fileUrls" type="java.lang.String">
+            <column name="file_urls" sql-type="nvarchar(MAX)"/>
+        </property>
+
+        <!--约定回款日期-->
+        <property name="appointedTime" type="java.sql.Timestamp">
+            <column name="appointed_time" length="23"/>
+        </property>
+
+        <property name="conciseConfigure" type="java.lang.String">
+            <column name="concise_configure"/>
+        </property>
+
+        <property name="conversionConfigure" type="java.lang.String">
+            <column name="conversion_configure"/>
+        </property>
+
+        <property name="superstructureConfigure" type="java.lang.String">
+            <column name="superstructure_configure"/>
+        </property>
+
+        <property name="vehicleGroupInfo" type="java.lang.String">
+            <column name="vehicle_group_info"/>
+        </property>
+
+        <property name="clientType" type="java.lang.String">
+            <column name="client_type"/>
+        </property>
+
+        <property name="approveTime" type="java.sql.Timestamp">
+            <column name="approve_time" length="23" />
+        </property>
+
+    </class>
+</hibernate-mapping>

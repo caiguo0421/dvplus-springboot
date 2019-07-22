@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- 保险购险统计-->
+<hibernate-mapping>
+    <class name="cn.sf_soft.report.model.InsurancePurchaseReport" abstract="true">
+    	<composite-id>
+    		<key-property name="stationName" column="station_name"/>
+    		<key-property name="statContent" column="supplier_name"/>
+    	</composite-id>
+    	<property name="firstInsurance">
+    		<column name="first_insurance"></column>
+    	</property>
+    	<property name="continueInsurance">
+    		<column name="continue_insurance"></column>
+    	</property>
+    	<property name="transferInsurance">
+    		<column name="transfer_insurance"></column>
+    	</property>
+    </class>
+</hibernate-mapping>

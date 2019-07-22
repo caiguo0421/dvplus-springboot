@@ -1,0 +1,76 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.vehicle.contract.model.VehicleSaleContractDetailGroups"
+           table="vehicle_sale_contract_detail_groups" schema="dbo" >
+        <id name="groupId" column="group_id"/>
+        <property name="groupNo" column="group_no"/>
+        <property name="contractNo" column="contract_no"/>
+        <property name="vnoId" column="vno_id"/>
+        <property name="vehicleVno" column="vehicle_vno"/>
+        <property name="shortNameVno" column="short_name_vno"/>
+        <property name="vehicleName" column="vehicle_name"/>
+        <property name="vehicleStrain" column="vehicle_strain"/>
+        <property name="vehicleColor" column="vehicle_color"/>
+        <property name="vehiclePriceTotal" column="vehicle_price_total"/>
+        <property name="vehiclePrice" column="vehicle_price"/>
+        <property name="deposit" column="deposit"/>
+        <property name="discountAmount" column="discount_amount"/>
+        <property name="vehicleQuantity" column="vehicle_quantity"/>
+        <property name="vnoIdNew" column="vno_id_new"/>
+        <property name="vehicleVnoNew" column="vehicle_vno_new"/>
+        <property name="vehicleNameNew" column="vehicle_name_new"/>
+        <property name="isContainInsuranceCost" column="is_contain_insurance_cost"/>
+        <property name="insuranceIncome" column="insurance_income"/>
+        <property name="insurancePf" column="insurance_pf"/>
+        <property name="presentIncome" column="present_income"/>
+        <property name="presentPf" column="present_pf"/>
+        <property name="conversionIncome" column="conversion_income"/>
+        <property name="conversionPf" column="conversion_pf"/>
+        <property name="chargeIncome" column="charge_income"/>
+        <property name="chargePf" column="charge_pf"/>
+        <property name="customerIdProfit" column="customer_id_profit"/>
+        <property name="customerNoProfit" column="customer_no_profit"/>
+        <property name="customerNameProfit" column="customer_name_profit"/>
+        <property name="vehicleProfit" column="vehicle_profit"/>
+        <property name="largessAmount" column="largess_amount"/>
+        <property name="belongToSupplierId" column="belong_to_supplier_id"/>
+        <property name="belongToSupplierNo" column="belong_to_supplier_no"/>
+        <property name="belongToSupplierName" column="belong_to_supplier_name"/>
+        <property name="subjectMatter" column="subject_matter"/>
+        <property name="startPoint" column="start_point"/>
+        <property name="waysPoint" column="ways_point"/>
+        <property name="endPoint" column="end_point"/>
+        <property name="vehicleOwnerId" column="vehicle_owner_id"/>
+        <property name="vehicleOwnerName" column="vehicle_owner_name"/>
+        <property name="visitorNo" column="visitor_no"/>
+        <property name="imagesUrls" column="images_urls"/>
+        <property name="vehicleComment" column="vehicle_comment"/>
+        <property name="groupNoRef" column="group_no_ref"/>
+        <property name="vehicleCostRef" column="vehicle_cost_ref"/>
+        <property name="minProfit" column="min_profit"/>
+        <property name="minSalePrice" column="min_sale_price"/>
+
+        <property name="cardType" column="card_type"/>
+        <property name="peopleNumber" column="people_number"/>
+        <property name="epNotice" column="ep_notice"/>
+        <property name="tractiveTonnage" column="tractive_tonnage"/>
+        <property name="containerInsideSize" column="container_inside_size"/>
+
+        <property name="profession" column="profession"/>
+        <property name="containerSize" column="container_size"/>
+        <property name="vehicleWeight" column="vehicle_weight"/>
+        <property name="curbWeight" column="curb_weight"/>
+        <property name="registrationTonnage" column="registration_tonnage"/>
+        <property name="registrationAddress" column="registration_address"/>
+        <property name="oilNotice" column="oil_notice"/>
+        <property name="vehicleSize" column="vehicle_size"/>
+        <property name="useProperty" column="use_property"/>
+
+        <property name="insuranceYear" column="insurance_year"/>
+        <property name="insuranceAppointUnit" column="insurance_appoint_unit"/>
+    </class>
+</hibernate-mapping>

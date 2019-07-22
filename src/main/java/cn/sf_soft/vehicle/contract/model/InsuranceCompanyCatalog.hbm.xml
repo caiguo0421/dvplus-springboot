@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.vehicle.contract.model.InsuranceCompanyCatalog" table="insurance_company_catalog"
+           schema="dbo">
+        <id name="selfId" column="self_id"/>
+        <property name="supplierId" column="supplier_id"/>
+        <property name="categoryId" column="category_id"/>
+        <property name="categoryScale" column="category_scale"/>
+        <property name="categoryType" column="category_type"/>
+        <property name="comment" column="comment"/>
+        <property name="categoryScaleSecond" column="category_scale_second"/>
+        <property name="commission" column="commission"/>
+        <property name="categoryScaleThird" column="category_scale_third"/>
+        <property name="discountRate" column="discount_rate"/>
+        <property name="taxRate" column="tax_rate"/>
+        <property name="rebateRatio" column="rebate_ratio"/>
+        <property name="rebateRatioSecond" column="rebate_ratio_second"/>
+        <property name="rebateRatioThird" column="rebate_ratio_third"/>
+    </class>
+</hibernate-mapping>

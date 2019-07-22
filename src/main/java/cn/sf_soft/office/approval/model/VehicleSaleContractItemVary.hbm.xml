@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class name="cn.sf_soft.office.approval.model.VehicleSaleContractItemVary" table="vehicle_sale_contract_item_vary" >
+        <id name="saleContractItemVaryId" type="java.lang.String">
+            <column name="sale_contract_item_vary_id" length="40" />
+            <generator class="assigned" />
+        </id>
+        <property name="detailVaryId" type="java.lang.String">
+            <column name="detail_vary_id" />
+        </property>
+        <property name="saleContractItemId" type="java.lang.String">
+            <column name="sale_contract_item_id" />
+        </property>
+        <property name="contractDetailId" type="java.lang.String">
+            <column name="contract_detail_id" />
+        </property>
+        <property name="itemId" type="java.lang.String">
+            <column name="item_id" />
+        </property>
+        <property name="itemNo" type="java.lang.String">
+            <column name="item_no" />
+        </property>
+        <property name="itemName" type="java.lang.String">
+            <column name="item_name" />
+        </property>
+        <property name="supplierId" type="java.lang.String">
+            <column name="supplier_id" />
+        </property>
+        <property name="supplierNo" type="java.lang.String">
+            <column name="supplier_no" />
+        </property>
+        <property name="supplierName" type="java.lang.String">
+            <column name="supplier_name" />
+        </property>
+        <property name="itemCost" type="java.lang.Double">
+            <column name="item_cost" precision="9" />
+        </property>
+        <property name="comment" type="java.lang.String">
+            <column name="comment" />
+        </property>
+        <property name="abortStatus" type="java.lang.Short">
+            <column name="abort_status" />
+        </property>
+        <property name="abortComment" type="java.lang.String">
+            <column name="abort_comment" />
+        </property>
+        <property name="income" type="java.lang.Double">
+            <column name="income" precision="9" />
+        </property>
+        <property name="contractNo" type="java.lang.String">
+            <column name="contract_no" />
+        </property>
+        <property name="oriItemCost" type="java.lang.Double">
+            <column name="ori_item_cost" precision="9" />
+        </property>
+        <property name="oriIncome" type="java.lang.Double">
+            <column name="ori_income" precision="9" />
+        </property>
+    </class>
+</hibernate-mapping>

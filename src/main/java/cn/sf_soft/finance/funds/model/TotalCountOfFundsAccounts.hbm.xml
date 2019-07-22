@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="cn.sf_soft.finance.funds.model.TotalCountOfFundsAccounts" abstract="true">
+    	<id name="totalDebitAmount">
+    		<column name="total_debit_amount"></column>
+    		<generator class="assigned"/>
+    	</id>
+    	<property name="totalCreditAmount">
+    		<column name="total_credit_amount"></column>
+    	</property>
+    	<property name="totalBeginningBalance">
+    		<column name="total_beginning_balance"></column>
+    	</property>
+    	<property name="totalDebitCount">
+    		<column name="total_debit_count"></column>
+    	</property>
+    	<property name="totalCreditCount">
+    		<column name="total_credit_count"></column>
+    	</property>
+    	
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="cn.sf_soft.finance.funds.model.FundsAccounts" abstract="true">
+    	<id name="accountId">
+    		<column name="account_id"></column>
+    		<generator class="assigned"/>
+    	</id>
+    	<property name="accountNo">
+    		<column name="account_no"></column>
+    	</property>
+    	<property name="accountName">
+    		<column name="account_name"></column>
+    	</property>
+    	<property name="bankAccountName">
+    		<column name="bank_account_name"></column>
+    	</property>
+    	<property name="bankName">
+    		<column name="bank_name"/>
+    	</property>
+    	<property name="bankNumber">
+    		<column name="bank_number"/>
+    	</property>
+    	<property name="address">
+    		<column name="address"/>
+    	</property>
+    	<property name="accountType">
+    		<column name="account_type"/>
+    	</property>
+    	<property name="accountKind">
+    		<column name="account_kind"/>
+    	</property>
+    	<property name="accountTypeMeaning">
+    		<column name="account_type_meaning"/>
+    	</property>
+    	<property name="accountKindMeaning">
+    		<column name="account_kind_meaning"/>
+    	</property>
+    	<property name="beginningBalance">
+    		<column name="beginning_balance"/>
+    	</property>
+    	<property name="debitAmount">
+    		<column name="debit_amount"/>
+    	</property>
+    	<property name="debitCount">
+    		<column name="debit_count"/>
+    	</property>
+    	<property name="creditAmount">
+    		<column name="credit_amount"/>
+    	</property>
+    	<property name="creditCount">
+    		<column name="credit_count"/>
+    	</property>
+    	
+    </class>
+</hibernate-mapping>

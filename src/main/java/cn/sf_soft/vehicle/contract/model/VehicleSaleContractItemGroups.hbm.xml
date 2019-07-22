@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.vehicle.contract.model.VehicleSaleContractItemGroups"
+           table="vehicle_sale_contract_item_groups" schema="dbo" >
+        <id name="itemGroupId" column="item_group_id"/>
+        <property name="groupId" column="group_id"/>
+        <property name="itemId" column="item_id"/>
+        <property name="itemNo" column="item_no"/>
+        <property name="itemName" column="item_name"/>
+        <property name="supplierId" column="supplier_id"/>
+        <property name="supplierNo" column="supplier_no"/>
+        <property name="supplierName" column="supplier_name"/>
+        <property name="income" column="income"/>
+        <property name="itemCost" column="item_cost"/>
+        <property name="comment" column="comment"/>
+        <property name="contractNo" column="contract_no"/>
+    </class>
+</hibernate-mapping>

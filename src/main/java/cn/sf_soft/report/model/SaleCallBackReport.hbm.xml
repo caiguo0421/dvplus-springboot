@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="cn.sf_soft.report.model.SaleCallBackReport" abstract="true">
+    	<id name="stationId">
+    		<column name="station_id"></column>
+    		<generator class="assigned"/>
+    	</id>
+    	<property name="stationName">
+    		<column name="station_name"></column>
+    	</property>
+    	<property name="callBack">
+    		<column name="call_back"></column>
+    	</property>
+    	<property name="noCallBack">
+    		<column name="no_call_back"></column>
+    	</property>
+    	<property name="complainCount">
+    		<column name="complain_count"></column>
+    	</property>
+    </class>
+</hibernate-mapping>

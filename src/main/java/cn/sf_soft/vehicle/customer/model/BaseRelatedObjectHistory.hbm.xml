@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.vehicle.customer.model.BaseRelatedObjectHistory" table="base_related_object_history"
+           schema="dbo">
+        <id name="historyId">
+            <column name="history_id" sql-type="varchar(40)" length="40"/>
+        </id>
+        <property name="objectId">
+            <column name="object_id" sql-type="varchar(40)" length="40"/>
+        </property>
+        <property name="fieldName">
+            <column name="field_name" sql-type="nvarchar(30)" length="30"/>
+        </property>
+        <property name="fieldNameMeaning">
+            <column name="field_name_meaning" sql-type="nvarchar(10)" length="10"/>
+        </property>
+        <property name="valueBefore">
+            <column name="value_before" sql-type="nvarchar(60)" length="60"/>
+        </property>
+        <property name="valueAfter">
+            <column name="value_after" sql-type="nvarchar(max)" length="2147483647"/>
+        </property>
+        <property name="modifier">
+            <column name="modifier" sql-type="nvarchar(20)" length="20"/>
+        </property>
+        <property name="modifyTime">
+            <column name="modify_time" sql-type="datetime"/>
+        </property>
+        <property name="stationId">
+            <column name="station_id" sql-type="nvarchar(40)" length="40"/>
+        </property>
+    </class>
+</hibernate-mapping>

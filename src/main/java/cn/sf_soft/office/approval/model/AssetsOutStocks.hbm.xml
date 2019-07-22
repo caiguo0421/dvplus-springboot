@@ -1,0 +1,154 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated 2015-4-28 15:14:09 by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="cn.sf_soft.office.approval.model.AssetsOutStocks" table="assets_out_stocks" schema="dbo" >
+        <id name="documentNo" type="java.lang.String">
+            <column name="document_no" length="40" />
+            <generator class="assigned" />
+        </id>
+        <property name="stationId" type="string">
+            <column name="station_id" length="10" not-null="true" />
+        </property>
+        <property name="posType" type="java.lang.Short">
+            <column name="pos_type" />
+        </property>
+        <property name="totPosPrice" type="java.lang.Double">
+            <column name="tot_pos_price" precision="9" />
+        </property>
+        <property name="toStationId" type="string">
+            <column name="to_station_id" length="10" />
+        </property>
+        <property name="assetsInNo" type="string">
+            <column name="assets_in_no" length="40" />
+        </property>
+        <property name="assetsTo" type="string">
+            <column name="assets_to" length="40" />
+        </property>
+        <property name="posDate" type="java.sql.Timestamp">
+            <column name="pos_date" length="23" />
+        </property>
+        <property name="scrappedFrom" type="java.lang.Short">
+            <column name="scrapped_from" />
+        </property>
+        <property name="originPosType" type="java.lang.Short">
+            <column name="origin_pos_type" />
+        </property>
+        <property name="businessUnitsType" type="java.lang.Short">
+            <column name="business_units_type" />
+        </property>
+        <property name="businessUnitsId" type="string">
+            <column name="business_units_id" length="40" />
+        </property>
+        <property name="businessUnitsNo" type="string">
+            <column name="business_units_no" length="40" />
+        </property>
+        <property name="businessUnitsName" type="string">
+            <column name="business_units_name" length="40" />
+        </property>
+        <property name="targetConfirmMan" type="string">
+            <column name="target_confirm_man" length="20" />
+        </property>
+        <property name="targetConfirmDate" type="java.sql.Timestamp">
+            <column name="target_confirm_date" length="23" />
+        </property>
+        <property name="targetStatus" type="java.lang.Short">
+            <column name="target_status" />
+        </property>
+        <property name="targetRemark" type="string">
+            <column name="target_remark" length="100" />
+        </property>
+        <property name="status" type="java.lang.Short">
+            <column name="status" />
+        </property>
+        <property name="remark" type="string">
+            <column name="remark" length="100" />
+        </property>
+        <property name="approver" type="string">
+            <column name="approver" length="20" />
+        </property>
+        <property name="approveTime" type="java.sql.Timestamp">
+            <column name="approve_time" length="23" />
+        </property>
+        <property name="creator" type="string">
+            <column name="creator" length="20" />
+        </property>
+        <property name="createTime" type="java.sql.Timestamp">
+            <column name="create_time" length="23" />
+        </property>
+        <property name="modifier" type="string">
+            <column name="modifier" length="20" />
+        </property>
+        <property name="modifyTime" type="java.sql.Timestamp">
+            <column name="modify_time" length="23" />
+        </property>
+        <property name="companyAmt" type="java.lang.Double">
+            <column name="company_amt" precision="9" />
+        </property>
+        <property name="employeesAmt" type="java.lang.Double">
+            <column name="employees_amt" precision="9" />
+        </property>
+        <property name="receivablesType" type="java.lang.Short">
+            <column name="receivables_type" />
+        </property>
+        <property name="deptAmt" type="java.lang.Double">
+            <column name="dept_amt" precision="9" />
+        </property>
+        <property name="departmentId" type="string">
+            <column name="department_id" length="40" />
+        </property>
+        <property name="departmentName" type="string">
+            <column name="department_name" length="40" />
+        </property>
+        <property name="departmentNo" type="string">
+            <column name="department_no" length="40" />
+        </property>
+        <property name="creatorNo" type="string">
+            <column name="creator_no" length="10" />
+        </property>
+        <property name="creatorUnitNo" type="string">
+            <column name="creator_unit_no" length="40" />
+        </property>
+        <property name="creatorUnitName" type="string">
+            <column name="creator_unit_name" length="40" />
+        </property>
+        <property name="approverNo" type="string">
+            <column name="approver_no" length="10" />
+        </property>
+        <property name="approverUnitNo" type="string">
+            <column name="approver_unit_no" length="40" />
+        </property>
+        <property name="approverUnitName" type="string">
+            <column name="approver_unit_name" length="40" />
+        </property>
+        <property name="userId" type="string">
+            <column name="user_id" length="40" />
+        </property>
+        <property name="userNo" type="string">
+            <column name="user_no" length="10" />
+        </property>
+        <property name="userName" type="string">
+            <column name="user_name" length="10" />
+        </property>
+        <property name="approverId" type="string">
+            <column name="approver_id" length="40" />
+        </property>
+        <property name="approverName" type="string">
+            <column name="approver_name" length="10" />
+        </property>
+        <property name="submitTime" type="java.sql.Timestamp">
+            <column name="submit_time" length="23" />
+        </property>
+        <property name="submitStationId" type="string">
+            <column name="submit_station_id" length="10" />
+        </property>
+        <property name="submitStationName" type="string">
+            <column name="submit_station_name" length="10" />
+        </property>
+         <set name="chargeDetail" table="assets_out_stock_detail" fetch="join">
+        	<key column="document_no"></key>
+        	<one-to-many class="cn.sf_soft.office.approval.model.AssetsOutStockDetail"/>
+        </set>
+    </class>
+</hibernate-mapping>

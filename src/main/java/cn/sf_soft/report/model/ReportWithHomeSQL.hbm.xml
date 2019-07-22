@@ -1,0 +1,1109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- 定义各报表统计的 SQL语句； 注意name属性的值不能重复 -->
+<hibernate-mapping>
+    <!--
+        purpose_quantity -新增意向
+        order_quantity -新增定车
+        delivery_quantity -新增交车
+        defeat_quantity -新增战败
+        month_sale_quantity -月销量
+        month_target_quantity -月目标
+        month_completion_rate -月完成率
+        year_sale_quantity -年销量
+        year_target_quantity -年目标
+        year_completion_rate -年完成率
+    -->
+    <sql-query name="saleReportWithHome">
+        <![CDATA[
+        SELECT
+                ISNULL(SUM (purpose_quantity),0) AS purpose_quantity,
+               ISNULL(SUM (order_quantity),0) AS order_quantity,
+               ISNULL(SUM (delivery_quantity),0) AS delivery_quantity,
+               ISNULL(SUM (defeat_quantity),0) AS defeat_quantity,
+               ISNULL(SUM (CAST(month_sale_quantity as INT)),0) AS month_sale_quantity,
+               ISNULL(SUM (CAST(month_target_quantity AS INT)),0) AS month_target_quantity,
+               cast(round((CASE WHEN SUM (month_target_quantity) > 0 THEN
+                    SUM (month_sale_quantity) * 1.0 / SUM (month_target_quantity) ELSE 1
+                    END),4) AS numeric(38,4)) AS month_completion_rate,
+               ISNULL(SUM (CAST(year_sale_quantity AS INT)),0) AS year_sale_quantity,
+               ISNULL(SUM (CAST(year_target_quantity AS INT)),0) AS year_target_quantity,
+               CAST(round((CASE WHEN SUM (year_target_quantity) > 0 THEN
+                    SUM (year_sale_quantity) * 1.0 / SUM (year_target_quantity) ELSE 1
+                    END),4) AS numeric(38,4)) AS year_completion_rate
+        FROM (SELECT d.station_name,
+                     g.unit_id AS department_id, g.unit_name AS department_name, a.*
+              FROM (SELECT a.station_id, a.seller_id, a.seller,
+                           CASE WHEN a.purpose_quantity > 1000 THEN 1 ELSE ISNULL (a.purpose_quantity, 0) END AS purpose_quantity,
+                           0 AS order_quantity, 0 AS delivery_quantity, 0 AS defeat_quantity,
+                           0 AS month_sale_quantity, 0 AS year_sale_quantity, 0 AS month_target_quantity,
+                           0 AS year_target_quantity
+                    FROM dbo.presell_visitors a  WITH ( NOLOCK )
+					LEFT JOIN dbo.vw_vehicle_type b WITH ( NOLOCK ) ON a.vno_id=b.vno_id
+                    WHERE DATEDIFF (MONTH, GETDATE (), a.create_time) = 0
+					AND ISNULL(b.vehicle_kind,1) IN (0,1)--不包含挂车
+                    UNION ALL
+                    SELECT b.station_id, b.seller_id, b.seller, ISNULL (a.vehicle_quantity, 1) AS purpose_quantity,
+                           0 AS order_quantity, 0 AS delivery_quantity, 0 AS defeat_quantity,
+                           0 AS month_sale_quantity, 0 AS year_sale_quantity, 0 AS month_target_quantity,
+                           0 AS year_target_quantity
+                    FROM dbo.vehicle_sale_contract_detail a WITH ( NOLOCK )
+                    LEFT JOIN dbo.vehicle_sale_contracts b WITH ( NOLOCK ) ON a.contract_no = b.contract_no
+					LEFT JOIN dbo.vw_vehicle_type c WITH ( NOLOCK ) ON a.vno_id = c.vno_id
+                    WHERE a.approve_status <> 30 AND b.contract_status <> 3 AND b.contract_status <> 4
+                        AND (ISNULL (a.visitor_no, '') = '' OR ISNULL (b.visitor_no, '') = '')
+                        AND DATEDIFF (MONTH, GETDATE (), b.create_time) = 0
+						AND ISNULL(c.vehicle_kind,1) IN (0,1)--不包含挂车
+                    UNION ALL
+                    SELECT b.station_id, b.seller_id, b.seller, 0 AS purpose_quantity,
+                           ISNULL (a.vehicle_quantity, 1) AS order_quantity, 0 AS delivery_quantity,
+                           0 AS defeat_quantity, 0 AS month_sale_quantity, 0 AS year_sale_quantity,
+                           0 AS month_target_quantity, 0 AS year_target_quantity
+                    FROM dbo.vehicle_sale_contract_detail a WITH ( NOLOCK )
+                    LEFT JOIN dbo.vehicle_sale_contracts b WITH ( NOLOCK ) ON a.contract_no = b.contract_no
+					LEFT JOIN dbo.vw_vehicle_type c WITH ( NOLOCK ) ON a.vno_id = c.vno_id
+                    WHERE a.approve_status <> 30 AND b.contract_status <> 3 AND b.contract_status <> 4
+                        AND DATEDIFF (MONTH, GETDATE (), b.create_time) = 0
+						AND ISNULL(c.vehicle_kind,1) IN (0,1)--不包含挂车
+                    UNION ALL
+                    SELECT b.station_id, b.seller_id, b.seller, 0 AS purpose_quantity, 0 AS order_quantity,
+                           ISNULL (a.vehicle_quantity, 1) AS delivery_quantity, 0 AS defeat_quantity,
+                           ISNULL (a.vehicle_quantity, 1) AS month_sale_quantity, 0 AS year_sale_quantity,
+                           0 AS month_target_quantity, 0 AS year_target_quantity
+                    FROM dbo.vehicle_sale_contract_detail a WITH ( NOLOCK )
+                    LEFT JOIN dbo.vehicle_sale_contracts b WITH ( NOLOCK ) ON a.contract_no = b.contract_no
+					LEFT JOIN dbo.vw_vehicle_type c WITH ( NOLOCK ) ON a.vno_id = c.vno_id
+                    WHERE a.approve_status <> 30 AND b.contract_status <> 3 AND b.contract_status <> 4
+                        AND a.real_deliver_time IS NOT NULL
+                        AND DATEDIFF (MONTH, GETDATE (), a.real_deliver_time) = 0
+						AND ISNULL(c.vehicle_kind,1) IN (0,1)--不包含挂车
+                    UNION ALL
+                    SELECT b.station_id, b.seller_id, b.seller, 0 AS purpose_quantity, 0 AS order_quantity,
+                           0 AS delivery_quantity,
+                           CASE WHEN b.purpose_quantity > 1000 THEN 1 ELSE ISNULL (b.purpose_quantity, 0) END AS defeat_quantity,
+                           0 AS month_sale_quantity, 0 AS year_sale_quantity, 0 AS month_target_quantity,
+                           0 AS year_target_quantity
+                    FROM presell_visitors_fail AS a WITH ( NOLOCK )
+                    INNER JOIN presell_visitors AS b WITH ( NOLOCK ) ON a.visitor_no = b.visitor_no
+					LEFT JOIN dbo.vw_interested_customers o WITH ( NOLOCK ) ON b.visitor_id=o.object_id
+					LEFT JOIN dbo.vw_vehicle_type c ON b.vno_id = c.vno_id
+                    WHERE b.visit_result = 20 AND DATEDIFF (MONTH, GETDATE (), b.create_time) = 0
+					AND ISNULL (o.status, 0) = 1 AND ISNULL (o.maintainer_id, '') <> ''
+					AND ISNULL (o.customer_type, 50) <> 50 AND (o.object_type & 2 = 2 OR o.object_type = 0)
+					AND ISNULL(c.vehicle_kind,1) IN (0,1)--不包含挂车
+                    UNION ALL
+                    SELECT b.station_id, b.seller_id, b.seller, 0 AS purpose_quantity, 0 AS order_quantity,
+                           0 AS delivery_quantity, 0 AS defeat_quantity, 0 AS month_sale_quantity,
+                           ISNULL (a.vehicle_quantity, 1) AS year_sale_quantity, 0 AS month_target_quantity,
+                           0 AS year_target_quantity
+                    FROM dbo.vehicle_sale_contract_detail a WITH ( NOLOCK )
+                    LEFT JOIN dbo.vehicle_sale_contracts b WITH ( NOLOCK ) ON a.contract_no = b.contract_no
+					LEFT JOIN dbo.vw_vehicle_type c WITH ( NOLOCK ) ON a.vno_id = c.vno_id
+                    WHERE a.approve_status <> 30 AND b.contract_status <> 3 AND b.contract_status <> 4
+                        AND a.real_deliver_time IS NOT NULL
+						AND DATEDIFF (YEAR, GETDATE (), a.real_deliver_time) = 0
+						AND ISNULL(c.vehicle_kind,1) IN (0,1)--不包含挂车
+                    UNION ALL
+                    SELECT station_id, seller_id, seller, 0 AS purpose_quantity, 0 AS order_quantity,
+                           0 AS delivery_quantity, 0 AS defeat_quantity, 0 AS month_sale_quantity,
+                           0 AS year_sale_quantity, SUM (sale_target) AS month_target_quantity,
+                           0 AS year_target_quantity
+                    FROM vw_vehicle_sale_target_setting WITH ( NOLOCK )
+                    WHERE DATEDIFF (MONTH, GETDATE (), days) = 0
+                    GROUP BY station_id, seller, seller_id
+                    UNION ALL
+                    SELECT station_id, seller_id, seller, 0 AS purpose_quantity, 0 AS order_quantity,
+                           0 AS delivery_quantity, 0 AS defeat_quantity, 0 AS month_sale_quantity,
+                           0 AS year_sale_quantity, 0 AS month_target_quantity,
+                           SUM (sale_target) AS year_target_quantity
+                    FROM vw_vehicle_sale_target_setting WITH ( NOLOCK )
+                    WHERE DATEDIFF (YEAR, GETDATE (), days) = 0
+                    GROUP BY station_id, seller, seller_id) a
+              LEFT JOIN (SELECT station_id, station_name FROM dbo.sys_stations) d ON a.station_id = d.station_id
+              LEFT JOIN dbo.sys_users f ON a.seller_id = f.user_id
+              LEFT JOIN dbo.sys_units g ON f.department = g.unit_id) a
+       		]]>
+    </sql-query>
+
+    <!--
+        销售年报
+        [CONDITION]：替换成条件
+    -->
+    <sql-query name="saleYearReport">
+        <![CDATA[
+             --DROP TABLE #temp_interested_customers
+--DROP TABLE #temp_retain_customers
+--DROP TABLE #temp_interested_customers
+--DROP TABLE #temp_purpose_quantity
+--DROP TABLE #temp_order_quantity
+--DROP TABLE #temp_vehicle_sale_target_setting
+--DROP TABLE #temp_vehicle_stocks_quantity
+
+
+---新增客户临时表
+SELECT * INTO #temp_interested_customers
+FROM (SELECT a.create_station_id AS station_id,
+				   YEAR (a.create_time) AS year, MONTH (a.create_time) AS month, a.create_time, a.object_id,
+				   a.object_name, c.user_id AS seller_id, c.user_name AS seller, d.unit_id AS department_id,
+				   d.unit_name AS department_name
+			FROM (SELECT dbo.fn_GetFirstMaintainer(maintainer_id) AS maintainerid,*
+			FROM dbo.vw_stat_effective_customer WITH ( NOLOCK ) WHERE ISNULL(maintainer_id,'')<>'') a
+			LEFT JOIN dbo.sys_users c ON c.user_id = a.maintainerid
+			LEFT JOIN dbo.sys_units d ON c.department = d.unit_id
+			WHERE ISNULL(a.maintainerid,'')<>''
+				AND ISNULL (customer_type, 50) <> 50 AND ISNULL (a.status, 0) = 1
+				AND (a.object_type & 2 = 2 OR a.object_type = 0)) a
+WHERE 1 = 1
+AND	a.year= [YEAR]
+[CONDITION]
+[MAINTENANCE_USER_CONDITION]
+--AND a.station_id='A'
+--AND a.seller_id='26a6607c-9e43-4087-88ac-27796eaf9401'
+--AND a.seller='张宇航'
+--AND a.department_name='广州销售部'
+
+
+--保有客户临时表
+SELECT * INTO #temp_retain_customers
+FROM (SELECT a.station_id, x.station_name,
+			 a.seller_id, c.user_name AS seller, d.unit_id AS department_id, d.unit_name AS department_name,
+			 YEAR (balance_month) AS year, MONTH (balance_month) AS month, customer_quantity
+	  FROM customer_quantity_balance_month a WITH ( NOLOCK )
+	  LEFT JOIN dbo.sys_users c ON c.user_id = a.seller_id
+	  LEFT JOIN dbo.sys_units d ON c.department = d.unit_id
+	  LEFT JOIN (SELECT station_id, station_name FROM dbo.sys_stations) x ON x.station_id = a.station_id
+	  UNION	 ALL
+	  SELECT a.station_id, x.station_name, a.seller_id,
+	   c.user_name AS seller, d.unit_id AS department_id, d.unit_name AS department_name,
+	   YEAR (balance_month) AS year, MONTH (balance_month) AS month, customer_quantity
+FROM (SELECT GETDATE () AS balance_month, a.station_id, a.seller_id, COUNT (*) AS customer_quantity
+	  FROM (SELECT a.create_station_id AS station_id,
+				   a.create_time, a.object_id, a.object_name, c.user_id AS seller_id, c.user_name AS seller,
+				   d.unit_id AS department_id, d.unit_name AS department_name
+			FROM (SELECT dbo.fn_GetFirstMaintainer(maintainer_id) AS maintainerid,*
+			FROM dbo.vw_stat_effective_customer WITH ( NOLOCK ) WHERE ISNULL(maintainer_id,'')<>'') a
+			LEFT JOIN dbo.sys_users c ON c.user_id = a.maintainerid
+			LEFT JOIN dbo.sys_units d ON c.department = d.unit_id
+			WHERE ISNULL(a.maintainerid,'')<>''
+				AND ISNULL (customer_type, 50) <> 50 AND ISNULL (a.status, 0) = 1
+				AND (a.object_type & 2 = 2 OR a.object_type = 0)) a
+	  WHERE 1 = 1
+	  GROUP BY a.station_id, a.seller_id) a
+LEFT JOIN dbo.sys_users c ON c.user_id = a.seller_id
+LEFT JOIN dbo.sys_units d ON c.department = d.unit_id
+LEFT JOIN (SELECT station_id, station_name FROM dbo.sys_stations) x ON x.station_id = a.station_id) a
+WHERE 1 = 1
+AND	a.year= [YEAR]
+[CONDITION]
+[MAINTENANCE_USER_CONDITION]
+--AND a.station_id='A'
+--AND a.seller_id='26a6607c-9e43-4087-88ac-27796eaf9401'
+--AND a.seller='张宇航'
+--AND a.department_name='广州销售部'
+
+
+--意向台数临时表
+--意向台数临时表
+SELECT * INTO #temp_purpose_quantity
+FROM (SELECT a.station_id, d.station_name,
+			 a.seller_id, a.seller, g.unit_id AS department_id, g.unit_name AS department_name,
+			 CASE WHEN a.purpose_quantity > 1000 THEN 1 ELSE ISNULL (a.purpose_quantity, 0) END AS purpose_quantity,
+			 a.create_time, YEAR (a.create_time) AS year, MONTH (a.create_time) AS month,h.vehicle_kind
+	  FROM dbo.presell_visitors a WITH ( NOLOCK )
+	  LEFT JOIN (SELECT station_id, station_name FROM dbo.sys_stations) d ON a.station_id = d.station_id
+	  LEFT JOIN dbo.vw_vehicle_type h ON a.vno_id = h.vno_id
+	  LEFT JOIN dbo.vw_interested_customers b ON a.visitor_id = b.object_id
+	  LEFT JOIN dbo.sys_users f ON a.seller_id = f.user_id
+	  LEFT JOIN dbo.sys_units g ON f.department = g.unit_id
+	  WHERE 1=1
+	  UNION ALL
+	  SELECT b.station_id, d.station_name,
+			 b.seller_id, b.seller, g.unit_id AS department_id, g.unit_name AS department_name,
+			 ISNULL (a.vehicle_quantity, 1), b.create_time, YEAR (b.create_time) AS year,
+			 MONTH (b.create_time) AS month,h.vehicle_kind
+	  FROM dbo.vehicle_sale_contract_detail a WITH ( NOLOCK )
+	  LEFT JOIN dbo.vehicle_sale_contracts b ON a.contract_no = b.contract_no
+	  LEFT JOIN (SELECT station_id, station_name FROM dbo.sys_stations) d ON b.station_id = d.station_id
+	  LEFT JOIN dbo.sys_users f ON b.seller_id = f.user_id
+	  LEFT JOIN dbo.sys_units g ON f.department = g.unit_id
+	  LEFT JOIN dbo.vw_vehicle_type h ON a.vno_id = h.vno_id
+	  WHERE a.approve_status <> 30 AND b.contract_status <> 3 AND b.contract_status <> 4
+		  AND (ISNULL (a.visitor_no, '') = '' OR ISNULL (b.visitor_no, '') = '')) a
+WHERE 1 = 1
+AND ISNULL(a.vehicle_kind,1) IN (0,1)--不包含挂车
+AND YEAR (a.create_time) = [YEAR]
+[CONDITION]
+[MAINTENANCE_USER_CONDITION]
+-- AND a.station_id='A'
+-- AND a.seller_id='26a6607c-9e43-4087-88ac-27796eaf9401'
+-- AND a.seller='张宇航'
+-- AND a.department_name='广州销售部'
+
+
+--定车台数临时表
+SELECT * INTO #temp_order_quantity
+FROM (SELECT b.station_id, d.station_name,
+			 b.customer_name, b.seller_id, b.seller, g.unit_id AS department_id,
+			 g.unit_name AS department_name,b.create_time, b.sign_time, YEAR (b.create_time) AS year,
+			 MONTH (b.create_time) AS month, ISNULL (a.vehicle_quantity, 1) AS vehicle_quantity,
+			 a.real_deliver_time,h.vehicle_kind,
+			 CASE WHEN ( SELECT COUNT (*)
+				   FROM dbo.vehicle_loan_budget_details a1
+				   LEFT JOIN dbo.vehicle_loan_budget b1 ON b1.document_no = a1.document_no
+				   WHERE b1.status =50
+					   AND a1.sale_contract_detail_id = a.contract_detail_id ) > 0
+			THEN 1 ELSE 0 END AS is_vehicle_loan,
+		CASE WHEN ( SELECT COUNT (*)
+					FROM dbo.insurance a2
+					WHERE a2.approve_status = 1
+						AND a2.vehicle_id = a.vehicle_id
+						AND a2.contract_no = a.contract_no ) > 0
+			 THEN 1 ELSE 0 END AS is_insurance
+	  FROM dbo.vehicle_sale_contract_detail a WITH ( NOLOCK )
+	  LEFT JOIN dbo.vehicle_sale_contracts b ON a.contract_no = b.contract_no
+	  LEFT JOIN (SELECT station_id, station_name FROM dbo.sys_stations) d ON b.station_id = d.station_id
+	  LEFT JOIN dbo.sys_users f ON b.seller_id = f.user_id
+	  LEFT JOIN dbo.sys_units g ON f.department = g.unit_id
+	  LEFT JOIN dbo.vw_vehicle_type h ON a.vno_id = h.vno_id
+	  WHERE a.approve_status <> 30 AND b.contract_status <> 3 AND b.contract_status <> 4) a
+WHERE 1 = 1
+AND ISNULL(a.vehicle_kind,1) IN (0,1)--不包含挂车
+AND YEAR (a.create_time)= [YEAR]
+[CONDITION]
+[MAINTENANCE_USER_CONDITION]
+-- AND a.station_id='A'
+-- AND a.seller_id='26a6607c-9e43-4087-88ac-27796eaf9401'
+-- AND a.seller='张宇航'
+-- AND a.department_name='广州销售部'
+
+--交车台数临时表
+SELECT * INTO #temp_deliver_quantity
+FROM (SELECT b.station_id, d.station_name,
+			 b.customer_name, b.seller_id, b.seller, g.unit_id AS department_id,
+			 g.unit_name AS department_name,b.create_time, a.real_deliver_time, YEAR (a.real_deliver_time) AS year,
+			 MONTH (a.real_deliver_time) AS month, ISNULL (a.vehicle_quantity, 1) AS vehicle_quantity,
+			 h.vehicle_kind,
+			 CASE WHEN ( SELECT COUNT (*)
+				   FROM dbo.vehicle_loan_budget_details a1
+				   LEFT JOIN dbo.vehicle_loan_budget b1 ON b1.document_no = a1.document_no
+				   WHERE b1.status =50
+					   AND a1.sale_contract_detail_id = a.contract_detail_id ) > 0
+			THEN 1 ELSE 0 END AS is_vehicle_loan,
+		CASE WHEN ( SELECT COUNT (*)
+					FROM dbo.insurance a2
+					WHERE a2.approve_status = 1
+						AND a2.vehicle_id = a.vehicle_id
+						AND a2.contract_no = a.contract_no ) > 0
+			 THEN 1 ELSE 0 END AS is_insurance
+	  FROM dbo.vehicle_sale_contract_detail a WITH ( NOLOCK )
+	  LEFT JOIN dbo.vehicle_sale_contracts b ON a.contract_no = b.contract_no
+	  LEFT JOIN (SELECT station_id, station_name FROM dbo.sys_stations) d ON b.station_id = d.station_id
+	  LEFT JOIN dbo.sys_users f ON b.seller_id = f.user_id
+	  LEFT JOIN dbo.sys_units g ON f.department = g.unit_id
+	  LEFT JOIN dbo.vw_vehicle_type h ON a.vno_id = h.vno_id
+	  WHERE a.approve_status <> 30 AND b.contract_status <> 3 AND b.contract_status <> 4) a
+WHERE 1 = 1 AND a.real_deliver_time IS NOT NULL
+AND ISNULL(a.vehicle_kind,1) IN (0,1)--不包含挂车
+AND YEAR (a.real_deliver_time) = [YEAR]
+[CONDITION]
+[MAINTENANCE_USER_CONDITION]
+-- AND a.station_id='A'
+-- AND a.seller_id='26a6607c-9e43-4087-88ac-27796eaf9401'
+-- AND a.seller='张宇航'
+-- AND a.department_name='广州销售部'
+
+
+--目标销量临时表
+SELECT * INTO #temp_vehicle_sale_target_setting
+FROM (SELECT a.station_id, x.station_name,
+			 a.seller_id, c.user_name AS seller, d.unit_id AS department_id, d.unit_name AS department_name,
+			 a.years AS year, a.months AS month, ISNULL(a.sale_target,0) AS sale_target
+	  FROM vw_vehicle_sale_target_setting a WITH ( NOLOCK )
+	  LEFT JOIN dbo.sys_users c ON c.user_id = a.seller_id
+	  LEFT JOIN dbo.sys_units d ON c.department = d.unit_id
+	  LEFT JOIN (SELECT station_id, station_name FROM dbo.sys_stations) x ON x.station_id = a.station_id) a
+WHERE 1 = 1
+AND a.year = [YEAR]
+[CONDITION]
+[MAINTENANCE_USER_CONDITION]
+-- AND a.station_id='A'
+-- AND a.seller_id='26a6607c-9e43-4087-88ac-27796eaf9401'
+-- AND a.seller='张宇航'
+-- AND a.department_name='广州销售部'
+
+
+--可用库存临时表
+SELECT *
+INTO #temp_vehicle_stocks_quantity
+FROM (SELECT a.station_id, d.station_name,
+			 YEAR (GETDATE ()) AS year, MONTH (GETDATE ()) AS month, a.vehicle_quantity
+	  FROM (SELECT a.station_id, c.station_name, vehicle_id, vehicle_quantity
+			FROM dbo.vehicle_stocks a WITH ( NOLOCK )
+			LEFT JOIN dbo.vw_vehicle_type f ON a.vno_id = f.self_id
+			LEFT JOIN dbo.sys_stations c ON a.station_id = c.station_id
+			WHERE a.status IN ( 0, 1 ) AND ISNULL (f.is_dongfeng, 0) = 1
+			AND ISNULL (f.vehicle_kind, 1) <> 2
+			UNION ALL
+			SELECT d.station_id, st.station_name, a.self_id,
+			 CASE WHEN CASE WHEN ISNULL (g.invoice_qty, 0) > ISNULL (a.quantity, 0) THEN
+							ISNULL (a.quantity, 0) ELSE ISNULL (g.invoice_qty, 0) END - ISNULL (f.qty, 0) > 0 THEN
+				  CASE WHEN ISNULL (g.invoice_qty, 0) > ISNULL (a.quantity, 0) THEN ISNULL (a.quantity, 0)
+				   ELSE ISNULL (g.invoice_qty,0) END
+				  - ISNULL (f.qty, 0) ELSE 0 END AS on_way_qty --已开票在途
+	  FROM dbo.vehicle_DF_sap_contract a WITH ( NOLOCK )
+	  LEFT JOIN dbo.vehicle_DF_purchase_order b ON b.purchase_order_no = a.purchase_order_no
+	  LEFT JOIN dbo.vehicle_demand_apply_detail c ON b.apply_order_no = c.order_no
+													  AND b.work_state_audit = c.work_state_audit
+													  AND ISNULL (c.detail_status, '') <> 'CRM删除'
+	  LEFT JOIN dbo.vehicle_demand_apply d ON c.order_no = d.order_no
+	  LEFT JOIN dbo.sys_stations st ON d.station_id = st.station_id
+	  LEFT JOIN (SELECT b.sap_contract_no, COUNT (*) AS qty
+				 FROM dbo.vehicle_DF_sap_delivery a
+				 INNER JOIN dbo.vehicle_DF_sap_order b ON b.sap_order_no = a.sap_order_no
+				 WHERE (a.finish_status = 1 OR a.underpan_no LIKE 'DEL_%')
+				 GROUP BY b.sap_contract_no) f ON f.sap_contract_no = a.contract_no
+	  LEFT JOIN (SELECT b.sap_contract_no, COUNT (*) AS qty
+				 FROM dbo.vehicle_DF_sap_delivery a
+				 INNER JOIN dbo.vehicle_DF_sap_order b ON b.sap_order_no = a.sap_order_no
+				 WHERE (a.underpan_no LIKE 'DEL_%')
+				 GROUP BY b.sap_contract_no) f1 ON f1.sap_contract_no = a.contract_no
+	  LEFT JOIN (SELECT a.sap_contract_no, COUNT (*) invoice_qty
+				 FROM dbo.vehicle_DF_invoice_apply a
+				 WHERE a.status IN ( '开票完成' )
+				 GROUP BY a.sap_contract_no) g ON g.sap_contract_no = a.contract_no
+	  WHERE d.station_id IS NOT NULL AND a.refuse_reason = '有效'
+		  AND (CASE WHEN ISNULL (a.quantity, 0) <= ISNULL (f1.qty, 0) THEN 0 ELSE
+			CASE WHEN ISNULL (a.quantity, 0) - ISNULL (g.invoice_qty, 0) >= 0
+			THEN ISNULL (a.quantity, 0) - ISNULL (g.invoice_qty, 0) ELSE 0 END END > 0
+				  OR CASE WHEN CASE WHEN ISNULL (g.invoice_qty, 0) > ISNULL (a.quantity, 0) THEN
+									ISNULL (a.quantity, 0) ELSE ISNULL (g.invoice_qty, 0) END
+							   - ISNULL (f.qty, 0) > 0 THEN
+						  CASE WHEN ISNULL (g.invoice_qty, 0) > ISNULL (a.quantity, 0) THEN
+							   ISNULL (a.quantity, 0) ELSE ISNULL (g.invoice_qty, 0) END - ISNULL (f.qty, 0) ELSE
+																											 0 END > 0)
+		  AND b.status NOT LIKE '%作废%' AND b.status NOT LIKE '%终止%' AND b.status NOT LIKE '%拒绝%') a
+	  LEFT JOIN (SELECT station_id, station_name FROM dbo.sys_stations) d ON a.station_id = d.station_id
+	  UNION ALL
+	  SELECT a.station_id, d.station_name,
+			 YEAR (balance_month) AS year, MONTH (balance_month) AS month, (a.quantity+a.quantity_way) AS vehicle_quantity
+	  FROM vehicle_stock_month a WITH ( NOLOCK )
+	  LEFT JOIN (SELECT station_id, station_name FROM dbo.sys_stations) d ON a.station_id = d.station_id
+	  WHERE YEAR (a.balance_month) = [YEAR]) a
+WHERE 1 = 1
+[STOCK_CONDITION]
+
+
+
+--统计SQL
+SELECT '新增客户' AS project_name, CONVERT(DECIMAL(19,2),COUNT (*)) AS tot_quantity_year,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 1 THEN 1 ELSE 0 END)) AS tot_quantity_1,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 2 THEN 1 ELSE 0 END)) AS tot_quantity_2,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 3 THEN 1 ELSE 0 END)) AS tot_quantity_3,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 4 THEN 1 ELSE 0 END)) AS tot_quantity_4,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 5 THEN 1 ELSE 0 END)) AS tot_quantity_5,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 6 THEN 1 ELSE 0 END)) AS tot_quantity_6,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 7 THEN 1 ELSE 0 END)) AS tot_quantity_7,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 8 THEN 1 ELSE 0 END)) AS tot_quantity_8,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 9 THEN 1 ELSE 0 END)) AS tot_quantity_9,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 10 THEN 1 ELSE 0 END)) AS tot_quantity_10,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 11 THEN 1 ELSE 0 END)) AS tot_quantity_11,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 12 THEN 1 ELSE 0 END)) AS tot_quantity_12
+FROM #temp_interested_customers
+WHERE year = [YEAR]
+UNION ALL
+SELECT '保有客户' AS project_name,
+	   CONVERT(DECIMAL(19,2),SUM(CASE WHEN month =MONTH(GETDATE()) AND year=YEAR(GETDATE()) THEN customer_quantity ELSE 0 END))
+	    AS tot_quantity_year,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 1 THEN customer_quantity ELSE 0 END)) AS tot_quantity_1,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 2 THEN customer_quantity ELSE 0 END)) AS tot_quantity_2,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 3 THEN customer_quantity ELSE 0 END)) AS tot_quantity_3,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 4 THEN customer_quantity ELSE 0 END)) AS tot_quantity_4,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 5 THEN customer_quantity ELSE 0 END)) AS tot_quantity_5,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 6 THEN customer_quantity ELSE 0 END)) AS tot_quantity_6,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 7 THEN customer_quantity ELSE 0 END)) AS tot_quantity_7,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 8 THEN customer_quantity ELSE 0 END)) AS tot_quantity_8,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 9 THEN customer_quantity ELSE 0 END)) AS tot_quantity_9,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 10 THEN customer_quantity ELSE 0 END)) AS tot_quantity_10,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 11 THEN customer_quantity ELSE 0 END)) AS tot_quantity_11,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 12 THEN customer_quantity ELSE 0 END)) AS tot_quantity_12
+FROM #temp_retain_customers
+WHERE year = [YEAR]
+UNION ALL
+SELECT '意向台数' AS project_name,
+	   CONVERT(DECIMAL(19,2),SUM(purpose_quantity)) AS tot_quantity_year,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 1 THEN purpose_quantity ELSE 0 END)) AS tot_quantity_1,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 2 THEN purpose_quantity ELSE 0 END)) AS tot_quantity_2,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 3 THEN purpose_quantity ELSE 0 END)) AS tot_quantity_3,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 4 THEN purpose_quantity ELSE 0 END)) AS tot_quantity_4,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 5 THEN purpose_quantity ELSE 0 END)) AS tot_quantity_5,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 6 THEN purpose_quantity ELSE 0 END)) AS tot_quantity_6,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 7 THEN purpose_quantity ELSE 0 END)) AS tot_quantity_7,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 8 THEN purpose_quantity ELSE 0 END)) AS tot_quantity_8,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 9 THEN purpose_quantity ELSE 0 END)) AS tot_quantity_9,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 10 THEN purpose_quantity ELSE 0 END)) AS tot_quantity_10,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 11 THEN purpose_quantity ELSE 0 END)) AS tot_quantity_11,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 12 THEN purpose_quantity ELSE 0 END)) AS tot_quantity_12
+FROM #temp_purpose_quantity
+WHERE year = [YEAR]
+UNION ALL
+SELECT '定车台数' AS project_name,
+	    CONVERT(DECIMAL(19,2),SUM(vehicle_quantity)) AS tot_quantity_year,
+	    CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 1 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_1,
+	    CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 2 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_2,
+	    CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 3 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_3,
+	    CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 4 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_4,
+	    CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 5 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_5,
+	    CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 6 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_6,
+	    CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 7 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_7,
+	    CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 8 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_8,
+	    CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 9 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_9,
+	    CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 10 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_10,
+	    CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 11 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_11,
+	    CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 12 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_12
+FROM #temp_order_quantity
+WHERE year = [YEAR]
+UNION ALL
+SELECT '成交率' AS project_name,
+	   SUM (a.vehicle_quantity) * 1.0 / ISNULL (NULLIF(SUM (a.purpose_quantity), 0), 1) AS tot_quantity_year,
+	   SUM (CASE WHEN month = 1 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 1 THEN a.purpose_quantity ELSE 0 END), 0), 1) AS tot_quantity_1,
+	   SUM (CASE WHEN month = 2 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 2 THEN a.purpose_quantity ELSE 0 END), 0), 1) AS tot_quantity_2,
+	   SUM (CASE WHEN month = 3 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 3 THEN a.purpose_quantity ELSE 0 END), 0), 1) AS tot_quantity_3,
+	   SUM (CASE WHEN month = 4 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 4 THEN a.purpose_quantity ELSE 0 END), 0), 1) AS tot_quantity_4,
+	   SUM (CASE WHEN month = 5 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 5 THEN a.purpose_quantity ELSE 0 END), 0), 1) AS tot_quantity_5,
+	   SUM (CASE WHEN month = 6 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 6 THEN a.purpose_quantity ELSE 0 END), 0), 1) AS tot_quantity_6,
+	   SUM (CASE WHEN month = 7 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 7 THEN a.purpose_quantity ELSE 0 END), 0), 1) AS tot_quantity_7,
+	   SUM (CASE WHEN month = 8 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 8 THEN a.purpose_quantity ELSE 0 END), 0), 1) AS tot_quantity_8,
+	   SUM (CASE WHEN month = 9 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 9 THEN a.purpose_quantity ELSE 0 END), 0), 1) AS tot_quantity_9,
+	   SUM (CASE WHEN month = 10 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 10 THEN a.purpose_quantity ELSE 0 END), 0), 1) AS tot_quantity_10,
+	   SUM (CASE WHEN month = 11 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 11 THEN a.purpose_quantity ELSE 0 END), 0), 1) AS tot_quantity_11,
+	   SUM (CASE WHEN month = 12 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 12 THEN a.purpose_quantity ELSE 0 END), 0), 1) AS tot_quantity_12
+FROM (SELECT year, month, purpose_quantity, 0 AS vehicle_quantity
+	  FROM #temp_purpose_quantity
+	  UNION ALL
+	  SELECT year, month, 0 AS purpose_quantity, vehicle_quantity
+	  FROM #temp_order_quantity) a
+WHERE a.year = [YEAR]
+UNION ALL
+SELECT '交车台数' AS project_name,
+	   CONVERT(DECIMAL(19,2),SUM(vehicle_quantity)) AS tot_quantity_year,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 1 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_1,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 2 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_2,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 3 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_3,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 4 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_4,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 5 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_5,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 6 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_6,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 7 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_7,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 8 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_8,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 9 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_9,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 10 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_10,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 11 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_11,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 12 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_12
+FROM #temp_deliver_quantity
+WHERE real_deliver_time IS NOT NULL AND year = [YEAR]
+UNION ALL
+SELECT '交付率' AS project_name,
+	   SUM (a.vehicle_quantity) * 1.0 / ISNULL (NULLIF(SUM (a.order_quantity), 0), 1) AS tot_quantity_year,
+	   SUM (CASE WHEN month = 1 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 1 THEN a.order_quantity ELSE 0 END), 0), 1) AS tot_quantity_1,
+	   SUM (CASE WHEN month = 2 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 2 THEN a.order_quantity ELSE 0 END), 0), 1) AS tot_quantity_2,
+	   SUM (CASE WHEN month = 3 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 3 THEN a.order_quantity ELSE 0 END), 0), 1) AS tot_quantity_3,
+	   SUM (CASE WHEN month = 4 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 4 THEN a.order_quantity ELSE 0 END), 0), 1) AS tot_quantity_4,
+	   SUM (CASE WHEN month = 5 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 5 THEN a.order_quantity ELSE 0 END), 0), 1) AS tot_quantity_5,
+	   SUM (CASE WHEN month = 6 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 6 THEN a.order_quantity ELSE 0 END), 0), 1) AS tot_quantity_6,
+	   SUM (CASE WHEN month = 7 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 7 THEN a.order_quantity ELSE 0 END), 0), 1) AS tot_quantity_7,
+	   SUM (CASE WHEN month = 8 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 8 THEN a.order_quantity ELSE 0 END), 0), 1) AS tot_quantity_8,
+	   SUM (CASE WHEN month = 9 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 9 THEN a.order_quantity ELSE 0 END), 0), 1) AS tot_quantity_9,
+	   SUM (CASE WHEN month = 10 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 10 THEN a.order_quantity ELSE 0 END), 0), 1) AS tot_quantity_10,
+	   SUM (CASE WHEN month = 11 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 11 THEN a.order_quantity ELSE 0 END), 0), 1) AS tot_quantity_11,
+	   SUM (CASE WHEN month = 12 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 12 THEN a.order_quantity ELSE 0 END), 0), 1) AS tot_quantity_12
+FROM (SELECT year, month, vehicle_quantity, 0 AS order_quantity
+	  FROM #temp_deliver_quantity WHERE real_deliver_time IS NOT NULL
+	  UNION ALL
+	  SELECT year, month, 0 AS vehicle_quantity, vehicle_quantity AS order_quantity
+	  FROM #temp_order_quantity) a
+WHERE a.year = [YEAR]
+UNION ALL
+SELECT '目标销量' AS project_name,
+	   CONVERT(DECIMAL(19,2),SUM(sale_target)) AS tot_quantity_year,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 1 THEN sale_target ELSE 0 END)) AS tot_quantity_1,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 2 THEN sale_target ELSE 0 END)) AS tot_quantity_2,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 3 THEN sale_target ELSE 0 END)) AS tot_quantity_3,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 4 THEN sale_target ELSE 0 END)) AS tot_quantity_4,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 5 THEN sale_target ELSE 0 END)) AS tot_quantity_5,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 6 THEN sale_target ELSE 0 END)) AS tot_quantity_6,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 7 THEN sale_target ELSE 0 END)) AS tot_quantity_7,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 8 THEN sale_target ELSE 0 END)) AS tot_quantity_8,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 9 THEN sale_target ELSE 0 END)) AS tot_quantity_9,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 10 THEN sale_target ELSE 0 END)) AS tot_quantity_10,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 11 THEN sale_target ELSE 0 END)) AS tot_quantity_11,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 12 THEN sale_target ELSE 0 END)) AS tot_quantity_12
+FROM #temp_vehicle_sale_target_setting
+WHERE year = [YEAR]
+UNION ALL
+
+SELECT '目标完成率' AS project_name,
+	   SUM (a.vehicle_quantity) * 1.0 / ISNULL (NULLIF(SUM (a.sale_target), 0), 1) AS tot_quantity_year,
+	   SUM (CASE WHEN month = 1 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 1 THEN a.sale_target ELSE 0 END), 0), 1) AS tot_quantity_1,
+	   SUM (CASE WHEN month = 2 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 2 THEN a.sale_target ELSE 0 END), 0), 1) AS tot_quantity_2,
+	   SUM (CASE WHEN month = 3 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 3 THEN a.sale_target ELSE 0 END), 0), 1) AS tot_quantity_3,
+	   SUM (CASE WHEN month = 4 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 4 THEN a.sale_target ELSE 0 END), 0), 1) AS tot_quantity_4,
+	   SUM (CASE WHEN month = 5 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 5 THEN a.sale_target ELSE 0 END), 0), 1) AS tot_quantity_5,
+	   SUM (CASE WHEN month = 6 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 6 THEN a.sale_target ELSE 0 END), 0), 1) AS tot_quantity_6,
+	   SUM (CASE WHEN month = 7 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 7 THEN a.sale_target ELSE 0 END), 0), 1) AS tot_quantity_7,
+	   SUM (CASE WHEN month = 8 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 8 THEN a.sale_target ELSE 0 END), 0), 1) AS tot_quantity_8,
+	   SUM (CASE WHEN month = 9 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 9 THEN a.sale_target ELSE 0 END), 0), 1) AS tot_quantity_9,
+	   SUM (CASE WHEN month = 10 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 10 THEN a.sale_target ELSE 0 END), 0), 1) AS tot_quantity_10,
+	   SUM (CASE WHEN month = 11 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 11 THEN a.sale_target ELSE 0 END), 0), 1) AS tot_quantity_11,
+	   SUM (CASE WHEN month = 12 THEN vehicle_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 12 THEN a.sale_target ELSE 0 END), 0), 1) AS tot_quantity_12
+FROM (SELECT year, month, vehicle_quantity, 0 AS sale_target
+	  FROM #temp_deliver_quantity WHERE real_deliver_time IS NOT NULL
+	  UNION ALL
+	  SELECT year, month, 0 AS vehicle_quantity, sale_target AS sale_target
+	  FROM #temp_vehicle_sale_target_setting) a
+WHERE a.year = [YEAR]
+UNION ALL
+SELECT '消贷台数' AS project_name,
+	   CONVERT(DECIMAL(19,2),SUM(vehicle_quantity)) AS tot_quantity_year,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 1 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_1,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 2 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_2,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 3 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_3,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 4 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_4,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 5 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_5,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 6 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_6,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 7 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_7,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 8 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_8,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 9 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_9,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 10 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_10,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 11 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_11,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 12 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_12
+FROM #temp_order_quantity
+WHERE real_deliver_time IS NOT NULL AND is_vehicle_loan=1 AND year = [YEAR]
+UNION ALL
+SELECT '消贷渗透率' AS project_name,
+	   SUM (a.vehicle_loan_quantity) * 1.0 / ISNULL (NULLIF(SUM (a.vehicle_quantity), 0), 1) AS tot_quantity_year,
+	   SUM (CASE WHEN month = 1 THEN vehicle_loan_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 1 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_1,
+	   SUM (CASE WHEN month = 2 THEN vehicle_loan_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 2 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_2,
+	   SUM (CASE WHEN month = 3 THEN vehicle_loan_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 3 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_3,
+	   SUM (CASE WHEN month = 4 THEN vehicle_loan_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 4 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_4,
+	   SUM (CASE WHEN month = 5 THEN vehicle_loan_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 5 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_5,
+	   SUM (CASE WHEN month = 6 THEN vehicle_loan_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 6 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_6,
+	   SUM (CASE WHEN month = 7 THEN vehicle_loan_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 7 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_7,
+	   SUM (CASE WHEN month = 8 THEN vehicle_loan_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 8 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_8,
+	   SUM (CASE WHEN month = 9 THEN vehicle_loan_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 9 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_9,
+	   SUM (CASE WHEN month = 10 THEN vehicle_loan_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 10 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_10,
+	   SUM (CASE WHEN month = 11 THEN vehicle_loan_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 11 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_11,
+	   SUM (CASE WHEN month = 12 THEN vehicle_loan_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 12 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_12
+FROM (SELECT year, month, vehicle_quantity, 0 AS vehicle_loan_quantity
+	  FROM #temp_deliver_quantity WHERE real_deliver_time IS NOT NULL
+	  UNION ALL
+	  SELECT year, month, 0 AS vehicle_quantity, vehicle_quantity AS vehicle_loan_quantity
+	  FROM #temp_deliver_quantity WHERE real_deliver_time IS NOT NULL AND is_vehicle_loan=1) a
+WHERE a.year = [YEAR]
+UNION ALL
+SELECT '保险台数' AS project_name,
+	   CONVERT(DECIMAL(19,2),SUM(vehicle_quantity)) AS tot_quantity_year,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 1 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_1,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 2 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_2,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 3 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_3,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 4 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_4,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 5 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_5,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 6 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_6,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 7 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_7,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 8 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_8,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 9 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_9,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 10 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_10,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 11 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_11,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 12 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_12
+FROM #temp_order_quantity
+WHERE real_deliver_time IS NOT NULL AND is_insurance=1 AND year = [YEAR]
+UNION ALL
+SELECT '保险渗透率' AS project_name,
+	   SUM (a.insurance_quantity) * 1.0 / ISNULL (NULLIF(SUM (a.vehicle_quantity), 0), 1) AS tot_quantity_year,
+	   SUM (CASE WHEN month = 1 THEN insurance_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 1 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_1,
+	   SUM (CASE WHEN month = 2 THEN insurance_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 2 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_2,
+	   SUM (CASE WHEN month = 3 THEN insurance_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 3 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_3,
+	   SUM (CASE WHEN month = 4 THEN insurance_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 4 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_4,
+	   SUM (CASE WHEN month = 5 THEN insurance_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 5 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_5,
+	   SUM (CASE WHEN month = 6 THEN insurance_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 6 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_6,
+	   SUM (CASE WHEN month = 7 THEN insurance_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 7 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_7,
+	   SUM (CASE WHEN month = 8 THEN insurance_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 8 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_8,
+	   SUM (CASE WHEN month = 9 THEN insurance_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 9 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_9,
+	   SUM (CASE WHEN month = 10 THEN insurance_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 10 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_10,
+	   SUM (CASE WHEN month = 11 THEN insurance_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 11 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_11,
+	   SUM (CASE WHEN month = 12 THEN insurance_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 12 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_12
+FROM (SELECT year, month, vehicle_quantity, 0 AS insurance_quantity
+	  FROM #temp_deliver_quantity WHERE real_deliver_time IS NOT NULL
+	  UNION ALL
+	  SELECT year, month, 0 AS vehicle_quantity, vehicle_quantity AS insurance_quantity
+	  FROM #temp_deliver_quantity WHERE real_deliver_time IS NOT NULL AND is_insurance=1) a
+WHERE a.year = [YEAR]
+UNION ALL
+SELECT '可用库存' AS project_name,
+	   CONVERT(DECIMAL(19,2),SUM(CASE WHEN year=YEAR(GETDATE()) AND month=MONTH(GETDATE()) THEN vehicle_quantity ELSE 0 END))
+	    AS tot_quantity_year,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 1 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_1,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 2 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_2,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 3 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_3,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 4 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_4,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 5 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_5,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 6 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_6,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 7 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_7,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 8 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_8,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 9 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_9,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 10 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_10,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 11 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_11,
+	   CONVERT(DECIMAL(19,2),SUM (CASE WHEN month = 12 THEN vehicle_quantity ELSE 0 END)) AS tot_quantity_12
+FROM #temp_vehicle_stocks_quantity
+WHERE year = [YEAR]
+UNION ALL
+SELECT '存销比' AS project_name,
+	   SUM (a.stock_quantity) * 1.0 / ISNULL (NULLIF(SUM (a.vehicle_quantity), 0), 1) AS tot_quantity_year,
+	   SUM (CASE WHEN month = 1 THEN stock_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 1 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_1,
+	   SUM (CASE WHEN month = 2 THEN stock_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 2 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_2,
+	   SUM (CASE WHEN month = 3 THEN stock_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 3 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_3,
+	   SUM (CASE WHEN month = 4 THEN stock_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 4 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_4,
+	   SUM (CASE WHEN month = 5 THEN stock_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 5 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_5,
+	   SUM (CASE WHEN month = 6 THEN stock_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 6 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_6,
+	   SUM (CASE WHEN month = 7 THEN stock_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 7 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_7,
+	   SUM (CASE WHEN month = 8 THEN stock_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 8 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_8,
+	   SUM (CASE WHEN month = 9 THEN stock_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 9 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_9,
+	   SUM (CASE WHEN month = 10 THEN stock_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 10 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_10,
+	   SUM (CASE WHEN month = 11 THEN stock_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 11 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_11,
+	   SUM (CASE WHEN month = 12 THEN stock_quantity ELSE 0 END) * 1.0
+	   / ISNULL (NULLIF(SUM (CASE WHEN month = 12 THEN a.vehicle_quantity ELSE 0 END), 0), 1) AS tot_quantity_12
+FROM (SELECT year, month, vehicle_quantity, 0 AS stock_quantity
+	  FROM #temp_order_quantity WHERE real_deliver_time IS NOT NULL
+	  UNION ALL
+	  SELECT year, month, 0 AS vehicle_quantity, vehicle_quantity AS stock_quantity
+	  FROM #temp_vehicle_stocks_quantity ) a
+WHERE a.year = [YEAR]
+
+/**字段说明：
+project_name, 项目
+tot_quantity_year, 当年累计
+tot_quantity_1, 1月份合计
+tot_quantity_2, 2月份合计
+............, 以此类推
+tot_quantity_12, 12月份合计
+**/
+        ]]>
+    </sql-query>
+
+
+    <!--实时战报-->
+    <sql-query name="realTimeReport">
+        <![CDATA[
+            WITH yx AS (
+                SELECT 1 AS _type, a.station_id, g.unit_id AS department_id
+                    , ISNULL(a.vehicle_strain, h.vehicleStrain) AS vehicle_strain
+                    , CASE
+                        WHEN a.purpose_quantity > 1000 THEN 1
+                        ELSE ISNULL(a.purpose_quantity, 0)
+                    END AS purpose_quantity, 0 AS month_sale_quantity, 0 AS year_sale_quantity, 0 AS month_target_quantity, 0 AS year_target_quantity
+                    , a.create_time, a.seller_id
+                FROM dbo.presell_visitors a WITH ( NOLOCK )
+                    LEFT JOIN (
+                        SELECT station_id, station_name, dealer_code_for_big_data
+                        FROM dbo.sys_stations
+                    ) d
+                    ON a.station_id = d.station_id
+                    LEFT JOIN dbo.vw_vehicle_type h WITH ( NOLOCK ) ON a.vehicle_vno = h.product_model
+                    LEFT JOIN dbo.sys_users f ON a.seller_id = f.user_id
+                    LEFT JOIN dbo.sys_units g ON f.department = g.unit_id
+                WHERE ISNULL(h.vehicle_kind,1) IN (0,1)
+                UNION ALL
+                SELECT 1 AS rpt_type, b.station_id, g.unit_id AS department_id, a.vehicle_strain
+                    , ISNULL(a.vehicle_quantity, 1), 0 AS month_sale_quantity
+                    , 0 AS year_sale_quantity, 0 AS month_target_quantity, 0 AS year_target_quantity, b.sign_time as create_time, b.seller_id
+                FROM dbo.vehicle_sale_contract_detail a WITH ( NOLOCK )
+                    LEFT JOIN dbo.vehicle_sale_contracts b WITH ( NOLOCK ) ON a.contract_no = b.contract_no
+                    LEFT JOIN (
+                        SELECT station_id, station_name, dealer_code_for_big_data
+                        FROM dbo.sys_stations
+                    ) d
+                    ON b.station_id = d.station_id
+                    LEFT JOIN dbo.sys_users f ON b.seller_id = f.user_id
+                    LEFT JOIN dbo.sys_units g ON f.department = g.unit_id
+                    LEFT JOIN dbo.vw_vehicle_type h WITH ( NOLOCK ) ON a.vno_id=h.vno_id
+                WHERE a.approve_status <> 30
+                    AND b.contract_status <> 3
+                    AND b.contract_status <> 4
+                    AND (ISNULL(a.visitor_no, '') = ''
+                        OR ISNULL(b.visitor_no, '') = '') AND ISNULL(h.vehicle_kind,1) IN (0,1)
+            ),
+            dc AS (
+                SELECT 2 AS _type, b.station_id, g.unit_id AS department_id, a.vehicle_strain
+                    , ISNULL(a.vehicle_quantity, 1) AS vehicle_quantity, 0 AS month_sale_quantity
+                    , 0 AS year_sale_quantity, 0 AS month_target_quantity, 0 AS year_target_quantity, b.sign_time AS create_time, b.seller_id
+                FROM dbo.vehicle_sale_contract_detail a WITH ( NOLOCK )
+                    LEFT JOIN dbo.vehicle_sale_contracts b WITH ( NOLOCK ) ON a.contract_no = b.contract_no
+                    LEFT JOIN dbo.vw_vehicle_type c WITH ( NOLOCK ) ON a.vno_id=c.vno_id
+                    LEFT JOIN (
+                        SELECT station_id, station_name
+                        FROM dbo.sys_stations
+                    ) d
+                    ON b.station_id = d.station_id
+                    LEFT JOIN dbo.sys_users f ON b.seller_id = f.user_id
+                    LEFT JOIN dbo.sys_units g ON f.department = g.unit_id
+                WHERE b.contract_status <> 3
+                    AND b.contract_status <> 4 AND ISNULL(c.vehicle_kind,1) IN (0,1)
+            ),
+            jc AS (
+                SELECT 3 AS _type, b.station_id, g.unit_id AS department_id, a.vehicle_strain
+                    , ISNULL(a.vehicle_quantity, 0) AS vehicle_quantity
+                    , ISNULL(a.vehicle_quantity, 1) AS month_sale_quantity, 0 AS year_sale_quantity
+                    , 0 AS month_target_quantity, 0 AS year_target_quantity, a.real_deliver_time AS create_time, b.seller_id
+                FROM dbo.vehicle_sale_contract_detail a WITH ( NOLOCK )
+                    LEFT JOIN dbo.vehicle_sale_contracts b WITH ( NOLOCK ) ON a.contract_no = b.contract_no
+                    LEFT JOIN dbo.vw_vehicle_type c WITH ( NOLOCK ) ON a.vno_id=c.vno_id
+                    LEFT JOIN (
+                        SELECT station_id, station_name
+                        FROM dbo.sys_stations
+                    ) d
+                    ON b.station_id = d.station_id
+                    LEFT JOIN dbo.sys_users f ON b.seller_id = f.user_id
+                    LEFT JOIN dbo.sys_units g ON f.department = g.unit_id
+                WHERE a.approve_status <> 30
+                    AND b.contract_status <> 3
+                    AND b.contract_status <> 4
+                    AND a.real_deliver_time IS NOT NULL AND ISNULL(c.vehicle_kind,1) IN (0,1)
+            ),
+            zb AS (
+                SELECT 4 AS _type, b.station_id, g.unit_id AS department_id
+                    , ISNULL(b.vehicle_strain, h.vehicleStrain) AS vehicle_strain
+                    , CASE
+                        WHEN b.purpose_quantity > 1000 THEN 1
+                        ELSE ISNULL(b.purpose_quantity, 0)
+                    END AS purpose_quantity, 0 AS month_sale_quantity, 0 AS year_sale_quantity, 0 AS month_target_quantity, 0 AS year_target_quantity
+                    , b.create_time AS create_time, b.seller_id
+                FROM presell_visitors_fail a WITH ( NOLOCK )
+                    INNER JOIN presell_visitors b WITH ( NOLOCK ) ON a.visitor_no = b.visitor_no
+                    LEFT JOIN (
+                        SELECT station_id, station_name
+                        FROM dbo.sys_stations
+                    ) d
+                    ON b.station_id = d.station_id
+                    LEFT JOIN dbo.sys_users f ON b.seller_id = f.user_id
+                    LEFT JOIN dbo.sys_units g ON f.department = g.unit_id
+                    LEFT JOIN dbo.vw_vehicle_type h WITH ( NOLOCK ) ON b.vehicle_vno = h.product_model
+                    LEFT JOIN dbo.vw_interested_customers o WITH ( NOLOCK ) ON b.visitor_id = o.object_id
+                WHERE b.visit_result = 20
+                	AND ISNULL (o.status, 0) = 1
+                      AND ISNULL (o.maintainer_id, '') <> ''
+                      AND ISNULL (o.customer_type, 50) <> 50
+                      AND ( o.object_type & 2 = 2
+                              OR o.object_type = 0 ) AND ISNULL(h.vehicle_kind,1) IN (0,1)
+            ),
+            year_sale AS (
+                SELECT b.station_id, 0 AS month_sale_quantity, ISNULL(a.vehicle_quantity, 1) AS year_sale_quantity
+                    , 0 AS month_target_quantity, 0 AS year_target_quantity,b.seller_id,f.department AS department_id
+                FROM dbo.vehicle_sale_contract_detail a WITH ( NOLOCK )
+                    LEFT JOIN dbo.vehicle_sale_contracts b WITH ( NOLOCK ) ON a.contract_no = b.contract_no
+                    LEFT JOIN dbo.sys_users f ON b.seller_id = f.user_id
+                    LEFT JOIN dbo.vw_vehicle_type h WITH ( NOLOCK ) ON a.vno_id=h.vno_id
+                WHERE a.approve_status <> 30
+                    AND b.contract_status <> 3
+                    AND b.contract_status <> 4
+                    AND a.real_deliver_time IS NOT NULL
+                    AND DATEDIFF(YEAR, GETDATE(), a.real_deliver_time) = 0 AND ISNULL(h.vehicle_kind,0)<>2
+            ),
+            month_sale_target AS (
+                SELECT station_id, 0 AS month_sale_quantity, 0 AS year_sale_quantity, SUM(sale_target) AS month_target_quantity
+                    , 0 AS year_target_quantity,seller_id,u.department AS department_id
+                FROM vw_vehicle_sale_target_setting
+                LEFT JOIN sys_users u ON u.user_id=seller_id
+                WHERE DATEDIFF(MONTH, GETDATE(), days) = 0
+                GROUP BY station_id,seller_id,u.department
+            ),
+            year_sale_target AS (
+                SELECT station_id, 0 AS month_sale_quantity, 0 AS year_sale_quantity, 0 AS month_target_quantity
+                    , SUM(sale_target) AS year_target_quantity,seller_id,u.department AS department_id
+                FROM vw_vehicle_sale_target_setting
+                LEFT JOIN sys_users u ON u.user_id=seller_id
+                WHERE DATEDIFF(YEAR, GETDATE(), days) = 0
+                GROUP BY station_id,seller_id,u.department
+            ),
+            allData AS (
+                SELECT *
+                FROM yx
+                WHERE DATEDIFF(MONTH, GETDATE(), create_time) = 0
+                UNION ALL
+                SELECT *
+                FROM dc
+                WHERE DATEDIFF(MONTH, GETDATE(), create_time) = 0
+                UNION ALL
+                SELECT *
+                FROM jc
+                WHERE DATEDIFF(MONTH, GETDATE(), create_time) = 0
+                UNION ALL
+                SELECT *
+                FROM zb
+                WHERE DATEDIFF(MONTH, GETDATE(), create_time) = 0
+            )
+
+        SELECT *
+        FROM (
+            SELECT 1 AS rpt_type, a._type AS data_type, a.day_quantity, a.week_quantity, a.month_quantity, NULL AS month_sale_quantity
+                , NULL AS month_target_quantity, NULL AS month_completion_rate, NULL AS year_sale_quantity, NULL AS year_target_quantity, NULL AS year_completion_rate
+            FROM (
+                SELECT _type, SUM(CASE
+                        WHEN DATEDIFF(DAY, GETDATE(), create_time) = 0 THEN purpose_quantity
+                        ELSE 0
+                    END) AS day_quantity, SUM(CASE
+                        WHEN DATEDIFF(WEEK, GETDATE(), create_time) = 0 THEN purpose_quantity
+                        ELSE 0
+                    END) AS week_quantity
+                    , SUM(purpose_quantity) AS month_quantity
+                FROM allData AS alias
+                WHERE 1=1 $condition
+                GROUP BY _type
+            ) a
+            UNION ALL
+            SELECT 2 AS rpt_type, NULL AS data_type, NULL AS day_quantity, NULL AS week_quantity, NULL AS month_quantity,
+                SUM (CAST(month_sale_quantity as INT)) AS month_sale_quantity,
+               SUM (CAST(month_target_quantity AS INT)) AS month_target_quantity,
+               cast(round((CASE WHEN SUM (month_target_quantity) > 0 THEN
+                    SUM (month_sale_quantity) * 1.0 / SUM (month_target_quantity) ELSE 1
+                    END),4) AS numeric(38,4)) AS month_completion_rate,
+               SUM (CAST(year_sale_quantity AS INT)) AS year_sale_quantity,
+               SUM (CAST(year_target_quantity AS INT)) AS year_target_quantity,
+               CAST(round((CASE WHEN SUM (year_target_quantity) > 0 THEN
+                    SUM (year_sale_quantity) * 1.0 / SUM (year_target_quantity) ELSE 1
+                    END),4) AS numeric(38,4)) AS year_completion_rate
+            FROM (
+                SELECT station_id, month_sale_quantity, year_sale_quantity, month_target_quantity, year_target_quantity,seller_id,department_id
+                FROM allData
+                UNION ALL
+                SELECT station_id, month_sale_quantity, year_sale_quantity, month_target_quantity, year_target_quantity,seller_id,department_id
+                FROM year_sale
+                UNION ALL
+                SELECT station_id, month_sale_quantity, year_sale_quantity, month_target_quantity, year_target_quantity,seller_id,department_id
+                FROM month_sale_target
+                UNION ALL
+                SELECT station_id, month_sale_quantity, year_sale_quantity, month_target_quantity, year_target_quantity,seller_id,department_id
+                FROM year_sale_target
+            ) alias WHERE 1=1 $summaryCondition
+        ) b
+        ORDER BY b.rpt_type, b.data_type
+        ]]>
+    </sql-query>
+
+    <sql-query name="realTimeReportByDate">
+        <![CDATA[
+            WITH yx AS (
+                SELECT 1 AS _type, a.station_id, g.unit_id AS department_id
+                    , ISNULL(a.vehicle_strain, h.vehicleStrain) AS vehicle_strain
+                    , CASE
+                        WHEN a.purpose_quantity > 1000 THEN 1
+                        ELSE ISNULL(a.purpose_quantity, 0)
+                    END AS purpose_quantity, 0 AS order_quantity, 0 AS delivery_quantity, 0 AS defeat_quantity, a.create_time, a.seller_id
+                FROM dbo.presell_visitors a WITH ( NOLOCK )
+                    LEFT JOIN (
+                        SELECT station_id, station_name, dealer_code_for_big_data
+                        FROM dbo.sys_stations
+                    ) d
+                    ON a.station_id = d.station_id
+                    LEFT JOIN dbo.vw_vehicle_type h WITH ( NOLOCK ) ON a.vehicle_vno = h.product_model
+                    LEFT JOIN dbo.sys_users f ON a.seller_id = f.user_id
+                    LEFT JOIN dbo.sys_units g ON f.department = g.unit_id
+                WHERE 1=1 AND ISNULL(h.vehicle_kind,1) IN (0,1)
+                UNION ALL
+                SELECT 1 AS rpt_type, b.station_id, g.unit_id AS department_id, a.vehicle_strain
+                    , ISNULL(a.vehicle_quantity, 1) AS purpose_quantity, 0 AS order_quantity
+                    , 0 AS delivery_quantity, 0 AS defeat_quantity, b.create_time, b.seller_id
+                FROM dbo.vehicle_sale_contract_detail a WITH ( NOLOCK )
+                    LEFT JOIN dbo.vehicle_sale_contracts b WITH ( NOLOCK ) ON a.contract_no = b.contract_no
+                    LEFT JOIN (
+                        SELECT station_id, station_name, dealer_code_for_big_data
+                        FROM dbo.sys_stations
+                    ) d
+                    ON b.station_id = d.station_id
+                    LEFT JOIN dbo.sys_users f ON b.seller_id = f.user_id
+                    LEFT JOIN dbo.sys_units g ON f.department = g.unit_id
+                    LEFT JOIN dbo.vw_vehicle_type h WITH ( NOLOCK ) ON a.vno_id=h.vno_id
+                WHERE a.approve_status <> 30
+                    AND b.contract_status <> 3
+                    AND b.contract_status <> 4
+                    AND (ISNULL(a.visitor_no, '') = ''
+                        OR ISNULL(b.visitor_no, '') = '') AND ISNULL(h.vehicle_kind,1) IN (0,1)
+            ),
+            dc AS (
+                SELECT 2 AS _type, b.station_id, g.unit_id AS department_id, a.vehicle_strain, 0 AS purpose_quantity
+                    , ISNULL(a.vehicle_quantity, 1) AS order_quantity, 0 AS delivery_quantity
+                    , 0 AS defeat_quantity, b.sign_time AS create_time, b.seller_id
+                FROM dbo.vehicle_sale_contract_detail a WITH ( NOLOCK )
+                    LEFT JOIN dbo.vehicle_sale_contracts b WITH ( NOLOCK ) ON a.contract_no = b.contract_no
+                    LEFT JOIN dbo.vw_vehicle_type c WITH ( NOLOCK ) ON a.vno_id=c.vno_id
+                    LEFT JOIN (
+                        SELECT station_id, station_name
+                        FROM dbo.sys_stations
+                    ) d
+                    ON b.station_id = d.station_id
+                    LEFT JOIN dbo.sys_users f ON b.seller_id = f.user_id
+                    LEFT JOIN dbo.sys_units g ON f.department = g.unit_id
+                WHERE b.contract_status <> 3
+                    AND b.contract_status <> 4 AND ISNULL(c.vehicle_kind,1) IN (0,1)
+            ),
+            jc AS (
+                SELECT 3 AS _type, b.station_id, g.unit_id AS department_id, a.vehicle_strain, 0 AS purpose_quantity
+                    , 0 AS order_quantity, ISNULL(a.vehicle_quantity, 1) AS delivery_quantity, 0 AS defeat_quantity
+                    , a.real_deliver_time AS create_time, b.seller_id
+                FROM dbo.vehicle_sale_contract_detail a WITH ( NOLOCK )
+                    LEFT JOIN dbo.vehicle_sale_contracts b WITH ( NOLOCK ) ON a.contract_no = b.contract_no
+                    LEFT JOIN dbo.vw_vehicle_type c WITH ( NOLOCK ) ON a.vno_id=c.vno_id
+                    LEFT JOIN (
+                        SELECT station_id, station_name
+                        FROM dbo.sys_stations
+                    ) d
+                    ON b.station_id = d.station_id
+                    LEFT JOIN dbo.sys_users f ON b.seller_id = f.user_id
+                    LEFT JOIN dbo.sys_units g ON f.department = g.unit_id
+                WHERE a.approve_status <> 30
+                    AND b.contract_status <> 3
+                    AND b.contract_status <> 4
+                    AND a.real_deliver_time IS NOT NULL AND ISNULL(c.vehicle_kind,1) IN (0,1)
+            ),
+            zb AS (
+                SELECT 4 AS _type, b.station_id, g.unit_id AS department_id
+                    , ISNULL(b.vehicle_strain, h.vehicleStrain) AS vehicle_strain, 0 AS purpose_quantity
+                    , 0 AS order_quantity, 0 AS delivery_quantity
+                    , CASE
+                        WHEN b.purpose_quantity > 1000 THEN 1
+                        ELSE ISNULL(b.purpose_quantity, 0)
+                    END AS defeat_quantity, b.create_time AS create_time, b.seller_id
+                FROM presell_visitors_fail a WITH ( NOLOCK )
+                    INNER JOIN presell_visitors b WITH ( NOLOCK ) ON a.visitor_no = b.visitor_no
+                    LEFT JOIN (
+                        SELECT station_id, station_name
+                        FROM dbo.sys_stations
+                    ) d
+                    ON b.station_id = d.station_id
+                    LEFT JOIN dbo.sys_users f ON b.seller_id = f.user_id
+                    LEFT JOIN dbo.sys_units g ON f.department = g.unit_id
+                    LEFT JOIN dbo.vw_vehicle_type h WITH ( NOLOCK ) ON b.vehicle_vno = h.product_model
+                    LEFT JOIN dbo.vw_interested_customers o WITH ( NOLOCK ) ON b.visitor_id = o.object_id
+                WHERE b.visit_result = 20
+                	AND ISNULL (o.status, 0) = 1
+                      AND ISNULL (o.maintainer_id, '') <> ''
+                      AND ISNULL (o.customer_type, 50) <> 50
+                      AND ( o.object_type & 2 = 2
+                              OR o.object_type = 0 ) AND ISNULL(h.vehicle_kind,1) IN (0,1)
+            ),
+            allData AS (
+                select * from (
+                    SELECT *
+                    FROM yx
+                    WHERE DATEDIFF(YEAR, GETDATE(), create_time) = 0
+                    UNION ALL
+                    SELECT *
+                    FROM dc
+                    WHERE DATEDIFF(YEAR, GETDATE(), create_time) = 0
+                    UNION ALL
+                    SELECT *
+                    FROM jc
+                    WHERE DATEDIFF(YEAR, GETDATE(), create_time) = 0
+                    UNION ALL
+                    SELECT *
+                    FROM zb
+                    WHERE DATEDIFF(YEAR, GETDATE(), create_time) = 0
+                ) allData
+                WHERE 1=1 AND $condition
+            )
+        SELECT *
+        FROM (
+            SELECT 1 AS data_type, SUM(purpose_quantity) AS purpose_quantity, SUM(order_quantity) AS order_quantity
+                , SUM(delivery_quantity) AS delivery_quantity, SUM(defeat_quantity) AS defeat_quantity
+                , substring(convert(varchar, create_time, 120), 1, 10) AS create_time
+            FROM allData
+            WHERE DATEDIFF(MONTH, GETDATE(), create_time) = 0
+            GROUP BY substring(convert(varchar, create_time, 120), 1, 10)
+            UNION ALL
+            SELECT 2 AS data_type, SUM(purpose_quantity) AS purpose_quantity, SUM(order_quantity) AS order_quantity
+                , SUM(delivery_quantity) AS delivery_quantity, SUM(defeat_quantity) AS defeat_quantity
+                , substring(convert(varchar, create_time, 120), 1, 10) AS create_time
+            FROM allData
+            WHERE DATEDIFF(WEEK, GETDATE(), create_time) >= -12
+            GROUP BY substring(convert(varchar, create_time, 120), 1, 10)
+            UNION ALL
+            SELECT 3 AS data_type, SUM(purpose_quantity) AS purpose_quantity, SUM(order_quantity) AS order_quantity
+                , SUM(delivery_quantity) AS delivery_quantity, SUM(defeat_quantity) AS defeat_quantity
+                , substring(convert(varchar, create_time, 120), 1, 7) AS create_time
+            FROM allData
+            GROUP BY substring(convert(varchar, create_time, 120), 1, 7)
+        ) a
+        ORDER BY a.data_type, a.create_time
+        ]]>
+    </sql-query>
+
+</hibernate-mapping>

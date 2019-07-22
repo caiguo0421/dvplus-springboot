@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="cn.sf_soft.report.model.MaintainClaimsReport" abstract="true">
+    	<id column="appraisal_mode_meaning" name="appraisalModeMeaning">
+    		<generator class="native"/>
+    	</id>
+    	<property name="appraisalQty">
+    		<column name="appraisal_qty"></column>
+    	</property>
+    	<property name="appraisalMoney">
+    		<column name="appraisal_money"></column>
+    	</property>
+    </class>
+</hibernate-mapping>

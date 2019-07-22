@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="cn.sf_soft.report.model.SuppliesPosition" abstract="true">
+    	<id name="id">
+    		<column name="id"></column>
+    		<generator class="assigned"/>
+    	</id>
+    	<property name="stationId">
+    		<column name="station_id"></column>
+    	</property>
+    	<property name="positionCode">
+    		<column name="position_code"></column>
+    	</property>
+    	<property name="positionName">
+    		<column name="position_name"></column>
+    	</property>
+    	<property name="modifyUserName">
+    		<column name="modify_user_name"></column>
+    	</property>
+    	<property name="modifyDatetime">
+    		<column name="modify_datetime"></column>
+    	</property>
+    	<property name="status">
+    		<column name="status"></column>
+    	</property>
+    	<property name="remark">
+    		<column name="remark"></column>
+    	</property>
+    	<property name="nature">
+    		<column name="nature"></column>
+    	</property>
+    </class>
+</hibernate-mapping>

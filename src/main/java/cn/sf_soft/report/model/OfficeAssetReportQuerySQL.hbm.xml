@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- 定义各报表统计的 SQL语句； 注意name属性的值不能重复 -->
+<hibernate-mapping>
+
+	
+	<!-- =======================================办公统计报表======================================= -->
+	
+	<sql-query name="getTypeInitData">
+		<!-- 出入库类型 -->
+		<return class="cn.sf_soft.basedata.model.SysFlags"/>
+			<![CDATA[
+					SELECT  *  
+					FROM    dbo.sys_flags  
+					WHERE   field_no = :type order by code
+       		]]>
+	</sql-query>
+	
+	<sql-query name="getPositionInitData">
+		<!-- 存放位置 -->
+		<return class="cn.sf_soft.basedata.model.BaseOthers"/>
+			<![CDATA[
+					SELECT  *
+						FROM    dbo.base_others
+						WHERE   type_no = 'ASSERT_POSITIOIN' 
+       		]]>
+	</sql-query>
+	
+	<sql-query name="getAssetOutReoprtData">
+		<!-- 资产出库统计 -->
+			<![CDATA[
+				SELECT  station_name + pos_type_meaning AS id,
+						station_id,
+						station_name ,
+				        pos_type as type,
+				        pos_type_meaning as type_meaning,
+				        SUM(ISNULL(pos_quantity, 0)) AS quantity ,
+				        SUM(ISNULL(pos_quantity, 0) * ISNULL(pos_price, 0)) AS price
+				FROM    vw_stat_aosdetail
+				WHERE   status = 40
+				        AND station_id IN ( :stationIds )
+				        AND DATEDIFF(Day, :beginTime, approve_time) >= 0
+				        AND DATEDIFF(Day, :endTime, approve_time) <= 0
+				        	:hql  
+				GROUP BY station_name ,
+						station_id,
+				        pos_type ,
+				        pos_type_meaning 
+       		]]>
+	</sql-query>
+	
+	<sql-query name="getAssetInReoprtData">
+		<!-- 资产入库统计 -->
+			<![CDATA[
+				SELECT  station_name + pis_type_meaning AS id,
+						station_name ,
+						station_id,
+				        pis_type as type,
+				        pis_type_meaning as type_meaning,
+				        SUM(ISNULL(pis_quantity, 0)) as quantity ,
+				        SUM(ISNULL(pis_quantity, 0) * ISNULL(pis_price, 0))  as price   
+				FROM    vw_stat_aisdetail
+				WHERE   status = 40
+				        AND station_id IN ( :stationIds )
+				        AND DATEDIFF(Day, :beginTime, approve_time) >= 0
+				        AND DATEDIFF(Day, :endTime, approve_time) <= 0
+				      		 :hql  
+				GROUP BY station_name ,
+						station_id,
+				        pis_type ,
+				        pis_type_meaning  
+       		]]>
+	</sql-query>
+	
+	
+	<sql-query name="getSuppliesPositionInitData">
+		<!-- 出入库类型 -->
+		<return class="cn.sf_soft.report.model.SuppliesPosition"/>
+			<![CDATA[
+					  SELECT  *
+				        FROM    dbo.supplies_position
+				        WHERE   status = 1
+				                AND station_id IN ( :stationIds )
+       		]]>
+	</sql-query>
+	
+	
+	<sql-query name="getThingsInReoprtData">
+		<!-- 用品入库统计 -->
+			<![CDATA[
+				SELECT  station_name + type_meaning as id,a.* ,
+				        b.station_name
+				FROM    ( SELECT    station_id ,
+				                    pis_type AS type,
+				                    pis_type_meaning  AS type_meaning,
+				                    SUM(ISNULL(pis_quantity, 0) + ISNULL(sab_quantity, 0)) AS quantity ,
+				                    SUM(( ISNULL(pis_quantity, 0) + ISNULL(sab_quantity, 0) )
+				                        * ( ISNULL(pis_price, 0) )) AS price
+				          FROM      vw_stat_sisdetail
+				          WHERE     status = 40
+				                    AND station_id IN ( :stationIds )
+				                    AND DATEDIFF(Day, :beginTime, approve_time) >= 0
+				                    AND DATEDIFF(Day, :endTime, approve_time) <= 0
+				                    	 :hql  
+				          GROUP BY  station_id ,
+				                    pis_type ,
+				                    pis_type_meaning
+				        ) AS a
+				        LEFT JOIN sys_stations AS b ON a.station_id = b.station_id
+       		]]>
+	</sql-query>
+	<sql-query name="getThingsOutReoprtData">
+		<!-- 用品出库统计 -->
+			<![CDATA[
+				SELECT  station_name + pos_type_meaning AS id,
+						station_id,
+						station_name ,
+				        pos_type AS type,
+				        pos_type_meaning AS type_meaning,
+				        SUM(ISNULL(pos_quantity, 0) + ISNULL(sab_quantity, 0)) AS quantity ,
+				        SUM(( ISNULL(pos_quantity, 0) + ISNULL(sab_quantity, 0) )
+				            * ( ISNULL(pos_price, 0) )) AS price
+				FROM    [vw_stat_sosdetail]
+				WHERE   status = 40
+				        AND station_id IN ( :stationIds  )
+				        AND DATEDIFF(Day, :beginTime, approve_time) >= 0
+				        AND DATEDIFF(Day, :endTime, approve_time) <= 0
+				      	     	 :hql  
+				GROUP BY 
+						station_id,
+						station_name ,
+				        pos_type ,
+				        pos_type_meaning 
+       		]]>
+	</sql-query>
+</hibernate-mapping>

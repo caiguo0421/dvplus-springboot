@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+	<class name="cn.sf_soft.office.approval.model.VehicleInStocks"
+		table="vehicle_in_stocks">
+		<id name="inStockNo" type="java.lang.String">
+			<column name="in_stock_no" length="20" />
+			<generator class="assigned" />
+		</id>
+		<property name="stationId" type="java.lang.String">
+			<column name="station_id" length="10" />
+		</property>
+		<property name="supplierType" type="java.lang.Short">
+			<column name="supplier_type" />
+		</property>
+		<property name="supplierId" type="java.lang.String">
+			<column name="supplier_id" length="40" />
+		</property>
+		<property name="supplierNo" type="java.lang.String">
+			<column name="supplier_no" length="40" />
+		</property>
+		<property name="supplierName" type="java.lang.String">
+			<column name="supplier_name" />
+		</property>
+		<property name="payType" type="java.lang.Short">
+			<column name="pay_type" />
+		</property>
+		<property name="inStockTime" type="java.sql.Timestamp">
+			<column name="in_stock_time" length="23" />
+		</property>
+		<property name="inStockCount" type="java.lang.Integer">
+			<column name="in_stock_count" />
+		</property>
+		<property name="inStockMoney" type="java.lang.Double">
+			<column name="in_stock_money" precision="11" />
+		</property>
+		<property name="inStockType" type="java.lang.Short">
+			<column name="in_stock_type" />
+		</property>
+		<property name="originalStockType" type="java.lang.Short">
+			<column name="original_stock_type" />
+		</property>
+		<property name="warehouseName" type="java.lang.String">
+			<column name="warehouse_name" />
+		</property>
+		<property name="warehouseId" type="java.lang.String">
+			<column name="warehouse_id" length="40" />
+		</property>
+		<property name="identifier" type="java.lang.String">
+			<column name="identifier" />
+		</property>
+		<property name="contractNo" type="java.lang.String">
+			<column name="contract_no" length="20" />
+		</property>
+		<property name="contractCode" type="java.lang.String">
+			<column name="contract_code" length="20" />
+		</property>
+		<property name="inStockCarriage" type="java.lang.Double">
+			<column name="in_stock_carriage" precision="9" />
+		</property>
+		<property name="carryCompanyId" type="java.lang.String">
+			<column name="carry_company_id" length="40" />
+		</property>
+		<property name="carryCompanyNo" type="java.lang.String">
+			<column name="carry_company_no" length="40" />
+		</property>
+		<property name="carryCompanyName" type="java.lang.String">
+			<column name="carry_company_name" />
+		</property>
+		<property name="paymentStatus" type="java.lang.Short">
+			<column name="payment_status" />
+		</property>
+		<property name="hypervalent" type="java.lang.Short">
+			<column name="hypervalent" />
+		</property>
+		<property name="carryNo" type="java.lang.String">
+			<column name="carry_no" length="30" />
+		</property>
+		<property name="comment" type="java.lang.String">
+			<column name="comment" />
+		</property>
+		<property name="approver" type="java.lang.String">
+			<column name="approver" />
+		</property>
+		<property name="approveTime" type="java.sql.Timestamp">
+			<column name="approve_time" length="23" />
+		</property>
+		<property name="approveStatus" type="java.lang.Short">
+			<column name="approve_status" />
+		</property>
+		<property name="approveComment" type="java.lang.String">
+			<column name="approve_comment" />
+		</property>
+		<property name="originalInStockNo" type="java.lang.String">
+			<column name="original_in_stock_no" length="20" />
+		</property>
+		<property name="cancelReason" type="java.lang.String">
+			<column name="cancel_reason" />
+		</property>
+		<property name="sourceStationId" type="java.lang.String">
+			<column name="source_station_id" length="10" />
+		</property>
+		<property name="unitNo" type="java.lang.String">
+			<column name="unit_no" length="40" />
+		</property>
+		<property name="unitName" type="java.lang.String">
+			<column name="unit_name" length="40" />
+		</property>
+		<property name="creator" type="java.lang.String">
+			<column name="creator" />
+		</property>
+		<property name="createTime" type="java.sql.Timestamp">
+			<column name="create_time" length="23" />
+		</property>
+		<property name="modifier" type="java.lang.String">
+			<column name="modifier" />
+		</property>
+		<property name="modifyTime" type="java.sql.Timestamp">
+			<column name="modify_time" length="23" />
+		</property>
+		<property name="refOutStocksNo" type="java.lang.String">
+			<column name="ref_out_stocks_no" length="20" />
+		</property>
+		<property name="carryFuturePayDate" type="java.sql.Timestamp">
+			<column name="carry_future_pay_date" length="23" />
+		</property>
+		<property name="refundmentAmount" type="java.lang.Double">
+			<column name="refundment_amount" />
+		</property>
+		<property name="creatorUnitId" type="java.lang.String">
+			<column name="creator_unit_id" length="60" />
+		</property>
+		<property name="approverUnitId" type="java.lang.String">
+			<column name="approver_unit_id" length="60" />
+		</property>
+		<property name="trackingNo" type="java.lang.String">
+			<column name="tracking_no" length="40" />
+		</property>
+		<property name="errorCode" type="java.lang.String">
+			<column name="error_code" length="20" />
+		</property>
+		<property name="errorMsg" type="java.lang.String">
+			<column name="error_msg" />
+		</property>
+	</class>
+</hibernate-mapping>

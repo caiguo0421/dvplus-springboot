@@ -1,0 +1,87 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.office.approval.model.OfficeGeneralApprove" table="office_general_approve" schema="dbo">
+        <id name="documentNo">
+            <column name="document_no" sql-type="varchar(40)" length="40"/>
+        </id>
+        <property name="stationId">
+            <column name="station_id" sql-type="varchar(10)" length="10" />
+        </property>
+        <property name="status">
+            <column name="status" sql-type="tinyint" />
+        </property>
+        <property name="approveTheme">
+            <column name="approve_theme" sql-type="nvarchar(100)" length="100" />
+        </property>
+        <property name="approveType">
+            <column name="approve_type" sql-type="nvarchar(100)" length="100" />
+        </property>
+        <property name="applyTime">
+            <column name="apply_time" sql-type="datetime" />
+        </property>
+        <property name="userId">
+            <column name="user_id" sql-type="varchar(40)" length="40" />
+        </property>
+        <property name="userNo">
+            <column name="user_no" sql-type="varchar(10)" length="10" />
+        </property>
+        <property name="userName">
+            <column name="user_name" sql-type="nvarchar(10)" length="10" />
+        </property>
+        <property name="departmentId">
+            <column name="department_id" sql-type="varchar(40)" length="40" />
+        </property>
+        <property name="departmentNo">
+            <column name="department_no" sql-type="varchar(40)" length="40" />
+        </property>
+        <property name="departmentName">
+            <column name="department_name" sql-type="nvarchar(40)" length="40" />
+        </property>
+        <property name="submitStationId">
+            <column name="submit_station_id" sql-type="varchar(10)" length="10" />
+        </property>
+        <property name="submitStationName">
+            <column name="submit_station_name" sql-type="nvarchar(10)" length="10" />
+        </property>
+        <property name="remark">
+            <column name="remark" sql-type="nvarchar(max)" length="2147483647" />
+        </property>
+        <property name="creator">
+            <column name="creator" sql-type="nvarchar(20)" length="20" />
+        </property>
+        <property name="createTime">
+            <column name="create_time" sql-type="datetime" />
+        </property>
+        <property name="modifier">
+            <column name="modifier" sql-type="nvarchar(20)" length="20" />
+        </property>
+        <property name="modifyTime">
+            <column name="modify_time" sql-type="datetime" />
+        </property>
+        <property name="submitTime">
+            <column name="submit_time" sql-type="datetime" />
+        </property>
+        <property name="approverId">
+            <column name="approver_id" sql-type="varchar(max)" length="2147483647" />
+        </property>
+        <property name="approverNo">
+            <column name="approver_no" sql-type="varchar(max)" length="2147483647" />
+        </property>
+        <property name="approverName">
+            <column name="approver_name" sql-type="nvarchar(max)" length="2147483647" />
+        </property>
+        <property name="approveTime">
+            <column name="approve_time" sql-type="datetime" />
+        </property>
+        <property name="errorCode">
+            <column name="error_code" sql-type="nvarchar(20)" length="20" not-null="false"/>
+        </property>
+        <property name="errorMsg">
+            <column name="error_msg" sql-type="nvarchar(max)" length="2147483647" not-null="false"/>
+        </property>
+    </class>
+</hibernate-mapping>

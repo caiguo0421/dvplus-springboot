@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- 定义各报表统计的 SQL语句； 注意name属性的值不能重复 -->
+<hibernate-mapping>
+
+	<!-- =======================================车辆业务======================================= -->
+	<!-- 车辆销售统计（时间段） 
+	<sql-query name="periodOfTimeSaleReportData">
+		
+			<![CDATA[
+			select a.station_name + isnull(a.analyse_type,'') AS id,
+			   a.* from  (select station_name AS station_name,
+				:analyseType AS analyse_type,
+                 COUNT(*) * 1.00 AS analyse_result from  vw_stat_vehicle_sale
+                	WHERE   DATEDIFF(DAY, :beginTime, :datetype) >= 0
+		       			 AND DATEDIFF(DAY, :endTime, :datetype) <= 0
+              AND station_id IN (:stationIds ) 
+           GROUP BY station_name ,:analyseType)  as a
+           	ORDER BY  station_name
+        ]]>
+	</sql-query>
+	-->
+	<!-- 车辆销售统计（时间段） 2013-08-24 更新 king-->
+	<sql-query name="periodOfTimeSaleReportData">
+		
+			<![CDATA[
+			SELECT  a.station_name + isnull(a.analyse_type,'') AS id,
+					a.*,
+					a.total_profit / (a.vehicle_price_total+isnull(oil_card_profit,0)) AS total_profit_percent 
+			FROM    ( SELECT    station_name ,
+			                    :analyseType AS analyse_type ,
+			                    ISNULL(SUM(vehicle_quantity), 0) AS analyse_result ,
+			                    ISNULL(SUM(oil_card_profit),0) AS oil_card_profit,
+			                    ISNULL(SUM(vehicle_price_total), 0)
+			                    + ISNULL(SUM(oil_card_profit), 0) AS vehicle_price_total ,
+			                    ISNULL(SUM(total_profit), 0) AS total_profit 
+			          FROM      dbo.vw_analyse_vehicle_sale
+			          WHERE     station_id IN ( :stationIds )
+			                    AND DATEDIFF(Day, :beginTime, :datetype) >= 0
+			                    AND DATEDIFF(Day, :endTime, :datetype) <= 0
+			          GROUP BY  :analyseType,
+			                    station_name
+			        ) AS a  
+        ]]>
+	</sql-query>
+	
+	
+	
+	<!--车辆销售统计(月度) by king 
+	<sql-query name="vehicleMonthlyQuery">
+    	<![CDATA[
+		SELECT
+		        a.station_name + isnull(a.analyse_type,
+		        '') AS id,
+		        a.*,
+		        b.analyse_result AS month_compare,
+		        c.analyse_result AS year_compare 
+		    FROM
+		        ( SELECT
+		            station_name AS station_name ,
+		            :analyseType AS analyse_type ,
+		            COUNT(*) * 1.00 AS analyse_result 
+		        FROM
+		            vw_stat_vehicle_sale 
+		        WHERE
+		            DATEDIFF(MONTH, :dateTime, :analyseMode) = 0 
+		            AND station_id IN (
+		                :stationIds
+		            ) 
+		        GROUP BY
+		            station_name ,
+		            :analyseType   ) AS a 
+		    LEFT JOIN
+		        (
+		            SELECT
+		                station_name AS station_name,
+		                :analyseType AS analyse_type,
+		                COUNT(*) * 1.00 AS analyse_result 
+		            FROM
+		                vw_stat_vehicle_sale 
+		            WHERE
+		                DATEDIFF(MONTH, DATEADD(MONTH,-1, :dateTime),:analyseMode) = 0 
+		                AND station_id IN (
+		                    :stationIds
+		                ) 
+		            GROUP BY
+		                station_name ,
+		                :analyseType  
+		        ) AS b 
+		            ON a.station_name = b.station_name 
+		            AND a.analyse_type = b.analyse_type 
+		    LEFT JOIN
+		        (
+		            SELECT
+		                station_name AS station_name ,
+		                :analyseType AS analyse_type ,
+		                COUNT(*) * 1.00 AS analyse_result 
+		            FROM
+		                vw_stat_vehicle_sale 
+		            WHERE
+		                DATEDIFF(MONTH, DATEADD(year,-1, :dateTime), :analyseMode) = 0 
+		                AND station_id IN (
+		                     :stationIds
+		                ) 
+		            GROUP BY
+		                station_name ,
+		                :analyseType  
+		                	
+		        ) AS c 
+		            ON a.station_name = c.station_name 
+		            AND a.analyse_type = c.analyse_type 
+		              ORDER BY
+                station_name     
+		]]>
+	</sql-query>-->
+
+	<!--车辆销售统计(月度) 更新于2013-08-24 by king -->
+	<sql-query name="vehicleMonthlyQuery">
+    	<![CDATA[
+		SELECT
+		        a.station_name + isnull(a.analyse_type,
+		        '') AS id,
+		        a.*,
+		        b.analyse_result AS month_compare,
+		        c.analyse_result AS year_compare        
+		    FROM
+		        ( SELECT    station_name ,
+		                    :analyseType AS analyse_type,
+		                    :analyseResult AS analyse_result 
+		          FROM      dbo.vw_analyse_vehicle_sale
+		          WHERE     station_id IN (:stationIds )
+		                    AND DATEDIFF(Month, :dateTime, :analyseMode)= 0     
+		          GROUP BY  :analyseType ,
+		                    station_name
+		        ) AS a     
+		    LEFT JOIN
+		        (
+		            SELECT    station_name ,
+		                    :analyseType AS analyse_type,
+		                    :analyseResult AS analyse_result 
+		          FROM      dbo.vw_analyse_vehicle_sale
+		          WHERE     station_id IN (:stationIds )
+		                    AND DATEDIFF(MONTH, DATEADD(MONTH, -1, :dateTime),:analyseMode)=0 
+		          GROUP BY  :analyseType ,
+		                    station_name           
+		        ) AS b                
+		            ON a.station_name = b.station_name                
+		            AND a.analyse_type = b.analyse_type        
+		    LEFT JOIN
+		        (
+		            SELECT    station_name ,
+		                    :analyseType AS analyse_type,
+		                    :analyseResult AS analyse_result 
+		          FROM      dbo.vw_analyse_vehicle_sale
+		          WHERE     station_id IN (:stationIds )
+		                    AND DATEDIFF(MONTH, DATEADD(year,-1, :dateTime), :analyseMode)= 0 
+		          GROUP BY  :analyseType ,
+		                    station_name                                      
+		        ) AS c                
+		            ON a.station_name = c.station_name                
+		            AND a.analyse_type = c.analyse_type                  
+		    ORDER BY
+		        station_name		   
+		]]>
+	</sql-query>
+</hibernate-mapping>

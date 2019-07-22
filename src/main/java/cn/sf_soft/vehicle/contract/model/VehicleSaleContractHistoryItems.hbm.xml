@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.vehicle.contract.model.VehicleSaleContractHistoryItems"
+           table="vehicle_sale_contract_history_items" schema="dbo">
+        <id name="selfId" column="self_id"/>
+        <property name="historyId" column="history_id"/>
+        <property name="historyGroupId" column="history_group_id"/>
+        <property name="groupId" column="group_id"/>
+        <property name="groupNo" column="group_no"/>
+        <property name="contractNo" column="contract_no"/>
+        <property name="itemType" column="item_type"/>
+        <property name="itemId" column="item_id"/>
+        <property name="itemName" column="item_name"/>
+        <property name="varyType" column="vary_type"/>
+        <property name="quantity" column="quantity"/>
+        <property name="quantityOri" column="quantity_ori"/>
+        <property name="quantityNew" column="quantity_new"/>
+        <property name="income" column="income"/>
+        <property name="incomeOri" column="income_ori"/>
+        <property name="incomeNew" column="income_new"/>
+        <property name="cost" column="cost"/>
+        <property name="costOri" column="cost_ori"/>
+        <property name="costNew" column="cost_new"/>
+        <property name="profit" column="profit"/>
+        <property name="profitOri" column="profit_ori"/>
+        <property name="profitNew" column="profit_new"/>
+        <property name="creator" column="creator"/>
+        <property name="createTime" column="create_time"/>
+        <property name="modifyTime" column="modify_time"/>
+        <property name="remark" column="remark"/>
+        <property name="invoiceTypeOri" column="invoice_type_ori"/>
+        <property name="invoiceTypeNew" column="invoice_type_new"/>
+        <property name="invoiceType" column="invoice_type"/>
+        <property name="invoiceAmountOri" column="invoice_amount_ori"/>
+        <property name="invoiceAmountNew" column="invoice_amount_new"/>
+        <property name="invoiceAmount" column="invoice_amount"/>
+        <property name="invoiceObjectOri" column="invoice_object_ori"/>
+        <property name="invoiceObjectNew" column="invoice_object_new"/>
+        <property name="invoiceObject" column="invoice_object"/>
+        <property name="giftNameOri" column="gift_name_ori"/>
+        <property name="giftNameNew" column="gift_name_new"/>
+        <property name="giftName" column="gift_name"/>
+        <property name="giftTypeOri" column="gift_type_ori"/>
+        <property name="giftTypeNew" column="gift_type_new"/>
+        <property name="giftType" column="gift_type"/>
+        <property name="giftAmountOri" column="gift_amount_ori"/>
+        <property name="giftAmountNew" column="gift_amount_new"/>
+        <property name="giftAmount" column="gift_amount"/>
+        <property name="giftGiveFlagOri" column="gift_give_flag_ori"/>
+        <property name="giftGiveFlagNew" column="gift_give_flag_new"/>
+        <property name="giftGiveFlag" column="gift_give_flag"/>
+    </class>
+</hibernate-mapping>

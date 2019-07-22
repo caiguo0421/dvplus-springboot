@@ -1,0 +1,153 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated 2015-4-28 15:14:09 by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="cn.sf_soft.office.approval.model.AssetsOutStockDetail" table="assets_out_stock_detail" schema="dbo">
+        <id name="aosdId" type="java.lang.String">
+            <column name="aosd_id" length="40" />
+            <generator class="assigned" />
+        </id>
+        <property name="documentNo" type="string">
+            <column name="document_no" length="40" />
+        </property>
+        <property name="assetsNo" type="string">
+            <column name="assets_no" length="40" />
+        </property>
+        <property name="assetsName" type="string">
+            <column name="assets_name" length="40" />
+        </property>
+        <property name="assetsKindName" type="string">
+            <column name="assets_kind_name" length="40" />
+        </property>
+        <property name="assetsKindNo" type="string">
+            <column name="assets_kind_no" length="40" />
+        </property>
+        <property name="assetsModel" type="string">
+            <column name="assets_model" length="40" />
+        </property>
+        <property name="assetsSpec" type="string">
+            <column name="assets_spec" length="40" />
+        </property>
+        <property name="posQuantity" type="java.lang.Double">
+            <column name="pos_quantity" precision="9" />
+        </property>
+        <property name="pisQuantity" type="java.lang.Double">
+            <column name="pis_quantity" precision="9" />
+        </property>
+        <property name="lossQuantity" type="java.lang.Double">
+            <column name="loss_quantity" precision="9" />
+        </property>
+        <property name="handleQuantity" type="java.lang.Double">
+            <column name="handle_quantity" precision="9" />
+        </property>
+        <property name="posPrice" type="java.lang.Double">
+            <column name="pos_price" precision="9" />
+        </property>
+        <property name="custodian" type="string">
+            <column name="custodian" length="20" />
+        </property>
+        <property name="custodianNo" type="string">
+            <column name="custodian_no" length="20" />
+        </property>
+        <property name="unit" type="string">
+            <column name="unit" length="10" />
+        </property>
+        <property name="DRemark" type="string">
+            <column name="d_remark" length="150" />
+        </property>
+        <property name="recNo" type="string">
+            <column name="rec_no" length="40" />
+        </property>
+        <property name="buyDate" type="java.sql.Timestamp">
+            <column name="buy_date" length="23" />
+        </property>
+        <property name="marketValue" type="java.lang.Double">
+            <column name="market_value" precision="9" />
+        </property>
+        <property name="netValue" type="java.lang.Double">
+            <column name="net_value" />
+        </property>
+        <property name="tel" type="string">
+            <column name="tel" length="20" />
+        </property>
+        <property name="originId" type="string">
+            <column name="origin_id" length="40" />
+        </property>
+        <property name="accDepr" type="java.lang.Double">
+            <column name="acc_depr" precision="9" />
+        </property>
+        <property name="supplierName" type="string">
+            <column name="supplier_name" length="40" />
+        </property>
+        <property name="warrantyPeriodDate" type="java.sql.Timestamp">
+            <column name="warranty_period_date" length="23" />
+        </property>
+        <property name="errorFlag" type="java.lang.Integer">
+            <column name="error_flag" />
+        </property>
+        <property name="depositPosition" type="string">
+            <column name="deposit_position" length="40" />
+        </property>
+        <property name="assetsTypeName" type="string">
+            <column name="assets_type_name" length="40" />
+        </property>
+        <property name="assetsBrandName" type="string">
+            <column name="assets_brand_name" length="40" />
+        </property>
+        <property name="shareDepts" type="string">
+            <column name="share_depts" length="100" />
+        </property>
+        <property name="depreciationMode" type="java.lang.Short">
+            <column name="depreciation_mode" />
+        </property>
+        <property name="depreciationModeName" type="string">
+            <column name="depreciation_mode_name" length="50" />
+        </property>
+        <property name="residualValue" type="java.lang.Double">
+            <column name="residual_value" />
+        </property>
+        <property name="originalValue" type="java.lang.Double">
+            <column name="original_value" />
+        </property>
+        <property name="accDeprInit" type="java.lang.Double">
+            <column name="acc_depr_init" />
+        </property>
+        <property name="depreciationPeriod" type="java.lang.Integer">
+            <column name="depreciation_period" />
+        </property>
+        <property name="currentPeriod" type="java.lang.Integer">
+            <column name="current_period" />
+        </property>
+        <property name="currentDepr" type="java.lang.Double">
+            <column name="current_depr" precision="9" />
+        </property>
+        <property name="beforeDepr" type="java.lang.Double">
+            <column name="before_depr" precision="9" />
+        </property>
+        <property name="deptNoGet" type="string">
+            <column name="dept_no_get" length="40" />
+        </property>
+        <property name="deptNameGet" type="string">
+            <column name="dept_name_get" length="40" />
+        </property>
+        <property name="supplierId" type="string">
+            <column name="supplier_id" length="40" />
+        </property>
+        <property name="supplierNo" type="string">
+            <column name="supplier_no" length="40" />
+        </property>
+        <property name="hireOutType" type="java.lang.Integer">
+            <column name="hire_out_type" />
+        </property>
+        <property name="hireOutTypeName" type="string">
+            <column name="hire_out_type_name" length="40" />
+        </property>
+        <property name="deptNoGetTemp" type="string">
+            <column name="dept_no_get_temp" length="50" />
+        </property>
+        <property name="baseAssetsId" type="string">
+            <column name="base_assets_id" length="40" />
+        </property>
+    </class>
+</hibernate-mapping>

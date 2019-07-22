@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.1//EN"
+        "http://struts.apache.org/dtds/struts-2.1.dtd">
+<struts>
+    <constant name="struts.i18n.encoding" value="UTF-8"></constant>
+    <constant name="struts.ui.theme" value="simple"/>
+    <!-- 将Struts实体交给Spring管理 -->
+    <constant name="struts.objectFactory" value="spring"/>
+    <constant name="struts.multipart.maxSize" value="10485760"></constant><!-- 最大10M -->
+
+    <!-- 公用 by_king -->
+    <package name="public" extends="struts-default">
+        <!-- 定义拦截器，管理权限 -->
+        <interceptors>
+            <!-- 方法访问控制拦截器 -->
+            <interceptor name="accessAuthInterceptor" class="cn.sf_soft.common.interceptor.AccessAuthInterceptor"/>
+            <!-- 站点范围访问控制拦截器 -->
+            <interceptor name="stationAuthInterceptor" class="cn.sf_soft.common.interceptor.StationAuthInterceptor"/>
+            <!-- Struts Action 异常信息集中处理拦截器 -->
+            <interceptor name="strutsExceptionInterceptor"
+                         class="cn.sf_soft.common.interceptor.StrutsExceptionInterceptor"/>
+            <!-- 完整的拦截器栈 -->
+            <interceptor-stack name="strutsInterceptStack">
+                <interceptor-ref name="accessAuthInterceptor"></interceptor-ref>
+                <interceptor-ref name="stationAuthInterceptor"></interceptor-ref>
+                <interceptor-ref name="strutsExceptionInterceptor"></interceptor-ref>
+                <interceptor-ref name="defaultStack"></interceptor-ref>
+            </interceptor-stack>
+        </interceptors>
+        <!-- 默认拦截器栈 -->
+        <default-interceptor-ref name="strutsInterceptStack"/>
+
+        <global-results>
+            <result name="error">/error2Servlet</result>
+            <result name="login">/loginServlet</result>
+            <result name="input">/inputServlet</result>
+            <result name="success">/resultServlet</result>
+        </global-results>
+    </package>
+
+    <!-- 获取基础数据 -->
+    <package name="base" extends="struts-default" namespace="/Base">
+        <global-results>
+            <result name="error">/error2Servlet</result>
+            <result name="login">/loginServlet</result>
+            <result name="input">/inputServlet</result>
+            <result name="success">/resultServlet</result>
+        </global-results>
+        <action name="*" class="sysBaseDataAction" method="{1}"/>
+    </package>
+
+    <!-- 报表-->
+    <package name="report" extends="public" namespace="/Report">
+        <global-results>
+            <result name="login">/loginServlet</result>
+            <result name="error">/error2Servlet</result>
+        </global-results>
+        <!-- 车辆 -->
+        <action name="Vehicle_*" class="vehicleReportAction" method="{1}">
+            <result name="MONTHLY_REPORT">/TouchReportForm/VehicleSaleReport.jsp</result>
+        </action>
+        <!-- 维修 -->
+        <action name="Maintain_*" class="maintainReportAction" method="{1}">
+            <result name="MaintainReport_Day">/TouchReportForm/MaintainReport.jsp</result>
+            <result name="MaintainReport_DailyLine">/TouchReportForm/MaintainDailyLineReport.jsp</result>
+            <result name="MaintainClaim_DailyReport">/TouchReportForm/MaintainClaimDailyReport.jsp</result>
+            <result name="MaintainClaimsReport">/TouchReportForm/MaintainClaimsReport.jsp</result>
+        </action>
+        <!-- 配件 -->
+        <action name="Fittings_*" class="fittingsReportAction" method="{1}">
+            <result name="FITTINGS_DAY_REPORT">/TouchReportForm/FittingsReport.jsp</result>
+            <result name="FITTINGS_PUTIN_REPORT">/TouchReportForm/FittingsReport.jsp</result>
+        </action>
+        <!-- 收款&付款（账户） -->
+        <action name="Finance_*" class="financeReportAction" method="{1}">
+            <result name="FINANCE_GATHERING">/TouchReportForm/FinanceReport.jsp</result>
+        </action>
+        <!-- 保险统计  -->
+        <action name="Insurance_*" class="insuranceReportAction" method="{1}">
+            <result name="SUPPLIER_AND_TYPE">/TouchReportForm/InsurancePurchaseReport.jsp</result>
+        </action>
+        <!-- 客户统计 -->
+        <action name="Customer_*" class="customerReportAction" method="{1}">
+            <result name="SALE_CALL_BACK">/ReportForm/CustomerReport.jsp</result>
+        </action>
+        <!-- 办公统计 -->
+        <action name="Office_*" class="officeReportAction" method="{1}">
+            <result name="OFFICE_REPORT">/TouchReportForm/OfficeReport.jsp</result>
+        </action>
+        <!-- 销售报表 -->
+        <action name="Sales_*" class="salesReportAction" method="{1}"/>
+    </package>
+
+
+    <!-- 库存浏览 -->
+    <package name="stockBrowse" extends="public" namespace="/StockBrowse">
+        <!-- 车辆 -->
+        <action name="VehicleStock_*" class="vehicleStockBrowseAction" method="{1}"/>
+        <!-- 配件 -->
+        <action name="PartStock_*" class="partStockBrowseAction" method="{1}"/>
+        <!-- 资金账户 -->
+        <action name="Funds_*" class="fundsAccountsAction" method="{1}"/>
+    </package>
+
+    <!-- 财务 -->
+    <package name="finance" extends="public" namespace="/Finance">
+        <!-- 资金账户 -->
+        <action name="Funds_*" class="fundsAccountsAction" method="{1}"/>
+    </package>
+
+    <!--手机认证和用户登录等不需要回话拦截器，所以继承struts-default，而不继承public -->
+    <!-- 手机认证 -->
+    <package name="mobile" extends="struts-default" namespace="/Mobile">
+        <global-results>
+            <result name="error">/error2Servlet</result>
+            <result name="login">/loginServlet</result>
+            <result name="input">/inputServlet</result>
+            <result name="success">/resultServlet</result>
+        </global-results>
+        <action name="Mobile_*" class="mobileAtteStationAction" method="{1}"/>
+    </package>
+
+    <!-- 用户 -->
+    <package name="user" extends="struts-default" namespace="/User">
+        <global-results>
+            <result name="error">/error2Servlet</result>
+            <result name="login">/loginServlet</result>
+            <result name="input">/inputServlet</result>
+            <result name="success">/resultServlet</result>
+        </global-results>
+        <action name="User_*" class="userAction" method="{1}"/>
+    </package>
+
+    <!-- 用户信息变更 -->
+    <package name="userInfo" extends="public" namespace="/UserInfo">
+        <global-results>
+            <result name="error">/error2Servlet</result>
+            <result name="login">/loginServlet</result>
+            <result name="input">/inputServlet</result>
+            <result name="success">/resultServlet</result>
+        </global-results>
+        <action name="UserInfo_*" class="userInfoAction" method="{1}"/>
+    </package>
+
+    <!-- OA -->
+    <package name="oa" extends="public" namespace="/Oa">
+        <action name="*" class="oaAction" method="{1}"></action>
+    </package>
+
+    <!-- 办公-->
+    <package name="offices" extends="public" namespace="/Offices">
+        <!-- 审批流程 -->
+        <action name="Approval_*" class="approvalAction" method="{1}"></action>
+        <!-- 事后审核 -->
+        <action name="PostAudit_*" class="postAuditAction" method="{1}"/>
+    </package>
+
+    <!-- 合同 -->
+    <package name="contract" extends="public" namespace="/Contract">
+        <!-- 销售合同 -->
+        <action name="Contract_*" class="saleContractAction" method="{1}">
+            <result name="PDF_EXPORT">/Contract/PdfExport.jsp</result>
+        </action>
+        <action name="Quotation_*" class="saleQuotationAction" method="{1}"/>
+    </package>
+
+    <!-- 意向客户 -->
+    <package name="customer" extends="public" namespace="/Customer">
+        <!-- 审批流程 -->
+        <action name="Customer_*" class="saleCustomerAction" method="{1}"/>
+    </package>
+
+    <!-- 配件库存盘整调整 -->
+    <package name="partCheckStocks" extends="public" namespace="/PartCheckStocks">
+        <!-- 审批流程 -->
+        <action name="PartCheckStocks_*" class="partCheckStocksAction" method="{1}"/>
+    </package>
+    <!-- 下载 -->
+    <package name="download" extends="struts-default" namespace="/download">
+        <global-results>
+            <result name="error">/error2Servlet</result>
+            <result name="login">/loginServlet</result>
+            <result name="input">/inputServlet</result>
+            <result name="success">/resultServlet</result>
+        </global-results>
+        <action name="Download_*" class="appDownloadAction" method="{1}"/>
+    </package>
+
+    <package name="file" extends="public" namespace="/File">
+        <action name="File_*" class="fileAction" method="{1}"/>
+    </package>
+
+    <package name="paymentRequest" extends="public" namespace="/PaymentRequest">
+        <action name="Request_*" class="paymentRequestAction" method="{1}"/>
+    </package>
+
+    <!--消贷费用预算单-->
+    <package name="loanBudget" extends="public" namespace="/LoanBudget">
+        <action name="LoanBudget_*" class="loanBudgetAction" method="{1}"/>
+    </package>
+
+    <!-- 资源管理-->
+    <package name="purchase" extends="public" namespace="/Purchase">
+        <action name="PurchaseOrder_*" class="purchaseOrderAction" method="{1}"/>
+        <action name="PurchaseContract_*" class="purchaseContractAction" method="{1}"/>
+        <action name="SapDelivery_*" class="vehicleDfSapDeliveryAction" method="{1}"/>
+    </package>
+
+    <package name="baseOther" extends="public" namespace="/BaseOther">
+        <action name="BaseOther_*" class="baseOtherAction" method="{1}"/>
+    </package>
+
+
+    <!-- 日志 -->
+    <package name="log" extends="struts-default" namespace="/Log">
+        <action name="Log_*" class="logAction" method="{1}">
+            <result name="LOG_LIST">/log.jsp</result>
+        </action>
+    </package>
+</struts>

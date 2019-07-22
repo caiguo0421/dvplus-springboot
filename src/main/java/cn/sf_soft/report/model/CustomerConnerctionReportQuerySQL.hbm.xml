@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- 定义各报表统计的 SQL语句； 注意name属性的值不能重复 -->
+<hibernate-mapping>
+
+	
+	<!-- =======================================客户关系 报表======================================= -->
+	
+	<sql-query name="getSaleCallBackData">
+		<!-- 销售回访 -->
+		<return class="cn.sf_soft.report.model.SaleCallBackReport"/>
+			<![CDATA[
+			SELECT s.station_id,a.call_back,s.station_name,b.count AS no_call_back,c.complain_count FROM (
+				SELECT * FROM sys_stations WHERE   station_id IN (:stationIds))s
+				 LEFT JOIN (
+				SELECT station_id ,
+									COUNT(*) AS call_back FROM(
+                                SELECT CONVERT(datetime,SUBSTRING(club_call_back_remark,
+                                                  CHARINDEX('[',club_call_back_remark)+ 1,
+                                                  CHARINDEX(']',club_call_back_remark)- 
+                                                  CHARINDEX('[',club_call_back_remark)- 1)) 
+                                                  AS last_back_time ,
+                                        back_time ,
+                                        club_call_back_remark ,
+                                        club_call_back_flag ,
+                                        station_id ,
+                                        contract_no
+                                FROM    vehicle_sale_contracts )e WHERE   
+							 DATEDIFF(DAY, :beginTime,last_back_time ) >= 0
+		      				AND DATEDIFF(DAY, :endTime, last_back_time) <= 0 GROUP BY station_id
+				        )a ON s.station_id=a.station_id
+				        left JOIN (
+									SELECT  COUNT(*) count,a.station_id
+						FROM    ( SELECT    contract_no,station_id
+								  FROM      vehicle_sale_contracts
+								  WHERE     contract_status = 2
+											AND ( club_call_back_result IS  NULL
+												  AND ( club_call_back_flag = 0
+														OR club_call_back_flag IS NULL
+													  )
+												)
+								) AS a
+								left  JOIN ( SELECT MAX(out_stock_time) out_stock_time ,
+									     	 contract_no
+											 FROM   dbo.vw_vehicle_out_stock where out_stock_type=0  
+									 GROUP BY contract_no
+								   ) b ON a.contract_no = b.contract_no
+										   WHERE    DATEDIFF(DAY, :beginTime, out_stock_time) >= 0
+		      		  						    AND DATEDIFF(DAY, :endTime, out_stock_time) <= 0
+						GROUP BY a.station_id
+				        )b ON s.station_id = b.station_id 
+				        LEFT JOIN (
+						 SELECT station_id , count(*) AS complain_count FROM  customer_complain  WHERE cc_from =10
+							 AND DATEDIFF(DAY, :beginTime, create_time) >= 0
+		      		   		 AND DATEDIFF(DAY, :endTime, create_time) <= 0
+						  GROUP BY station_id
+				        )c ON s.station_id = c.station_id
+				  ORDER BY station_id
+       		]]>
+	</sql-query>
+	
+	
+	<sql-query name="getServiceCallBackData">
+		<!-- 维修回访 -->
+		<return class="cn.sf_soft.report.model.SaleCallBackReport"/>
+			<![CDATA[
+				SELECT s.station_id,s.station_name,a.call_back,b.no_call_back,c.complain_count FROM(
+					SELECT * FROM sys_stations WHERE   station_id IN (:stationIds))s
+					LEFT  JOIN(
+					SELECT station_id ,
+									COUNT(*) AS call_back FROM(
+                                SELECT CONVERT(datetime,SUBSTRING(call_back_remark,
+                                                  CHARINDEX('[',call_back_remark)+ 1,
+                                                  CHARINDEX(']',call_back_remark)- 
+                                                  CHARINDEX('[',call_back_remark)- 1)) 
+                                                  AS last_back_time ,
+                                        back_time ,
+                                        call_back_remark ,
+                                        call_back_flag ,
+                                        station_id , task_status,task_kind,
+                                        task_no
+                                FROM    service_work_lists )e WHERE    task_status = 60
+					                    AND task_kind = 10
+							AND DATEDIFF(DAY, :beginTime,last_back_time ) >= 0
+		      				AND DATEDIFF(DAY, :endTime, last_back_time) <= 0 GROUP BY station_id
+					)a ON s.station_id = a.station_id
+					LEFT JOIN (
+					SELECT  station_id,COUNT(*) AS no_call_back
+					FROM    service_work_lists
+					WHERE   task_kind = 10
+					        AND task_status = 60
+					        AND ( call_back_result IS  NULL
+					              AND ( call_back_flag = 0
+					                    OR call_back_flag IS NULL
+					                  )
+					            )
+					         AND DATEDIFF(DAY, :beginTime, balance_time) >= 0                 
+					         AND DATEDIFF(DAY, :endTime, balance_time) <= 0   
+					            GROUP BY station_id) b ON s.station_id= b.station_id 
+					 LEFT JOIN (           
+					 SELECT station_id , count(*) AS complain_count FROM  customer_complain  WHERE cc_from =20
+								 AND DATEDIFF(DAY, :beginTime, create_time) >= 0                 
+					             AND DATEDIFF(DAY, :endTime, create_time) <= 0    
+							  GROUP BY station_id)c ON s.station_id=c.station_id
+		  
+       		]]>
+	</sql-query>
+	
+</hibernate-mapping>

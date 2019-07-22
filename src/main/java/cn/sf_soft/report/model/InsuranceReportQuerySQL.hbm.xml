@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- 保险统计的 SQL语句； 注意name属性的值不能重复 -->
+<hibernate-mapping>
+
+	<!-- 保险购险统计(按供应商+保单类型) by king -->
+	<sql-query name="insuranceReportBySupplierAndInsuType">
+		<return class="cn.sf_soft.report.model.InsurancePurchaseReport"/>
+		<![CDATA[
+		SELECT  t.station_name ,
+		        t.supplier_name ,
+		        ISNULL(a.first_insurance, 0) AS first_insurance ,
+		        ISNULL(b.continue_insurance, 0) AS continue_insurance ,
+		        ISNULL(c.transfer_insurance, 0) AS transfer_insurance
+		FROM    ( SELECT    station_name ,
+		                    supplier_name ,
+		                    ISNULL(COUNT(*), 0) AS total
+		          FROM      dbo.vw_stat_insurance_purchase
+		          WHERE     station_id IN ( :stationIds )
+		                    AND DATEDIFF(D, :beginTime, approve_time) >= 0
+		                    AND DATEDIFF(D, :endTime, approve_time) <= 0
+		          GROUP BY  station_name ,
+		                    supplier_name
+		        ) AS t
+		        LEFT JOIN ( SELECT  station_name ,
+		                            supplier_name ,
+		                            ISNULL(COUNT(*), 0) AS first_insurance
+		                    FROM    dbo.vw_stat_insurance_purchase
+		                    WHERE   insurance_type = 10
+		                            AND station_id IN ( :stationIds )
+		                            AND DATEDIFF(D, :beginTime, approve_time) >= 0
+		                            AND DATEDIFF(D, :endTime, approve_time) <= 0
+		                    GROUP BY station_name ,
+		                            supplier_name
+		                  ) AS a ON ( t.station_name = a.station_name
+		                              AND t.supplier_name = a.supplier_name
+		                            )
+		        LEFT JOIN ( SELECT  station_name ,
+		                            supplier_name ,
+		                            ISNULL(COUNT(*), 0) AS continue_insurance
+		                    FROM    dbo.vw_stat_insurance_purchase
+		                    WHERE   insurance_type = 20
+		                            AND station_id IN ( :stationIds )
+		                            AND DATEDIFF(D, :beginTime, approve_time) >= 0
+		                            AND DATEDIFF(D, :endTime, approve_time) <= 0
+		                    GROUP BY station_name ,
+		                            supplier_name
+		                  ) AS b ON ( t.station_name = b.station_name
+		                              AND t.supplier_name = b.supplier_name
+		                            )
+		        LEFT JOIN ( SELECT  station_name ,
+		                            supplier_name ,
+		                            ISNULL(COUNT(*), 0) AS transfer_insurance
+		                    FROM    dbo.vw_stat_insurance_purchase
+		                    WHERE   insurance_type = 30
+		                            AND station_id IN ( :stationIds )
+		                            AND DATEDIFF(D, :beginTime, approve_time) >= 0
+		                            AND DATEDIFF(D, :endTime, approve_time) <= 0
+		                    GROUP BY station_name ,
+		                            supplier_name
+		                  ) AS c ON ( t.station_name = c.station_name
+		                              AND t.supplier_name = c.supplier_name
+		                            )			
+        ]]>
+	</sql-query>
+
+
+	<sql-query name="insuranceReportByCategoryTypeAndInsuType">
+		<return class="cn.sf_soft.report.model.InsurancePurchaseReport"/>
+		<![CDATA[
+			                SELECT  station_name ,
+                        category_type AS supplier_name ,
+                        total ,
+                        first_insurance ,
+                        continue_insurance ,
+                        trans_insurance AS transfer_insurance
+                FROM    ( SELECT    d.station_name ,
+                                    d.category_type ,
+                                    ISNULL(d.total, 0) AS total ,
+                                    ISNULL(a.first_insurance, 0) AS first_insurance ,
+                                    ISNULL(b.continue_insurance, 0) AS continue_insurance ,
+                                    ISNULL(c.trans_insurance, 0) AS trans_insurance
+                          FROM      ( SELECT    ISNULL(COUNT(*), 0) AS total ,
+                                                station_name ,
+                                                category_type
+                                      FROM      vw_stat_insurance_purchase_detail
+                                      WHERE     1 = 1
+                                                AND station_id IN (  :stationIds )
+                                                AND DATEDIFF(DAY,:beginTime,approve_time) >= 0
+                                                AND DATEDIFF(DAY,:endTime,approve_time) <= 0
+                                      GROUP BY  station_name ,
+                                                category_type
+                                    ) AS d
+                                    LEFT JOIN ( SELECT  ISNULL(COUNT(*), 0) AS first_insurance ,
+                                                        station_name ,
+                                                        category_type
+                                                FROM    vw_stat_insurance_purchase_detail
+                                                WHERE   insurance_type = 10
+                                                        AND station_id IN (:stationIds )
+                                                        AND DATEDIFF(DAY,:beginTime, approve_time) >= 0
+                                                        AND DATEDIFF(DAY,:endTime,approve_time) <= 0
+                                                GROUP BY station_name ,
+                                                        category_type
+                                              ) AS a ON a.station_name = d.station_name
+                                                        AND a.category_type = d.category_type
+                                    LEFT JOIN ( SELECT  ISNULL(COUNT(*), 0) AS continue_insurance ,
+                                                        station_name ,
+                                                        category_type
+                                                FROM    vw_stat_insurance_purchase_detail
+                                                WHERE   insurance_type = 20
+                                                        AND station_id IN (:stationIds )
+                                                        AND DATEDIFF(DAY,:beginTime,approve_time) >= 0
+                                                        AND DATEDIFF(DAY,:endTime, approve_time) <= 0
+                                                GROUP BY station_name ,
+                                                        category_type
+                                              ) AS b ON d.station_name = b.station_name
+                                                        AND d.category_type = b.category_type
+                                    LEFT JOIN ( SELECT  ISNULL(COUNT(*), 0) AS trans_insurance ,
+                                                        station_name ,
+                                                        category_type
+                                                FROM    vw_stat_insurance_purchase_detail
+                                                WHERE   insurance_type = 30
+                                                        AND station_id IN ( :stationIds )
+                                                        AND DATEDIFF(DAY,:beginTime,approve_time) >= 0
+                                                        AND DATEDIFF(DAY,:endTime,approve_time) <= 0
+                                                GROUP BY station_name ,
+                                                        category_type
+                                              ) AS c ON d.station_name = c.station_name
+                                                        AND d.category_type = c.category_type
+                        ) AS temp			
+        ]]>
+	</sql-query>
+</hibernate-mapping>

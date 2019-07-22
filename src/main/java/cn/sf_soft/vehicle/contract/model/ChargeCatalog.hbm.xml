@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.vehicle.contract.model.ChargeCatalog" table="charge_catalog" schema="dbo">
+        <id name="chargeId" column="charge_id"/>
+        <property name="chargeName" column="charge_name"/>
+        <property name="accountNo" column="account_no"/>
+        <property name="forbidFlag" column="forbid_flag"/>
+        <property name="remark" column="remark"/>
+        <property name="chargeType" column="charge_type"/>
+        <property name="defaultFlag" column="default_flag"/>
+        <property name="objectId" column="object_id"/>
+        <property name="objectNo" column="object_no"/>
+        <property name="objectName" column="object_name"/>
+        <property name="defaultMoney" column="default_money"/>
+        <property name="moneyType" column="money_type"/>
+        <property name="direction" column="direction"/>
+        <property name="accruedType" column="accrued_type"/>
+        <property name="accruedValue" column="accrued_value"/>
+        <property name="defaultCost" column="default_cost"/>
+    </class>
+</hibernate-mapping>

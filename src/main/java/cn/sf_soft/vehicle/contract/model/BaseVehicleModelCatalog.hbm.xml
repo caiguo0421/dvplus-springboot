@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.vehicle.contract.model.BaseVehicleModelCatalog" table="base_vehicle_model_catalog"
+           schema="dbo">
+        <id name="selfId" column="self_id"/>
+        <property name="modelsId" column="models_id"/>
+        <property name="productModel" column="product_model"/>
+        <property name="engineType" column="engine_type"/>
+        <property name="ratio" column="ratio"/>
+        <property name="transType" column="trans_type"/>
+        <property name="modelName" column="model_name"/>
+        <property name="clutch" column="clutch"/>
+        <property name="carType" column="car_type"/>
+        <property name="rearType" column="rear_type"/>
+        <property name="tyre" column="tyre"/>
+        <property name="engine" column="engine"/>
+        <property name="driverCab" column="driver_cab"/>
+        <property name="cabType" column="cab_type"/>
+        <property name="frontAxle" column="front_axle"/>
+        <property name="ratioType" column="ratio_type"/>
+        <property name="rearAxle" column="rear_axle"/>
+        <property name="status" column="status"/>
+        <property name="gearbox" column="gearbox"/>
+        <property name="masisModels" column="masis_models"/>
+        <property name="worktimeType" column="worktime_type"/>
+        <property name="subStorageCode" column="sub_storage_code"/>
+        <property name="factoryDealerName" column="factory_dealer_name"/>
+        <property name="subStorageName" column="sub_storage_name"/>
+        <property name="color" column="color"/>
+        <property name="colorDesc" column="color_desc"/>
+        <property name="underpanFlag" column="underpan_flag"/>
+        <property name="werksCode" column="werks_code"/>
+        <property name="subStorageFlag" column="sub_storage_flag"/>
+        <property name="productNo" column="product_no"/>
+        <property name="isSaleModel" column="is_sale_model"/>
+        <property name="bulletinNo" column="bulletin_no"/>
+        <property name="shortName" column="short_name"/>
+        <property name="isPrimary" column="is_primary"/>
+        <property name="isDongfeng" column="is_dongfeng"/>
+        <property name="emissionStandard" column="emission_standard"/>
+        <property name="variety" column="variety"/>
+        <property name="technologyLine" column="technology_line"/>
+        <property name="baseConfigure" column="base_configure"/>
+        <property name="vehicleFrame" column="vehicle_frame"/>
+        <property name="rearAxleTonnage" column="rear_axle_tonnage"/>
+        <property name="rearAxleSupplier" column="rear_axle_supplier"/>
+        <property name="rearAxleVelocityRatio" column="rear_axle_velocity_ratio"/>
+        <property name="airConditioning" column="air_conditioning"/>
+        <property name="leafSpring" column="leaf_spring"/>
+        <property name="oilBox" column="oil_box"/>
+        <property name="wheelBase" column="wheel_base"/>
+        <property name="boxLong" column="box_long"/>
+        <property name="autoAdjustableArm" column="auto_adjustable_arm"/>
+        <property name="liftConfigure" column="lift_configure"/>
+        <property name="navigationSystem" column="navigation_system"/>
+        <property name="remark" column="remark"/>
+        <property name="pricePurchase" column="price_purchase"/>
+        <property name="purchaseDiscountRatio" column="purchase_discount_ratio"/>
+        <property name="purchaseDiscountAmount" column="purchase_discount_amount"/>
+        <property name="purchaseOtherAmount" column="purchase_other_amount"/>
+        <property name="priceSale" column="price_sale"/>
+        <property name="profitMin" column="profit_min"/>
+        <property name="createTime" column="create_time"/>
+        <property name="creator" column="creator"/>
+        <property name="modifyTime" column="modify_time"/>
+        <property name="modifier" column="modifier"/>
+        <property name="vehicleNameId" column="vehicle_name_id"/>
+        <property name="vehicleStrain" column="vehicle_strain"/>
+        <property name="vehicleKind" column="vehicle_kind"/>
+        <property name="errorCode" column="error_code"/>
+        <property name="errorMsg" column="error_msg"/>
+        <property name="dfsUploadStatus" column="DFS_upload_status"/>
+        <property name="detailConfig" column="detail_config"/>
+        <property name="priceSaleBigCustomer" column="price_sale_big_customer"/>
+        <property name="priceSaleTerminal" column="price_sale_terminal"/>
+        <property name="priceSaleSecLvl" column="price_sale_sec_lvl"/>
+    </class>
+</hibernate-mapping>

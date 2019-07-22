@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+
+<hibernate-mapping>
+    <class name="cn.sf_soft.office.approval.model.VehicleSaleContractsVary" table="vehicle_sale_contracts_vary" >
+        <id name="documentNo" type="java.lang.String">
+            <column name="document_no" length="40" />
+            <generator class="assigned" />
+        </id>
+        <property name="stationId" type="java.lang.String">
+            <column name="station_id" />
+        </property>
+        <property name="contractNo" type="java.lang.String">
+            <column name="contract_no" />
+        </property>
+        <property name="oriContractMoney" type="java.lang.Double">
+            <column name="ori_contract_money" />
+        </property>
+        <property name="oriCommissionAmt" type="java.lang.Double">
+            <column name="ori_commission_amt" />
+        </property>
+        <property name="priceVary" type="java.lang.Double">
+            <column name="price_vary" />
+        </property>
+        <property name="commissionAmtVary" type="java.lang.Double">
+            <column name="commission_amt_vary" />
+        </property>
+        <property name="priceRequest" type="java.lang.Double">
+            <column name="price_request" />
+        </property>
+        <property name="varyCount" type="java.lang.Integer">
+            <column name="vary_count" />
+        </property>
+        <property name="remark" type="java.lang.String">
+            <column name="remark" />
+        </property>
+        <property name="version" type="java.lang.String">
+            <column name="version" />
+        </property>
+        <property name="status" type="java.lang.Short">
+            <column name="status" />
+        </property>
+        <property name="approverName" type="java.lang.String">
+            <column name="approver_name" />
+        </property>
+        <property name="approveTime" type="java.sql.Timestamp">
+            <column name="approve_time" length="23" />
+        </property>
+        <property name="creator" type="java.lang.String">
+            <column name="creator" />
+        </property>
+        <property name="createTime" type="java.sql.Timestamp">
+            <column name="create_time" length="23" />
+        </property>
+        <property name="modifier" type="java.lang.String">
+            <column name="modifier" />
+        </property>
+        <property name="modifyTime" type="java.sql.Timestamp">
+            <column name="modify_time" length="23" />
+        </property>
+        <property name="userId" type="java.lang.String">
+            <column name="user_id" />
+        </property>
+        <property name="userNo" type="java.lang.String">
+            <column name="user_no" />
+        </property>
+        <property name="userName" type="java.lang.String">
+            <column name="user_name" />
+        </property>
+        <property name="departmentId" type="java.lang.String">
+            <column name="department_id" />
+        </property>
+        <property name="departmentNo" type="java.lang.String">
+            <column name="department_no" />
+        </property>
+        <property name="departmentName" type="java.lang.String">
+            <column name="department_name" />
+        </property>
+        <property name="submitStationId" type="java.lang.String">
+            <column name="submit_station_id" />
+        </property>
+        <property name="submitStationName" type="java.lang.String">
+            <column name="submit_station_name" />
+        </property>
+        <property name="approverId" type="java.lang.String">
+            <column name="approver_id" />
+        </property>
+        <property name="approverNo" type="java.lang.String">
+            <column name="approver_no" />
+        </property>
+        <property name="submitTime" type="java.sql.Timestamp">
+            <column name="submit_time" length="23" />
+        </property>
+
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,519 @@
+package cn.sf_soft.parts.inventory.action;
+
+import java.lang.reflect.Type;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+
+import cn.sf_soft.basedata.service.SysCodeRulesService;
+import cn.sf_soft.common.action.BaseAction;
+import cn.sf_soft.common.annotation.Access;
+import cn.sf_soft.common.annotation.AccessPopedom.PartCheckStocksPopedoms;
+import cn.sf_soft.common.model.ResponseMessage;
+import cn.sf_soft.common.util.Constant.Attribute;
+import cn.sf_soft.parts.inventory.model.PartCheckStockDocumentAndDetail;
+import cn.sf_soft.parts.inventory.model.PartCheckStockPlanInitData;
+import cn.sf_soft.parts.inventory.model.PartCheckStockRandomInitData;
+import cn.sf_soft.parts.inventory.model.PartCheckStocks;
+import cn.sf_soft.parts.inventory.model.PartCheckStocksDetail;
+import cn.sf_soft.parts.inventory.model.PartCheckStoksAdjust;
+import cn.sf_soft.parts.inventory.model.PartsCheckCUDData;
+import cn.sf_soft.parts.inventory.model.ResponsibleDepartment;
+import cn.sf_soft.parts.inventory.service.PartCheckStocksService;
+import cn.sf_soft.user.model.SysUsers;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
+
+/**
+ * 配件盘存调整
+ * 
+ * @author cw
+ * @date 2014-4-9 上午9:42:27
+ */
+public class PartCheckStocksAction extends BaseAction {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private PartCheckStocksService service;
+	private SysCodeRulesService sysCodeRulesService;
+	private String pcsNo; // 盘存调整单号
+	private String planNo;// 计划单号
+	private String warehouseId;// 仓库
+	private String depositPosition;// 库位
+	private String searchCondition;// 抽盘用于过滤 名称/编码/自编码
+	private List<PartCheckStoksAdjust> parts;// 调整过的配件
+	private String remark;// 调整单的备注
+	private int inventoryType;// 标志是按计划盘 0,还是抽盘1,为空则是从PC端过来的数
+	private ResponsibleDepartment deptment;// 负责部门
+
+	private PartCheckStocks document;// 盘存调整单
+	private List<PartCheckStocksDetail> details;// 盘存单明细
+
+	private PartCheckStocksDetail detail;// 单挑盘点明细 用于修改
+	/**
+	 * //=========================Create By YPZ
+	 * 2015.06.05===========================
+	 * 
+	 * **/
+	private boolean excuteByPC = false;// 是否是PC端调用
+
+	public boolean getExcuteByPC() {
+		return excuteByPC;
+	}
+
+	public void setApprovalByPC(String excuteByPC) {
+		if ("是".equals(excuteByPC)) {
+
+			this.excuteByPC = true;
+		} else {
+			this.excuteByPC = false;
+		}
+	}
+
+	public void setPlanNo(String planNo) {
+		this.planNo = planNo;
+	}
+
+	public void setInventoryType(int inventoryType) {
+		this.inventoryType = inventoryType;
+	}
+
+	public void setDepositPosition(String depositPosition) {
+		this.depositPosition = depositPosition;
+	}
+
+	public void setSearchCondition(String searchCondition) {
+		this.searchCondition = searchCondition;
+	}
+
+	public void setWarehouseId(String warehouseId) {
+		this.warehouseId = warehouseId;
+	}
+
+	public void setPcsNo(String pcsNo) {
+		this.pcsNo = pcsNo;
+	}
+
+	public void setService(PartCheckStocksService service) {
+		this.service = service;
+	}
+
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
+
+	public void setDeptment(String deptment) {
+		// this.deptment = deptment;
+		try {
+			this.deptment = gson
+					.fromJson(deptment, ResponsibleDepartment.class);
+		} catch (JsonSyntaxException e) {
+			e.printStackTrace();
+			addActionError("参数错误");
+		}
+	}
+
+	public void setSysCodeRulesService(SysCodeRulesService sysCodeRulesService) {
+		this.sysCodeRulesService = sysCodeRulesService;
+	}
+
+	public void setParts(String parts) {
+		// this.parts = parts;
+		Type type = new TypeToken<List<PartCheckStoksAdjust>>() {
+		}.getType();
+		try {
+			this.parts = gson.fromJson(parts, type);
+		} catch (JsonSyntaxException e) {
+			e.printStackTrace();
+			addActionError("参数错误");
+		}
+	}
+
+	public void setDetail(String detail) {
+		// this.dateil = dateil;
+		try {
+			this.detail = gson.fromJson(detail, PartCheckStocksDetail.class);
+		} catch (JsonSyntaxException e) {
+			e.printStackTrace();
+			addActionError("参数错误");
+		}
+	}
+
+	public void setDocument(String document) {
+		// this.document = document;
+		try {
+			Gson gson = new Gson();
+			this.document = gson.fromJson(document, PartCheckStocks.class);
+		} catch (JsonSyntaxException e) {
+			e.printStackTrace();
+			addActionError("参数错误");
+		}
+	}
+
+	public void setDetails(String details) {
+		Type type = new TypeToken<List<PartCheckStocksDetail>>() {
+		}.getType();
+		try {
+			this.details = gson.fromJson(details, type);
+		} catch (JsonSyntaxException e) {
+			e.printStackTrace();
+			addActionError("参数错误");
+		}
+	}
+
+	/**
+	 * 获取首页未审批的盘存调整单
+	 * 
+	 * @param stationId
+	 * @return
+	 */
+	@Access(pass = true)
+	public String getPartCheckStock() {
+		List<PartCheckStocks> list = service.getPartCheckStock(stationIds);
+		setResponseData(list);
+		return SUCCESS;
+	}
+
+	/**
+	 * 获取盘存调整单对应的明细
+	 * 
+	 * @param pcsNo
+	 *            盘存调整单号
+	 * @return
+	 */
+	@Access(pass = true)
+	public String getPartCheckStockDetail() {
+		/*
+		 * if(pageNo == 0){ pageNo = 1; }
+		 */
+		List<PartCheckStocksDetail> list = service
+				.getPartCheckStockDetail(pcsNo);
+		setResponseData(list);
+		/*
+		 * ResponseMessage<List<PartCheckStocksDetail>> result = new
+		 * ResponseMessage<List<PartCheckStocksDetail>>(list);
+		 * result.setPageNo(pageNo); result.setPageSize(pageSize);
+		 * result.setTotalSize(service.getPartCheckStockDetailCount(pcsNo,
+		 * pageNo, pageSize)); setResponseMessageData(result);
+		 */
+		return SUCCESS;
+	}
+
+	/**
+	 * 获取按计划盘整的基础数据
+	 * 
+	 * @param pcsNo
+	 *            当前调整单单号
+	 * @return
+	 */
+	@Access(pass = true)
+	public String getPartCheckStockPlanInitData() {
+		PartCheckStockPlanInitData initData = service
+				.getPartCheckStockPlanInitData(getDefaultStationId());
+		setResponseData(initData);
+		return SUCCESS;
+	}
+
+	/**
+	 * 获取抽盘的基础数据
+	 * 
+	 * @param pcsNo
+	 *            当前调整单单号
+	 * @return
+	 */
+	@Access(pass = true)
+	public String getPartCheckStockRandomInitData() {
+		SysUsers user = (SysUsers) getAttributeFromSession(Attribute.SESSION_USER);
+		PartCheckStockRandomInitData initData = service
+				.getPartCheckStockRandomInitData(user.getUserId(),
+						getDefaultStationId());
+		setResponseData(initData);
+		return SUCCESS;
+	}
+
+	/**
+	 * 获取已盘点界面的基础数据
+	 * 
+	 * @return
+	 */
+	@Access(pass = true)
+	public String getPartCheckStockInventoryInitData() {
+		setResponseData(service
+				.getPartCheckStockInventoryInitData(getDefaultStationId()));
+		return SUCCESS;
+	}
+
+	/**
+	 * 获取按计划盘整待调整的配件信息
+	 * 
+	 * @return
+	 */
+	@Access(needPopedom = PartCheckStocksPopedoms.NEW_PART_CHECK_STOCKS_DOCUMENT)
+	public String getPartCheckStoksAdjustData() {
+		if (pageNo == 0) {
+			pageNo = 1;
+		}
+		List<PartCheckStoksAdjust> list = service.getPartCheckStoksAdjustData(
+				planNo, depositPosition, pageNo, pageSize);
+		ResponseMessage<List<PartCheckStoksAdjust>> result = new ResponseMessage<List<PartCheckStoksAdjust>>(
+				list);
+		result.setPageNo(pageNo);
+		result.setPageSize(pageSize);
+		result.setTotalSize(service.getPartCheckStoksAdjustCount(planNo,
+				depositPosition));
+		setResponseMessageData(result);
+		return SUCCESS;
+	}
+
+	/**
+	 * 获取抽盘待调整的配件信息
+	 * 
+	 * @return
+	 */
+	@Access(needPopedom = PartCheckStocksPopedoms.PART_CHECK_STOCKS_SELECT_PART)
+	public String getPartCheckStoksAdjustForWarehouse() {
+		if (pageNo == 0) {
+			pageNo = 1;
+		}
+		List<PartCheckStoksAdjust> list = service
+				.getPartCheckStoksAdjustForWarehouse(warehouseId,
+						depositPosition, searchCondition, pageNo, pageSize);
+		ResponseMessage<List<PartCheckStoksAdjust>> result = new ResponseMessage<List<PartCheckStoksAdjust>>(
+				list);
+		result.setPageNo(pageNo);
+		result.setPageSize(pageSize);
+		result.setTotalSize(service.getPartCheckStoksAdjustForWarehouseCount(
+				warehouseId, depositPosition, searchCondition));
+		setResponseMessageData(result);
+		return SUCCESS;
+	}
+
+	/**
+	 * 修改盘存明细
+	 * 
+	 * @return
+	 */
+	@Access(needPopedom = PartCheckStocksPopedoms.NEW_PART_CHECK_STOCKS_DOCUMENT)
+	public String updatePartCheckStocksDetail() {
+		SysUsers user = (SysUsers) getAttributeFromSession(Attribute.SESSION_USER);
+		ResponseMessage<String> result = new ResponseMessage<String>();
+		List<PartCheckStocksDetail> stockdetail = service
+				.getPartCheckStockDetailById(detail.getPcsDetailId());
+		List<PartCheckStocks> partCheckStock = service
+				.getPartCheckStocksById(document.getPcsNo());
+		if (stockdetail == null) {
+			result.setMsg("该条记录已经不存在!");
+		} else {
+			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			document.setModifier(user.getUserName() + "(" + user.getUserNo()
+					+ ")");
+			document.setModifyTime(Timestamp.valueOf(df.format(new Date())));
+			double count = 0;
+			double pcsprice = 0;
+			/*
+			 * if(detail.getQuantityStock() !=
+			 * stockdetail.get(0).getQuantityStock()){ count =
+			 * detail.getQuantityFact() - detail.getQuantityStock()-
+			 * stockdetail.get(0).getQuantityFact(); }else
+			 */
+			if (stockdetail.get(0).getQuantityFact()
+					- stockdetail.get(0).getQuantityStock() > 0) {
+				count += -(stockdetail.get(0).getQuantityFact() - stockdetail
+						.get(0).getQuantityStock());
+			} else
+				count += stockdetail.get(0).getQuantityFact()
+						- stockdetail.get(0).getQuantityStock();
+			if (detail.getQuantityFact() - detail.getQuantityStock() < 0) {
+				count += -(detail.getQuantityFact() - detail.getQuantityStock());
+			} else
+				count += detail.getQuantityFact() - detail.getQuantityStock();
+			pcsprice += count * detail.getCost();
+
+			/*
+			 * if(count > 0){ pcsprice += count * detail.getCost(); }else {
+			 * pcsprice += -count * detail.getCost(); }
+			 */
+			double totalPrice = partCheckStock.get(0).getPcsPrice() == null ? 0
+					: partCheckStock.get(0).getPcsPrice() + pcsprice;
+			if (totalPrice < 0) {
+				document.setPcsPrice(-totalPrice);
+			} else
+				document.setPcsPrice(totalPrice);
+			service.updatePartCheckStockDetail(document, detail);
+			result.setMsg("修改成功！");
+		}
+		setResponseMessageData(result);
+		return SUCCESS;
+	}
+
+	/**
+	 * 新建盘存调整
+	 * 
+	 * @return
+	 */
+	@Access(needPopedom = PartCheckStocksPopedoms.NEW_PART_CHECK_STOCKS_DOCUMENT)
+	public String savePartCheckStocks() {
+		SysUsers user = (SysUsers) getAttributeFromSession(Attribute.SESSION_USER);
+		List<PartCheckStocksDetail> list = new ArrayList<PartCheckStocksDetail>();
+		// ResponseMessage<String> result = new ResponseMessage<String>();
+		double pcs_price = 0;
+		String defaultStationId = getDefaultStationId();
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		if (document == null) {
+			document = new PartCheckStocks();
+			// 获得配件库存盘存的单据编码规则
+			String code = sysCodeRulesService.createSysCodeRules("PCS_NO",
+					defaultStationId);
+
+			document.setPcsNo(code);
+			document.setPcsPrice(0.0);
+			document.setRemark(remark);
+			document.setStationId(defaultStationId);
+			document.setCreator(user.getUserName() + "(" + user.getUserNo()
+					+ ")");
+			document.setCreateTime(Timestamp.valueOf(df.format(new Date())));
+			document.setApproveStatus((short) 0);
+			if (deptment == null) {
+				document.setDeptName(user.getDepartmentName());
+				document.setDeptId(user.getDepartment());
+				document.setDeptNo(user.getDepartmentNo());
+
+			} else {
+				document.setDeptName(deptment.getUnitName());
+				document.setDeptId(deptment.getUnitId());
+				document.setDeptNo(deptment.getUnitNo());
+			}
+			document.setCreatorNo(user.getUserNo());
+			document.setCreatorUnitNo(user.getInstitution().getUnitNo());
+			document.setCreatorUnitName(user.getInstitution().getUnitName());
+			document.setInventoryType(inventoryType);
+
+		} else {
+			document.setModifier(user.getUserName() + "(" + user.getUserNo()
+					+ ")");
+			document.setModifyTime(Timestamp.valueOf(df.format(new Date())));
+		}
+		for (PartCheckStoksAdjust p : parts) {
+			list.add(new PartCheckStocksDetail(UUID.randomUUID().toString(),
+					document.getPcsNo(), p.getCost(), 0.0, p.getQuantity(), p
+							.getQuantityFact(), p.getDepositPosition(), p
+							.getStockId(), p.getPartId(), p.getPartNo(), p
+							.getPartName(), p.getPartMnemonic(), p
+							.getProducingArea(), p.getPartType(), p
+							.getSpecModel(), p.getApplicableModel(), p
+							.getColor(), p.getMaterial(), p.getUnit(), p
+							.getWarehouseName(), p.getRemark(), p.getPlanNo(),
+					p.getWarehouseId()));
+			double count = p.getQuantityFact() - p.getQuantity();
+			if (count > 0) {
+				pcs_price += count * p.getCost();
+			} else {
+				pcs_price += -count * p.getCost();
+			}
+		}
+		// document.setPcsPrice(document.getPcsPrice()==null?0:document.getPcsPrice()+pcs_price);
+
+		service.savePartCheckStocks(document, pcs_price, list);
+		// sysCodeRulesService.updateSysCodeRules(code);
+
+		// result.setMsg("新建成功！");
+		setResponseData(new PartCheckStockDocumentAndDetail(document,
+				service.getPartCheckStockDetail(document.getPcsNo())));
+		return SUCCESS;
+	}
+
+	/**
+	 * 审批 盘存单
+	 * 
+	 * @return
+	 */
+	@Access(needOneOfPopedoms = {
+			PartCheckStocksPopedoms.PART_CHECK_STOCKS_APPROVE_PROFIT,
+			PartCheckStocksPopedoms.PART_CHECK_STOCKS_APPROVE_DEFICIT })
+	public String updatePartCheckStocksApproval() {
+		ResponseMessage<List<PartCheckStocksDetail>> result = new ResponseMessage<List<PartCheckStocksDetail>>();
+
+		SysUsers user = (SysUsers) getAttributeFromSession(Attribute.SESSION_USER);
+		result = service.updatePartCheckStocksApproval(document, user);
+		setResponseMessageData(result);
+		return SUCCESS;
+	}
+
+	// ===========Create by LiuJin==============
+	private PartsCheckCUDData partsCheckCudData;
+
+	public void setPartsCheckCudData(String partsCheckCudDataJson) {
+		try {
+			this.partsCheckCudData = gson.fromJson(partsCheckCudDataJson,
+					PartsCheckCUDData.class);
+		} catch (JsonSyntaxException e) {
+			addFieldError("partsCheckCudData", "参数格式错误");
+		}
+
+	}
+
+	/**
+	 * 创建盘存单
+	 * 
+	 * @return
+	 */
+	// modify by shichunshan 新增账面量校验
+	@Access(needPopedom = PartCheckStocksPopedoms.NEW_PART_CHECK_STOCKS_DOCUMENT)
+	public String createPartsCheckDoc() {
+		ResponseMessage<List<PartCheckStocksDetail>> responseMessage = service
+				.createPartsCheckDoc(document);
+		if (null != responseMessage.getData()
+				&& responseMessage.getData().size() > 0) {
+			setResponseMessageData(responseMessage);
+		} else {
+			setResponseData("创建成功!");
+		}
+		return SUCCESS;
+	}
+
+	// =========================Create By YPZ
+	// 2015.06.05===========================
+	/**
+	 * 创建盘存单
+	 * 
+	 * @return
+	 */
+	@Access(needPopedom = PartCheckStocksPopedoms.NEW_PART_CHECK_STOCKS_DOCUMENT)
+	public String createPartsCheckDocByPC() {
+
+		ResponseMessage<PartCheckStocks> result = new ResponseMessage<PartCheckStocks>();
+		PartCheckStocks partCheckStockDocument = service
+				.createPartsCheckDocByPC(document);
+		result.setData(partCheckStockDocument);
+		setResponseMessageData(result);
+		result.setMsg("创建成功!");
+		return SUCCESS;
+	}
+
+	/**
+	 * 更新盘存单
+	 * 
+	 * @return
+	 */
+	// modify by shichunshan 新增账面量校验
+	@Access(needPopedom = PartCheckStocksPopedoms.NEW_PART_CHECK_STOCKS_DOCUMENT)
+	public String updatePartsCheckDoc() {
+		ResponseMessage<List<PartCheckStocksDetail>> responseMessage = service
+				.updatePartsCheckDoc(partsCheckCudData);
+		if (null != responseMessage.getData()
+				&& responseMessage.getData().size() > 0) {
+			setResponseMessageData(responseMessage);
+		} else {
+			setResponseData("更新成功!");
+		}
+
+		return SUCCESS;
+	}
+}

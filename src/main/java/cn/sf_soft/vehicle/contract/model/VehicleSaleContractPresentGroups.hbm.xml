@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.vehicle.contract.model.VehicleSaleContractPresentGroups" table="vehicle_sale_contract_present_groups" schema="dbo">
+        <id name="presentGroupId" column="present_group_id"/>
+        <property name="groupId" column="group_id"/>
+        <property name="income" column="income"/>
+        <property name="planQuantity" column="plan_quantity"/>
+        <property name="posPrice" column="pos_price"/>
+        <property name="posAgio" column="pos_agio"/>
+        <property name="stockId" column="stock_id"/>
+        <property name="depositPosition" column="deposit_position"/>
+        <property name="partName" column="part_name"/>
+        <property name="partNo" column="part_no"/>
+        <property name="partMnemonic" column="part_mnemonic"/>
+        <property name="producingArea" column="producing_area"/>
+        <property name="partType" column="part_type"/>
+        <property name="specModel" column="spec_model"/>
+        <property name="applicableModel" column="applicable_model"/>
+        <property name="unit" column="unit"/>
+        <property name="warehouseName" column="warehouse_name"/>
+        <property name="costRecord" column="cost_record"/>
+        <property name="carriageRecord" column="carriage_record"/>
+        <property name="remark" column="remark"/>
+        <property name="contractNo" column="contract_no"/>
+    </class>
+</hibernate-mapping>

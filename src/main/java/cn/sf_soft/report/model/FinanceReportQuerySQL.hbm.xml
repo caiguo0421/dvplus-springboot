@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- 定义各报表统计的 SQL语句； 注意name属性的值不能重复 -->
+<hibernate-mapping>
+
+	
+	<!-- =======================================收款&付款（账户）报表======================================= -->
+	
+	<sql-query name="getGatheringInitData">
+		<!-- 初始化收款类型数据 -->
+		<return class="cn.sf_soft.report.model.FinanceType"/>
+			<![CDATA[
+							SELECT  code ,
+				        meaning
+				FROM    sys_flags
+				WHERE   field_no = 'amount_type'
+				        AND code NOT IN ( 65, 70, 80, 85, 88, 90 )
+       		]]>
+	</sql-query>
+	
+	<sql-query name="getPaymentInitData">
+		<!-- 初始化付款类型数据 -->
+		<return class="cn.sf_soft.report.model.FinanceType"/>
+			<![CDATA[
+						SELECT  code ,
+						        meaning
+						FROM    sys_flags
+						WHERE   field_no = 'amount_type'
+						        AND code NOT IN ( 20, 30, 35, 38, 40 )
+       		]]>
+	</sql-query>
+	
+	<sql-query name="getGatheringReportData">
+		<!-- 收款统计 -->
+			<![CDATA[
+						SELECT  
+						a.account_id + b.station_name + isnull(c.meaning,
+        			'') AS id,a.* ,
+			        b.station_name ,
+			        c.meaning AS payment_mode_meaning ,
+			        d.account_no ,
+			        d.account_name ,
+			        d.bank_name
+			FROM    ( SELECT    a.settle_station_id ,
+			                    b.payment_mode ,
+			                    b.account_id ,
+			                    SUM(b.settle_amount) AS settle_amount
+			          FROM      finance_settlements a
+			                    LEFT JOIN ( SELECT  settlement_no ,
+			                                        payment_mode ,
+			                                        CASE WHEN payment_mode > 20
+			                                             THEN CONVERT(NVARCHAR(40), payment_mode)
+			                                             ELSE account_id
+			                                        END AS account_id ,
+			                                        settle_amount
+			                                FROM    finance_settlements_modes
+			                              ) b ON a.settlement_no = b.settlement_no
+			          WHERE     a.settle_kind > 0
+			                    AND a.status IN ( 40, 90 )
+			                    AND a.settle_station_id IN ( :stationIds )  
+			                      :hql
+			          GROUP BY  a.settle_station_id ,
+			                    b.payment_mode ,
+			                    b.account_id
+			        ) a
+			        LEFT JOIN ( SELECT  station_id ,
+			                            station_name
+			                    FROM    sys_stations
+			                  ) b ON a.settle_station_id = b.station_id
+			        LEFT JOIN ( SELECT  code ,
+			                            meaning
+			                    FROM    sys_flags
+			                    WHERE   field_no = 'payment_mode'
+			                  ) c ON a.payment_mode = c.code
+			        LEFT JOIN ( SELECT  account_id ,
+			                            account_no ,
+			                            account_name ,
+			                            bank_name
+			                    FROM    base_funds_accounts
+			                  ) d ON a.account_id = d.account_id
+			ORDER BY a.settle_station_id ,
+			        a.payment_mode
+       		]]>
+	</sql-query>
+	
+	<sql-query name="getPayMentReportData">
+		<!-- 付款统计 -->
+			<![CDATA[
+						SELECT  
+						a.account_id + b.station_name + isnull(c.meaning,
+        			'') AS id,a.* ,
+			        b.station_name ,
+			        c.meaning AS payment_mode_meaning ,
+			        d.account_no ,
+			        d.account_name ,
+			        d.bank_name
+			FROM    ( SELECT    a.settle_station_id ,
+			                    b.payment_mode ,
+			                    b.account_id ,
+			                    SUM(b.settle_amount) AS settle_amount
+			          FROM      finance_settlements a
+			                    LEFT JOIN ( SELECT  settlement_no ,
+			                                        payment_mode ,
+			                                        CASE WHEN payment_mode > 20
+			                                             THEN CONVERT(NVARCHAR(40), payment_mode)
+			                                             ELSE account_id
+			                                        END AS account_id ,
+			                                        settle_amount
+			                                FROM    finance_settlements_modes
+			                              ) b ON a.settlement_no = b.settlement_no
+			          WHERE     a.settle_kind = 0
+			                    AND a.status IN ( 40, 90 )
+			                    AND a.settle_station_id IN ( :stationIds )  
+			                      :hql
+			          GROUP BY  a.settle_station_id ,
+			                    b.payment_mode ,
+			                    b.account_id
+			        ) a
+			        LEFT JOIN ( SELECT  station_id ,
+			                            station_name
+			                    FROM    sys_stations
+			                  ) b ON a.settle_station_id = b.station_id
+			        LEFT JOIN ( SELECT  code ,
+			                            meaning
+			                    FROM    sys_flags
+			                    WHERE   field_no = 'payment_mode'
+			                  ) c ON a.payment_mode = c.code
+			        LEFT JOIN ( SELECT  account_id ,
+			                            account_no ,
+			                            account_name ,
+			                            bank_name
+			                    FROM    base_funds_accounts
+			                  ) d ON a.account_id = d.account_id
+			ORDER BY a.settle_station_id ,
+			        a.payment_mode
+       		]]>
+	</sql-query>
+	
+	
+	<sql-query name="getFinanceReportForGatheringModeData">
+		<!-- 收款统计（收款方式） -->
+			<![CDATA[
+						SELECT   b.station_name + isnull(c.meaning,
+				        '') AS id,a.* ,
+				        b.station_name ,
+				        c.meaning AS payment_mode_meaning 
+				      
+				FROM    ( SELECT    a.settle_station_id ,
+				                    b.payment_mode ,
+				                    SUM(b.settle_amount) AS settle_amount
+				          FROM      finance_settlements a
+				                    LEFT JOIN ( SELECT  settlement_no ,
+				                                        payment_mode ,
+				                                        CASE WHEN payment_mode > 20
+				                                             THEN CONVERT(NVARCHAR(40), payment_mode)
+				                                             ELSE account_id
+				                                        END AS account_id ,
+				                                        settle_amount
+				                                FROM    finance_settlements_modes
+				                              ) b ON a.settlement_no = b.settlement_no
+				          WHERE     a.settle_kind > 0
+				                    AND a.status IN ( 40, 90 )
+				                    AND a.settle_station_id IN ( :stationIds )  
+			                         :hql
+				          GROUP BY  a.settle_station_id ,
+				                    b.payment_mode 
+				        ) a
+				        LEFT JOIN ( SELECT  station_id ,
+				                            station_name
+				                    FROM    sys_stations
+				                  ) b ON a.settle_station_id = b.station_id
+				        LEFT JOIN ( SELECT  code ,
+				                            meaning
+				                    FROM    sys_flags
+				                    WHERE   field_no = 'payment_mode'
+				                  ) c ON a.payment_mode = c.code
+				      
+				ORDER BY a.settle_station_id ,
+				        a.payment_mode
+       		]]>
+	</sql-query>
+	
+	
+	<sql-query name="getFinanceReportForPayMentModeData">
+		<!-- 付款统计（付款方式） -->
+			<![CDATA[
+						SELECT   b.station_name + isnull(c.meaning,
+				        '') AS id,a.* ,
+				        b.station_name ,
+				        c.meaning AS payment_mode_meaning 
+				      
+				FROM    ( SELECT    a.settle_station_id ,
+				                    b.payment_mode ,
+				                    SUM(b.settle_amount) AS settle_amount
+				          FROM      finance_settlements a
+				                    LEFT JOIN ( SELECT  settlement_no ,
+				                                        payment_mode ,
+				                                        CASE WHEN payment_mode > 20
+				                                             THEN CONVERT(NVARCHAR(40), payment_mode)
+				                                             ELSE account_id
+				                                        END AS account_id ,
+				                                        settle_amount
+				                                FROM    finance_settlements_modes
+				                              ) b ON a.settlement_no = b.settlement_no
+				          WHERE     a.settle_kind = 0
+				                    AND a.status IN ( 40, 90 )
+				                    AND a.settle_station_id IN ( :stationIds )  
+			                         :hql
+				          GROUP BY  a.settle_station_id ,
+				                    b.payment_mode 
+				        ) a
+				        LEFT JOIN ( SELECT  station_id ,
+				                            station_name
+				                    FROM    sys_stations
+				                  ) b ON a.settle_station_id = b.station_id
+				        LEFT JOIN ( SELECT  code ,
+				                            meaning
+				                    FROM    sys_flags
+				                    WHERE   field_no = 'payment_mode'
+				                  ) c ON a.payment_mode = c.code
+				      
+				ORDER BY a.settle_station_id ,
+				        a.payment_mode
+       		]]>
+	</sql-query>
+</hibernate-mapping>

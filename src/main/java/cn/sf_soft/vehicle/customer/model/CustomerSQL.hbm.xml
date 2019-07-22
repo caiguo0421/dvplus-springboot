@@ -1,0 +1,575 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <!--
+    获取交车后指定的时间未跟进的客户，车辆出库后会在presell_visitors_back中插入记录
+    this.dataSet.Tables["presell_visitors_back"].Rows[0]["visitor_no"] = this.m_drvMaster["out_stock_no"];
+	this.dataSet.Tables["presell_visitors_back"].Rows[0]["back_purpose"] = "成交回访";
+	this.dataSet.Tables["presell_visitors_back"].Rows[0]["plan_back_time"] = Convert.ToDateTime(this.m_drvMaster["out_stock_time"]).AddDays(3.0);
+	this.dataSet.Tables["presell_visitors_back"].Rows[0]["backer"] = SysUser.UserFullName;
+    -->
+    <sql-query name="sellerCallBackWarning">
+        <![CDATA[
+            SELECT back.back_id,back.creator,back.backer,back.station_id,a.out_stock_no, d.object_id, d.object_name, d.mobile, d.phone
+                , d.linkman, a.out_stock_time, a.out_stock_count
+                , d.profession, d.object_property
+                , DATEDIFF(DAY, a.out_stock_time, GETDATE()) AS out_stock_day
+                , (
+                    SELECT '[' + STUFF((
+                            SELECT ',{"vehicle_no":"' + detail.vehicle_vno +'","vehicle_vin":"' + detail.vehicle_vin + '","vehicle_name":"' + detail.vehicle_name + '", "quantity":' + CAST(isnull(COUNT(detail.vehicle_vno), 0) AS VARCHAR) + '}'
+                            FROM vehicle_out_stock_detail detail
+                            WHERE detail.out_stock_no = a.out_stock_no
+                            GROUP BY detail.vehicle_vno, detail.vehicle_vin, detail.vehicle_name
+                            FOR XML PATH('')
+                        ), 1, 1, '')
+                ) + ']' AS purchase_details, d.maintainer_id, d.maintainer_name,
+                ISNULL(h.visit_result_meaning, '潜在') AS visit_result_meaning, h.intent_level,
+                d.province,d.city,d.area
+            FROM vehicle_out_stocks a WITH ( NOLOCK )
+                LEFT JOIN presell_visitors_back back WITH ( NOLOCK ) ON a.out_stock_no = back.visitor_no
+                LEFT JOIN dbo.sys_stations c WITH ( NOLOCK ) ON c.station_id = a.station_id
+                LEFT JOIN dbo.vw_interested_customers d WITH ( NOLOCK ) ON d.object_id = a.customer_id
+                LEFT JOIN (
+                            SELECT *
+                            FROM (
+                                SELECT ROW_NUMBER() OVER (PARTITION BY x.visitor_id ORDER BY x.order_time DESC, x.create_time DESC) AS rowNumber, x.visitor_id, x.visit_result, x.intent_level
+                                    , CASE
+                                        WHEN y.meaning IS NOT NULL THEN y.meaning
+                                        ELSE
+                                            CASE
+                                                WHEN DATEDIFF(DAY, x.plan_purchase_time, GETDATE()) > 0 THEN '疑似战败'
+                                                ELSE '意向'
+                                            END
+                                    END AS visit_result_meaning, purpose_quantity
+                                FROM (
+                                    SELECT CASE
+                                            WHEN ISNULL(visit_result, '') = '' THEN GETDATE()
+                                            ELSE create_time
+                                        END AS order_time, *
+                                    FROM presell_visitors WITH ( NOLOCK )
+                                ) x
+                                    LEFT JOIN (
+                                        SELECT code, meaning
+                                        FROM dbo.sys_flags
+                                        WHERE field_no = 'visit_result'
+                                    ) y
+                                    ON x.visit_result = y.code
+                                WHERE ISNULL(x.visit_result, '') = ''
+                                    OR x.visit_result = 10
+                                    OR x.visit_result = 20
+                            ) t
+                            WHERE t.rowNumber = 1
+                        ) h ON d.object_id = h.visitor_id
+            WHERE a.out_stock_type = 0 AND back.back_purpose='成交回访'
+                AND a.out_stock_no NOT LIKE 'Init%'
+                AND a.approve_status = 1
+                AND d.object_id IS NOT NULL
+                AND (back.back_id IS NOT NULL
+                        AND back.real_back_time IS NULL)
+        ]]>
+    </sql-query>
+
+    <!-- 逾期未跟进的客户-->
+    <sql-query name="overdueCallBack">
+        <![CDATA[
+            SELECT
+                    *
+                FROM
+                    (
+                    SELECT
+                        back.back_id,back.creator,back.backer,back.station_id,
+                        obj.object_id,
+                        obj.object_name,
+                        obj.profession,
+                        obj.object_property,
+                        obj.linkman,
+                        lst.last_back_time AS last_back_time,
+                        back.plan_back_time,
+                        obj.maintainer_name,
+                        obj.maintainer_id ,
+                        obj.mobile,
+                        obj.phone,
+                        '1' AS type,
+                        obj.province,
+                        obj.city,
+                        obj.area,
+                        DATEDIFF(
+                            DAY,
+                            back.plan_back_time,
+                        GETDATE()) AS day,
+                        ISNULL(h.visit_result_meaning, '潜在') AS visit_result_meaning, h.intent_level
+                    FROM
+                        presell_visitors_back back WITH ( NOLOCK )
+                        LEFT JOIN vw_interested_customers obj WITH ( NOLOCK ) ON obj.object_id = back.object_id
+                        LEFT JOIN (
+                    SELECT
+                        *
+                    FROM
+                        (
+                        SELECT
+                            ROW_NUMBER () OVER ( PARTITION BY obj.object_id ORDER BY b.real_back_time DESC ) AS RowNum,
+                            obj.object_id,
+                            b.real_back_time AS last_back_time
+                        FROM
+                            presell_visitors_back b WITH ( NOLOCK )
+                            LEFT JOIN interested_customers obj WITH ( NOLOCK ) ON obj.object_id = b.object_id
+                        WHERE
+                            b.real_back_time IS NOT NULL
+                        ) t1
+                    WHERE
+                        RowNum = 1
+                    ) lst ON lst.object_id = obj.object_id
+                    LEFT JOIN (
+                            SELECT *
+                            FROM (
+                                SELECT ROW_NUMBER() OVER (PARTITION BY x.visitor_id ORDER BY x.order_time DESC, x.create_time DESC) AS rowNumber, x.visitor_id, x.visit_result, x.intent_level
+                                    , CASE
+                                        WHEN y.meaning IS NOT NULL THEN y.meaning
+                                        ELSE
+                                            CASE
+                                                WHEN DATEDIFF(DAY, x.plan_purchase_time, GETDATE()) > 0 THEN '疑似战败'
+                                                ELSE '意向'
+                                            END
+                                    END AS visit_result_meaning, purpose_quantity
+                                FROM (
+                                    SELECT CASE
+                                            WHEN ISNULL(visit_result, '') = '' THEN GETDATE()
+                                            ELSE create_time
+                                        END AS order_time, *
+                                    FROM presell_visitors WITH ( NOLOCK )
+                                ) x
+                                    LEFT JOIN (
+                                        SELECT code, meaning
+                                        FROM dbo.sys_flags
+                                        WHERE field_no = 'visit_result'
+                                    ) y
+                                    ON x.visit_result = y.code
+                                WHERE ISNULL(x.visit_result, '') = ''
+                                    OR x.visit_result = 10
+                                    OR x.visit_result = 20
+                            ) t
+                            WHERE t.rowNumber = 1
+                        ) h ON obj.object_id = h.visitor_id
+                    WHERE
+                        back.real_back_time IS NULL
+                        AND obj.object_id IS NOT NULL
+                        AND ISNULL(obj.status,0)=1
+                        AND ISNULL (obj.customer_type, 50) <> 50
+	                    AND (obj.object_type & 2 = 2 OR obj.object_type = 0)
+                        AND DATEDIFF(
+                            DAY,
+                            back.plan_back_time,
+                        GETDATE()) > 0
+                        AND obj.maintainer_id LIKE :maintainerId
+                    ) base_tmp
+         ]]>
+    </sql-query>
+
+    <!--获取超过指定天数未跟进的客户-->
+    <sql-query name="callBackWarning">
+        <![CDATA[
+            SELECT *
+                FROM (
+                    SELECT back.back_id,back.creator,back.backer,back.station_id,obj.object_id, obj.object_name, obj.profession, obj.object_property, obj.mobile
+                        , obj.phone, obj.linkman, obj.maintainer_name, obj.maintainer_id,obj.province,obj.city,obj.area,
+                        ((select max(plan_back_time) from presell_visitors_back b where b.object_id=obj.object_id AND b.real_back_time IS NULL)) as plan_back_time,
+                        ISNULL(h.visit_result_meaning, '潜在') AS visit_result_meaning, h.intent_level
+                    FROM vw_interested_customers obj WITH ( NOLOCK )
+                    LEFT JOIN (
+                            SELECT *
+                            FROM (
+                                SELECT ROW_NUMBER() OVER (PARTITION BY x.visitor_id ORDER BY x.order_time DESC, x.create_time DESC) AS rowNumber, x.visitor_id, x.visit_result, x.intent_level
+                                    , CASE
+                                        WHEN y.meaning IS NOT NULL THEN y.meaning
+                                        ELSE
+                                            CASE
+                                                WHEN DATEDIFF(DAY, x.plan_purchase_time, GETDATE()) > 0 THEN '疑似战败'
+                                                ELSE '意向'
+                                            END
+                                    END AS visit_result_meaning, purpose_quantity
+                                FROM (
+                                    SELECT CASE
+                                            WHEN ISNULL(visit_result, '') = '' THEN GETDATE()
+                                            ELSE create_time
+                                        END AS order_time, *
+                                    FROM presell_visitors WITH ( NOLOCK )
+                                ) x
+                                    LEFT JOIN (
+                                        SELECT code, meaning
+                                        FROM dbo.sys_flags
+                                        WHERE field_no = 'visit_result'
+                                    ) y
+                                    ON x.visit_result = y.code
+                                WHERE ISNULL(x.visit_result, '') = ''
+                                    OR x.visit_result = 10
+                                    OR x.visit_result = 20
+                            ) t
+                            WHERE t.rowNumber = 1
+                        ) h ON obj.object_id = h.visitor_id
+                        INNER JOIN presell_visitors_back back ON back.object_id=obj.object_id
+                    WHERE
+                        back.real_back_time IS NULL
+                        AND DATEDIFF(DAY, back.plan_back_time, GETDATE()) >=:startDay
+                        AND DATEDIFF(DAY, back.plan_back_time, GETDATE()) <=:endDay
+                        AND ISNULL(obj.status,0)=1
+                        AND ISNULL (obj.customer_type, 50) <> 50
+	                    AND (obj.object_type & 2 = 2 OR obj.object_type = 0)
+                ) base_tmp
+        ]]>
+    </sql-query>
+    <!--待检查客户-->
+    <sql-query name="pendingCheck">
+        <![CDATA[
+            SELECT *
+            FROM (
+            SELECT
+                obj.object_id,
+                obj.object_name,
+                obj.mobile,
+                obj.phone,
+                obj.profession,
+                obj.object_property,
+                obj.check_result as object_check_result,
+                obj.province,
+                obj.city,
+                obj.area,
+                a.back_id,
+                a.back_way,
+                a.real_back_time,
+                a.backer,
+                a.back_purpose,
+                a.back_content,
+                a.check_time,
+                a.check_result,
+                obj.maintainer_name,
+                obj.maintainer_id,
+                '0' AS type,
+                a.checker_id,
+                a.checker,
+                a.longitude,
+                a.latitude,
+                a.img_urls,
+                a.address,
+                a.station_id,
+                ISNULL(h.visit_result_meaning, '潜在') AS visit_result_meaning, h.intent_level
+            FROM presell_visitors_back a WITH ( NOLOCK )
+            LEFT JOIN vw_interested_customers obj WITH ( NOLOCK ) ON obj.object_id = a.object_id
+            LEFT JOIN (
+                            SELECT *
+                            FROM (
+                                SELECT ROW_NUMBER() OVER (PARTITION BY x.visitor_id ORDER BY x.order_time DESC, x.create_time DESC) AS rowNumber, x.visitor_id, x.visit_result, x.intent_level
+                                    , CASE
+                                        WHEN y.meaning IS NOT NULL THEN y.meaning
+                                        ELSE
+                                            CASE
+                                                WHEN DATEDIFF(DAY, x.plan_purchase_time, GETDATE()) > 0 THEN '疑似战败'
+                                                ELSE '意向'
+                                            END
+                                    END AS visit_result_meaning, purpose_quantity
+                                FROM (
+                                    SELECT CASE
+                                            WHEN ISNULL(visit_result, '') = '' THEN GETDATE()
+                                            ELSE create_time
+                                        END AS order_time, *
+                                    FROM presell_visitors WITH ( NOLOCK )
+                                ) x
+                                    LEFT JOIN (
+                                        SELECT code, meaning
+                                        FROM dbo.sys_flags
+                                        WHERE field_no = 'visit_result'
+                                    ) y
+                                    ON x.visit_result = y.code
+                                WHERE ISNULL(x.visit_result, '') = ''
+                                    OR x.visit_result = 10
+                                    OR x.visit_result = 20
+                            ) t
+                            WHERE t.rowNumber = 1
+                        ) h ON obj.object_id = h.visitor_id
+            WHERE
+                a.real_back_time IS NOT NULL
+                AND (ISNULL (a.checker_id, '') = '' OR a.checker_id LIKE :checkerId)
+                AND  ISNULL (obj.customer_type, 50) <> 50
+                AND (obj.object_type & 2 = 2 OR obj.object_type = 0)
+                AND ISNULL(obj.maintainer_id,'')<>''
+                ) base_tmp
+        ]]>
+    </sql-query>
+
+    <!--待检查的新增客户-->
+    <sql-query name="pendingCheckForNewCustomer">
+        <![CDATA[
+            SELECT *
+            FROM (
+                SELECT obj.object_id, obj.object_name, obj.mobile, obj.phone, obj.profession, obj.create_station_id
+                    , obj.object_property, obj.maintainer_name, obj.maintainer_id, obj.linkman, obj.station_id,obj.check_time,
+                    obj.create_time, obj.creator,
+                    obj.checker,obj.check_result as object_check_result,obj.province,obj.city,obj.area,
+                    h.vehicle_vno, h.vehicle_name, h.intent_level, h.visitor_count,ISNULL(h.visit_result_meaning, '潜在') AS visit_result_meaning
+                FROM vw_interested_customers obj WITH ( NOLOCK )
+                LEFT JOIN (
+                            SELECT *
+                            FROM (
+                                SELECT ROW_NUMBER() OVER (PARTITION BY x.visitor_id ORDER BY x.order_time DESC, x.create_time DESC) AS rowNumber,x.vehicle_vno,x.vehicle_name,x.visitor_count, x.visitor_id, x.visit_result, x.intent_level
+                                    , CASE
+                                        WHEN y.meaning IS NOT NULL THEN y.meaning
+                                        ELSE
+                                            CASE
+                                                WHEN DATEDIFF(DAY, x.plan_purchase_time, GETDATE()) > 0 THEN '疑似战败'
+                                                ELSE '意向'
+                                            END
+                                    END AS visit_result_meaning, purpose_quantity
+                                FROM (
+                                    SELECT CASE
+                                            WHEN ISNULL(visit_result, '') = '' THEN GETDATE()
+                                            ELSE create_time
+                                        END AS order_time, *
+                                    FROM presell_visitors WITH ( NOLOCK )
+                                ) x
+                                    LEFT JOIN (
+                                        SELECT code, meaning
+                                        FROM dbo.sys_flags
+                                        WHERE field_no = 'visit_result'
+                                    ) y
+                                    ON x.visit_result = y.code
+                                WHERE ISNULL(x.visit_result, '') = ''
+                                    OR x.visit_result = 10
+                                    OR x.visit_result = 20
+                            ) t
+                            WHERE t.rowNumber = 1
+                        ) h ON obj.object_id = h.visitor_id
+                WHERE
+                ISNULL(obj.status,0)=1
+                AND ISNULL (obj.maintainer_id, '') <> '' AND ISNULL (obj.customer_type, 50) <> 50
+	            AND (obj.object_type & 2 = 2 OR obj.object_type = 0)
+            ) base_tmp
+        ]]>
+    </sql-query>
+
+    <!--
+    客户动态（合同信息）
+    time(创建时间)
+    vehicle_sales_code(车型)
+    vehicle_first_pay(车辆首付)
+    month_pay(月供)
+    period_number(贷款期数)
+    -->
+    <sql-query name="customerInformationWithContract">
+        <![CDATA[
+            SELECT '1' as type,
+                d.*,
+               x.create_time as time
+            FROM vehicle_sale_contracts x WITH ( NOLOCK )
+            INNER JOIN vehicle_sale_contract_detail_groups d WITH ( NOLOCK ) ON x.contract_no=d.contract_no
+            WHERE
+                x.status not in (70, 80)
+                AND x.customer_id=:customerId
+        ]]>
+    </sql-query>
+    <!--
+    客户动态（报价信息）
+    计算公式注解(vehicle_sale_quotation_loan_budget=a)：
+
+    1、贷款标的金额=a.loan_amount / ( 1-a.payment_ratio / 100 )
+    2、车款合计=车辆单价+保险合计+改装合计+其他费用
+    3、贷款首付=单台首付 +消贷费用+车款合计-贷款标的金额
+    4、单台首付=a.loan_amount / ( 1-a.payment_ratio / 100 ) * a.payment_ratio / 100
+    5、月供=〔贷款本金×月利率×(1＋月利率)＾还款月数〕÷〔(1＋月利率)＾还款月数-1〕
+       a.loan_amount / ( 1-a.payment_ratio / 100 ) * a.interest_rate / 1200 * POWER( 1+a.interest_rate / 1200, a.period_number ) / ( POWER( 1+a.interest_rate / 1200, a.period_number ) - 1 )
+
+    time(创建时间)
+    first_loan_amount(贷款首付)
+    first_pay_tot(首付款)
+    month_pay(月供)
+    period_number(期数)
+    buy_type_meaning(付款方式)
+    vehicle_price_tot(车款合计)
+    -->
+    <sql-query name="customerInformationWithQuotation">
+        <![CDATA[
+            SELECT '5' AS type, b.create_time AS time
+            , isnull(b.vehicle_price, 0) + isnull((
+                SELECT SUM(charge.income)
+                FROM vehicle_sale_quotation_charge charge
+                WHERE charge.quotation_id = b.quotation_id
+            ), 0) + isnull((
+                SELECT SUM(item.income)
+                FROM vehicle_sale_quotation_item item
+                WHERE item.quotation_id = b.quotation_id
+            ), 0) + isnull((
+                SELECT SUM(insurance.category_income)
+                FROM vehicle_sale_quotation_insurance insurance
+                WHERE insurance.quotation_id = b.quotation_id
+            ), 0) AS vehicle_price_tot
+            , CONVERT(DECIMAL(18, 2), isnull(b.vehicle_price, 0) + isnull((
+                SELECT SUM(charge.income)
+                FROM vehicle_sale_quotation_charge charge
+                WHERE charge.quotation_id = b.quotation_id
+            ), 0) + isnull((
+                SELECT SUM(item.income)
+                FROM vehicle_sale_quotation_item item
+                WHERE item.quotation_id = b.quotation_id
+            ), 0) + isnull((
+                SELECT SUM(insurance.category_income)
+                FROM vehicle_sale_quotation_insurance insurance
+                WHERE insurance.quotation_id = b.quotation_id
+            ), 0) + (
+                SELECT ISNULL(SUM(charge.loan_amount), 0)
+                FROM vehicle_sale_quotation_loan_budget_charge charge
+                WHERE charge.quotation_loan_budget_id = a.self_id
+            ) + a.loan_amount / (1 - a.payment_ratio / 100) * a.payment_ratio / 100 - a.loan_amount / (1 - a.payment_ratio / 100)) AS first_loan_amount
+            , CONVERT(DECIMAL(18, 2), a.loan_amount / (1 - a.payment_ratio / 100) * a.payment_ratio / 100) AS first_pay_tot
+            , CONVERT(DECIMAL(18, 2), a.loan_amount / (1 - a.payment_ratio / 100) * a.interest_rate / 1200 * POWER(1 + a.interest_rate / 1200, a.period_number) / (POWER(1 + a.interest_rate / 1200, a.period_number) - 1)) AS month_pay
+            , a.period_number, flag.meaning AS buy_type_meaning, b.quotation_id,b.contract_no
+        FROM vehicle_sale_quotation_loan_budget a WITH ( NOLOCK )
+            LEFT JOIN vehicle_sale_quotation b WITH ( NOLOCK ) ON a.quotation_id = b.quotation_id
+            LEFT JOIN sys_flags flag
+            ON flag.field_no = 'vs_buy_type'
+                AND b.buy_type = flag.code
+        WHERE b.contract_no IS NOT NULL
+            AND b.status = 10
+                and a.customer_id=:customerId
+        ]]>
+    </sql-query>
+
+    <!--
+    客户动态（跟进信息）
+    time(跟进时间)
+    back_content(点评)
+    -->
+    <sql-query name="customerInformationWithCallBack">
+        <![CDATA[
+        SELECT
+            '10' as type,
+            back.back_id,
+            back.real_back_time as time,
+            back.back_content,
+            back.backer
+            FROM
+            presell_visitors_back back WITH ( NOLOCK )
+            WHERE back.real_back_time IS NOT NULL
+            AND back.object_id=:customerId
+        ]]>
+    </sql-query>
+
+    <!--
+    客户动态（待跟进信息）包含逾期跟进
+    time(计划跟进时间)
+    -->
+    <sql-query name="customerInformationWithPendingCallBack1">
+        <![CDATA[
+        SELECT
+            '11' as type,
+            back.back_id,
+            back.plan_back_time as time,
+            back.backer
+            FROM
+            presell_visitors_back back WITH ( NOLOCK )
+            WHERE back.real_back_time IS NULL
+            AND back.object_id=:customerId
+        ]]>
+    </sql-query>
+
+    <!--
+    客户动态（待跟进信息）不包含逾期跟进
+    time(计划跟进时间)
+    -->
+    <sql-query name="customerInformationWithPendingCallBack2">
+        <![CDATA[
+        SELECT
+            '11' as type,
+            back.back_id,
+            back.plan_back_time as time,
+            back.backer
+            FROM
+            presell_visitors_back back WITH ( NOLOCK )
+            WHERE back.real_back_time IS NULL
+            AND DATEDIFF(DAY, back.plan_back_time, GETDATE())<=0
+            AND back.object_id=:customerId
+        ]]>
+    </sql-query>
+
+    <!--
+    客户动态（跟进逾期）
+    time(计划跟进时间)
+    -->
+    <sql-query name="customerInformationWithOverdueCallBack">
+        <![CDATA[
+        SELECT
+            '15' as type,
+            back.back_id,
+            back.plan_back_time as time,
+            back.backer
+            FROM
+            presell_visitors_back back WITH ( NOLOCK )
+            WHERE back.real_back_time IS NULL AND DATEDIFF(DAY, back.plan_back_time, GETDATE())>0 AND back.object_id=:customerId
+        ]]>
+    </sql-query>
+    <!-- 获取指定客户购买车辆的次数与车辆总数 -->
+    <sql-query name="customerPurchaseSummaryById">
+        <![CDATA[
+        SELECT
+            a.customer_id as customer_id,
+            COUNT ( b.contract_no ) as purchaseNumber,
+            SUM ( a.out_stock_count )  as vehicleQuantity
+        FROM
+            vehicle_out_stocks a WITH ( NOLOCK )
+            LEFT JOIN vehicle_sale_contracts b WITH ( NOLOCK ) ON a.contract_no = b.contract_no
+        WHERE
+            a.out_stock_type = 0
+            AND a.out_stock_no NOT LIKE 'Init%'
+            AND a.approve_status = 1
+            AND a.customer_id=:customerId
+        GROUP BY
+            a.customer_id
+        ]]>
+    </sql-query>
+    <!-- 获取指定客户最后购买时间 -->
+    <sql-query name="customerLastPurchaseTimeById">
+        <![CDATA[
+        SELECT TOP 1
+            a.out_stock_time AS lastPurchaseTime
+        FROM
+            vehicle_out_stocks a WITH ( NOLOCK )
+            LEFT JOIN vehicle_sale_contracts b WITH ( NOLOCK ) ON a.contract_no = b.contract_no
+        WHERE
+            a.out_stock_type = 0
+            AND a.out_stock_no NOT LIKE 'Init%'
+            AND a.approve_status = 1
+            AND a.customer_id=:customerId
+        ORDER BY
+            a.out_stock_time DESC
+        ]]>
+    </sql-query>
+    <!-- 获取指定客户最近跟进时间 -->
+    <sql-query name="customerLastVisitTimeById">
+        <![CDATA[
+            SELECT TOP 1
+                    back.real_back_time AS realBackTime
+            FROM
+                presell_visitors_back back WITH ( NOLOCK )
+            WHERE
+                back.real_back_time IS NOT NULL
+                AND back.object_id =:customerId
+            ORDER BY
+                back.real_back_time DESC
+
+        ]]>
+    </sql-query>
+    <!-- 获取指定客户最近跟进计划时间 -->
+    <sql-query name="customerLastVisitPlanTimeById">
+        <![CDATA[
+            SELECT TOP 1
+                 back.plan_back_time AS planBackTime
+            FROM
+                presell_visitors_back back WITH ( NOLOCK )
+            WHERE
+                back.real_back_time IS NULL
+                AND back.object_id =:customerId
+            ORDER BY
+                back.plan_back_time DESC
+        ]]>
+
+    </sql-query>
+</hibernate-mapping>

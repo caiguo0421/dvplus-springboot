@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- 定义各报表统计的 SQL语句； 注意name属性的值不能重复 -->
+<hibernate-mapping>
+
+	
+	<!-- =======================================配件业务======================================= -->
+	
+	<sql-query name="fittingsPutInReportData">
+		<!-- 配件入库统计 -->
+			<![CDATA[
+					SELECT  station_name + isnull(:analyseType,
+        					'') AS id,
+							station_name AS station_name,
+					        :analyseType AS analyse_type,
+					        SUM(pis_carriage) AS yf, COUNT(DISTINCT part_id) AS sort,
+					        SUM(pis_price * pis_quantity) AS analyse_result ,
+					        SUM(pis_quantity) AS analyse_count
+					FROM    vw_stat_pisdetail
+					WHERE   pis_type IS NOT NULL
+							AND DATEDIFF(DAY, :beginTime, approve_time) >= 0
+		       				AND DATEDIFF(DAY, :endTime, approve_time) <= 0
+					        AND station_id IN ( :stationIds )
+					GROUP BY station_name ,
+					        :analyseType
+       		]]>
+	</sql-query>
+	
+	
+	<sql-query name="fittingsOutStockReportData">
+		<!-- 配件出库统计 -->
+			<![CDATA[
+						SELECT   station_name + isnull(:analyseType,
+        						'') AS id,
+								station_name AS station_name,
+						        :analyseType AS analyse_type,
+						        SUM(pos_price * pos_quantity * pos_agio) AS pos_price,
+						        SUM(cost * pos_quantity) AS cost ,
+						        SUM(( pos_price * pos_agio - cost ) * pos_quantity - carriage) AS profit
+						FROM    vw_stat_posdetail
+						WHERE   1 = 1
+						        AND station_id IN ( :stationIds ) 
+						        AND DATEDIFF(DAY, :beginTime, approve_time) >= 0 
+		       					AND DATEDIFF(DAY, :endTime, approve_time) <= 0 
+						GROUP BY station_name ,
+						        :analyseType
+       		]]>
+	</sql-query>
+	
+	
+	
+	
+	
+	<sql-query name="fittingsReportDataForFrequency">
+		<!-- 配件出库统计按频次 -->
+			<![CDATA[
+					SELECT  station_name + isnull(:analyseType,
+        					'') AS id ,
+							station_name AS station_name ,
+					        CASE WHEN :analyseType IS NULL
+					                  OR :analyseType = '' THEN ''
+					             ELSE :analyseType
+					        END AS analyse_type,
+					        balance_month AS analyse_mode ,
+					        COUNT(DISTINCT pos_no) * 1.00 AS analyse_result
+					FROM    vw_stat_posdetail AS a
+					WHERE   1 = 1
+							AND DATEDIFF(DAY, :dateTime, approve_time) >= 0
+		       				AND DATEDIFF(DAY, :endTime, approve_time) <= 0
+					        AND station_id IN ( :stationIds )
+					        AND ( is_sab IS NULL
+					              OR is_sab = 0
+					            )
+					GROUP BY station_name ,
+					        :analyseType ,
+					        balance_month
+					ORDER BY station_name
+       		]]>
+	</sql-query>
+	
+	
+	<sql-query name="fittingsReportDataforValue">
+		<!-- 配件出库统计按产值 -->
+			<![CDATA[
+					SELECT  station_name + isnull(:analyseType,
+        					'') AS id ,
+							station_name AS station_name ,
+					        CASE WHEN :analyseType IS NULL
+					                  OR :analyseType = '' THEN ''
+					             ELSE :analyseType
+					        END AS analyse_type ,
+					        balance_month AS analyse_mode ,
+					       SUM(pos_price * pos_quantity * pos_agio) AS analyse_result
+					FROM    vw_stat_posdetail AS a
+					WHERE   1 = 1
+					       AND DATEDIFF(DAY, :dateTime, approve_time) >= 0
+		       				AND DATEDIFF(DAY, :endTime, approve_time) <= 0
+					        AND station_id IN ( :stationIds )
+					GROUP BY station_name ,
+					        :analyseType ,
+					        balance_month
+					        ORDER BY station_name
+       		]]>
+	</sql-query>
+	
+	<sql-query name="fittingsReportDataforSort">
+		<!-- 配件出库统计按种类 -->
+			<![CDATA[
+					SELECT  station_name + isnull(:analyseType,
+        					'') AS id ,
+        					station_name AS station_name ,
+					        CASE WHEN :analyseType IS NULL
+					                  OR :analyseType = '' THEN ''
+					             ELSE :analyseType
+					        END AS analyse_type ,
+					        balance_month AS analyse_mode ,
+					       COUNT(DISTINCT part_id) * 1.00 AS analyse_result  
+					FROM    vw_stat_posdetail AS a
+					WHERE   1 = 1
+					       AND DATEDIFF(DAY, :dateTime, approve_time) >= 0
+		       				AND DATEDIFF(DAY, :endTime, approve_time) <= 0
+					        AND station_id IN ( :stationIds )
+					        AND ( is_sab IS NULL
+              					OR is_sab = 0
+           						 )
+					GROUP BY station_name ,
+					        :analyseType ,
+					        balance_month
+					        ORDER BY station_name
+       		]]>
+	</sql-query>
+	
+	<sql-query name="fittingsReportDataforGain">
+		<!-- 配件出库统计按利润 -->
+			<![CDATA[
+					SELECT  station_name + isnull(:analyseType,
+        					'') AS id ,
+        					station_name AS station_name ,
+					        CASE WHEN :analyseType IS NULL
+					                  OR :analyseType = '' THEN ''
+					             ELSE :analyseType
+					        END AS analyse_type ,
+					        balance_month AS analyse_mode ,
+					        SUM(( pos_price * pos_agio - cost ) * pos_quantity - ISNULL(carriage,0)) AS analyse_result 
+					FROM    vw_stat_posdetail AS a
+					WHERE   1 = 1
+					       AND DATEDIFF(DAY, :dateTime, approve_time) >= 0
+		       				AND DATEDIFF(DAY, :endTime, approve_time) <= 0
+					        AND station_id IN ( :stationIds )
+					GROUP BY station_name ,
+					        :analyseType ,
+					        balance_month
+					        ORDER BY station_name
+       		]]>
+	</sql-query>
+	
+	<sql-query name="fittingsPutInReportForFrequency">
+		<!-- 配件入库统计按频次 -->
+			<![CDATA[
+					SELECT  station_name + isnull(:analyseType,
+        					'') AS id ,
+			        				station_name AS station_name ,
+							        CASE WHEN :analyseType IS NULL
+							        OR :analyseType = '' THEN ''
+							        ELSE :analyseType
+							        END AS analyse_type ,
+							        balance_month AS analyse_mode ,
+							        COUNT(DISTINCT pis_no) * 1.00 AS analyse_result
+							FROM    vw_stat_pisdetail AS a
+							WHERE   1 = 1
+							        AND DATEDIFF(DAY, :beginTime, approve_time) >= 0
+		       					    AND DATEDIFF(DAY, :endTime, approve_time) <= 0
+							        AND station_id IN ( :stationIds )
+							        AND ( is_sab IS NULL
+							              OR is_sab = 0
+							            )
+							GROUP BY station_name ,
+							        :analyseType ,
+							        balance_month  
+							ORDER BY balance_month,station_name
+       		]]>
+	</sql-query>
+	
+	
+	<sql-query name="fittingsPutInReportDataforSort">
+		<!-- 配件入库统计按种类 -->
+			<![CDATA[
+					SELECT  station_name + isnull(:analyseType,
+        					'') AS id ,
+			        				station_name AS station_name ,
+							        CASE WHEN :analyseType IS NULL
+							        OR :analyseType = '' THEN ''
+							        ELSE :analyseType
+							        END AS analyse_type ,
+							        balance_month AS analyse_mode ,
+							        COUNT(DISTINCT part_id) * 1.00 AS analyse_result
+							FROM    vw_stat_pisdetail AS a
+							WHERE   1 = 1
+							        AND  DATEDIFF(DAY, :beginTime, approve_time) >= 0
+		       					    AND DATEDIFF(DAY, :endTime, approve_time) <= 0
+							        AND station_id IN ( :stationIds )
+							        AND ( is_sab IS NULL
+							              OR is_sab = 0
+							            )
+							GROUP BY station_name ,
+							        :analyseType ,
+							        balance_month  
+								ORDER BY balance_month,station_name
+       		]]>
+	</sql-query>
+	
+	
+	<sql-query name="fittingsPutInReportDataforMoney">
+		<!-- 配件入库统计按金额 -->
+			<![CDATA[
+					SELECT  station_name + isnull(:analyseType,
+        					'') AS id ,
+			        				station_name AS station_name ,
+							        CASE WHEN :analyseType IS NULL
+							        OR :analyseType = '' THEN ''
+							        ELSE :analyseType
+							        END AS analyse_type ,
+							        balance_month AS analyse_mode ,
+							       SUM(pis_price * pis_quantity) AS analyse_result
+							FROM    vw_stat_pisdetail AS a
+							WHERE   1 = 1
+							        AND  DATEDIFF(DAY, :beginTime, approve_time) >= 0
+		       					    AND DATEDIFF(DAY, :endTime, approve_time) <= 0
+							        AND station_id IN ( :stationIds )
+							GROUP BY station_name ,
+							        :analyseType ,
+							        balance_month   
+								ORDER BY balance_month,station_name
+       		]]>
+	</sql-query>
+</hibernate-mapping>

@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.vehicle.customer.model.VwInterestedCustomers" table="vw_interested_customers" schema="dbo">
+        <id name="objectId" column="object_id"/>
+        <property name="objectNo" column="object_no"/>
+        <property name="objectName" column="object_name"/>
+        <property name="namePinyin" column="name_pinyin"/>
+        <property name="shortName" column="short_name"/>
+        <property name="stationId" column="station_id"/>
+        <property name="status" column="status"/>
+        <property name="sex" column="sex"/>
+        <property name="nation" column="nation"/>
+        <property name="birthday" column="birthday"/>
+        <property name="isLunarBirthday" column="is_lunar_birthday"/>
+        <property name="objectType" column="object_type"/>
+        <property name="objectKind" column="object_kind"/>
+        <property name="objectNature" column="object_nature"/>
+        <property name="objectProperty" column="object_property"/>
+        <property name="customerType" column="customer_type"/>
+        <property name="customerKind" column="customer_kind"/>
+        <property name="isCompetitive" column="is_competitive"/>
+        <property name="profession" column="profession"/>
+        <property name="certificateType" column="certificate_type"/>
+        <property name="certificateNo" column="certificate_no"/>
+        <property name="linkman" column="linkman"/>
+        <property name="phone" column="phone"/>
+        <property name="mobile" column="mobile"/>
+        <property name="fax" column="fax"/>
+        <property name="icq" column="icq"/>
+        <property name="wechat" column="wechat"/>
+        <property name="email" column="email"/>
+        <property name="postalcode" column="postalcode"/>
+        <property name="address" column="address"/>
+        <property name="area" column="area"/>
+        <property name="city" column="city"/>
+        <property name="province" column="province"/>
+        <property name="registeredCapital" column="registered_capital"/>
+        <property name="fixedAssets" column="fixed_assets"/>
+        <property name="mainBusiness" column="main_business"/>
+        <property name="businessScope" column="business_scope"/>
+        <property name="staffNumber" column="staff_number"/>
+        <property name="shareholderNumber" column="shareholder_number"/>
+        <property name="topShareholder" column="top_shareholder"/>
+        <property name="topShares" column="top_shares"/>
+        <property name="vehicleLinkman" column="vehicle_linkman"/>
+        <property name="vehiclePhone" column="vehicle_phone"/>
+        <property name="partLinkman" column="part_linkman"/>
+        <property name="partPhone" column="part_phone"/>
+        <property name="serviceLinkman" column="service_linkman"/>
+        <property name="servicePhone" column="service_phone"/>
+        <property name="insuranceLinkman" column="insurance_linkman"/>
+        <property name="insurancePhone" column="insurance_phone"/>
+        <property name="introducerId" column="introducer_id"/>
+        <property name="introducerNo" column="introducer_no"/>
+        <property name="introducerName" column="introducer_name"/>
+        <property name="remark" column="remark"/>
+        <property name="createStationId" column="create_station_id"/>
+        <property name="creator" column="creator"/>
+        <property name="createTime" column="create_time"/>
+        <property name="modifier" column="modifier"/>
+        <property name="modifyTime" column="modify_time"/>
+        <property name="relatedObjectId" column="related_object_id"/>
+        <property name="repeatCreator" column="repeat_creator"/>
+        <property name="repeatCreateTime" column="repeat_create_time"/>
+        <property name="repeatCustomerName" column="repeat_customer_name"/>
+        <property name="repeatMobile" column="repeat_mobile"/>
+        <property name="longitude" column="longitude"/>
+        <property name="latitude" column="latitude"/>
+        <property name="locationAddress" column="location_address"/>
+    </class>
+</hibernate-mapping>

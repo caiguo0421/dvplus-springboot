@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.vehicle.contract.model.VehicleSaleContractHistoryGroups"
+           table="vehicle_sale_contract_history_groups" schema="dbo">
+        <id name="historyGroupId" column="history_group_id"/>
+        <property name="historyId" column="history_id"/>
+        <property name="groupId" column="group_id"/>
+        <property name="groupNo" column="group_no"/>
+        <property name="contractNo" column="contract_no"/>
+        <property name="varyType" column="vary_type"/>
+        <property name="vehicleVno" column="vehicle_vno"/>
+        <property name="vehicleVnoOri" column="vehicle_vno_ori"/>
+        <property name="vehicleVnoNew" column="vehicle_vno_new"/>
+        <property name="vehicleColor" column="vehicle_color"/>
+        <property name="vehicleColorOri" column="vehicle_color_ori"/>
+        <property name="vehicleColorNew" column="vehicle_color_new"/>
+        <property name="quantity" column="vehicle_quantity"/>
+        <property name="quantityOri" column="quantity_ori"/>
+        <property name="quantityNew" column="quantity_new"/>
+        <property name="income" column="income"/>
+        <property name="incomeOri" column="income_ori"/>
+        <property name="incomeNew" column="income_new"/>
+        <property name="cost" column="cost"/>
+        <property name="costOri" column="cost_ori"/>
+        <property name="costNew" column="cost_new"/>
+        <property name="profit" column="profit"/>
+        <property name="profitOri" column="profit_ori"/>
+        <property name="profitNew" column="profit_new"/>
+        <property name="belongToSupplierName" column="belong_to_supplier_name"/>
+        <property name="belongToSupplierNameOri" column="belong_to_supplier_name_ori"/>
+        <property name="belongToSupplierNameNew" column="belong_to_supplier_name_new"/>
+        <property name="vehicleOwnerName" column="vehicle_owner_name"/>
+        <property name="vehicleOwnerNameOri" column="vehicle_owner_name_ori"/>
+        <property name="vehicleOwnerNameNew" column="vehicle_owner_name_new"/>
+        <property name="vehiclePrice" column="vehicle_price"/>
+        <property name="vehiclePriceOri" column="vehicle_price_ori"/>
+        <property name="vehiclePriceNew" column="vehicle_price_new"/>
+        <property name="vehiclePriceTotal" column="vehicle_price_total"/>
+        <property name="vehiclePriceTotalOri" column="vehicle_price_total_ori"/>
+        <property name="vehiclePriceTotalNew" column="vehicle_price_total_new"/>
+        <property name="isContainInsuranceCost" column="is_contain_insurance_cost"/>
+        <property name="isContainInsuranceCostOri" column="is_contain_insurance_cost_ori"/>
+        <property name="isContainInsuranceCostNew" column="is_contain_insurance_cost_new"/>
+        <property name="discountAmount" column="discount_amount"/>
+        <property name="discountAmountOri" column="discount_amount_ori"/>
+        <property name="discountAmountNew" column="discount_amount_new"/>
+        <property name="largessAmount" column="largess_amount"/>
+        <property name="largessAmountOri" column="largess_amount_ori"/>
+        <property name="largessAmountNew" column="largess_amount_new"/>
+        <property name="customerNameDetail" column="customer_name_detail"/>
+        <property name="customerNameDetailOri" column="customer_name_detail_ori"/>
+        <property name="customerNameDetailNew" column="customer_name_detail_new"/>
+        <property name="vehicleProfit" column="vehicle_profit"/>
+        <property name="vehicleProfitOri" column="vehicle_profit_ori"/>
+        <property name="vehicleProfitNew" column="vehicle_profit_new"/>
+        <property name="deposit" column="deposit"/>
+        <property name="depositOri" column="deposit_ori"/>
+        <property name="depositNew" column="deposit_new"/>
+        <property name="subjectMatter" column="subject_matter"/>
+        <property name="subjectMatterOri" column="subject_matter_ori"/>
+        <property name="subjectMatterNew" column="subject_matter_new"/>
+        <property name="vehicleCardModel" column="vehicle_card_model"/>
+        <property name="vehicleCardModelOri" column="vehicle_card_model_ori"/>
+        <property name="vehicleCardModelNew" column="vehicle_card_model_new"/>
+        <property name="transportRoutes" column="transport_routes"/>
+        <property name="transportRoutesOri" column="transport_routes_ori"/>
+        <property name="transportRoutesNew" column="transport_routes_new"/>
+        <property name="vins" column="vins"/>
+        <property name="vinsOri" column="vins_ori"/>
+        <property name="vinsNew" column="vins_new"/>
+        <property name="creator" column="creator"/>
+        <property name="createTime" column="create_time"/>
+        <property name="modifyTime" column="modify_time"/>
+        <property name="remark" column="remark"/>
+    </class>
+</hibernate-mapping>

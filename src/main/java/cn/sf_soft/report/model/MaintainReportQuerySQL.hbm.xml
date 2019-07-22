@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- 定义各报表统计的 SQL语句； 注意name属性的值不能重复 -->
+<hibernate-mapping>
+
+	<!-- ===========================维修业务============================== -->
+    <!--日进场台次曲线查询语句 by king -->
+	<sql-query name="maintainDailyNumQuery">
+	    <return class="cn.sf_soft.report.model.MainTainDailyLineReport"/>
+    	<![CDATA[
+		SELECT  CONVERT(VARCHAR(10), balance_time, 102) AS date,
+		        COUNT(DISTINCT task_no) AS num,
+		        SUM(m) AS money
+		FROM    dbo.vw_stat_taskdetail
+		WHERE   station_id IN ( :stationIds )
+		        AND DATEDIFF(DAY, :beginTime, balance_time) >= 0
+		        AND DATEDIFF(DAY, :endTime, balance_time) <= 0
+		        AND task_kind = 10
+		GROUP BY CONVERT(VARCHAR(10), balance_time, 102)
+		ORDER BY date 
+		]]>
+	</sql-query>
+	
+	<!--日产值曲线查询语句 by king 
+	<sql-query name="maintainDailyOutputQuery">
+		<return class="cn.sf_soft.report.model.MainTainDailyLineReport"/>
+		<![CDATA[
+		SELECT  CONVERT(VARCHAR(10), balance_time, 102) AS date,
+		        SUM(m) AS result
+		FROM    vw_stat_taskdetail AS a
+		WHERE   station_id IN ( :stationIds )
+		        AND DATEDIFF(DAY, :beginTime, balance_time) >= 0
+		        AND DATEDIFF(DAY, :endTime, balance_time) <= 0
+		GROUP BY 
+				CONVERT(VARCHAR(10), balance_time, 102),
+		        balance_month
+		ORDER BY balance_month
+		]]>
+	</sql-query>
+	-->
+	<!-- 维修日报  -->
+	<sql-query name="maintainDayReport">
+	<return class="cn.sf_soft.report.model.MaintainReport"/>
+	<![CDATA[
+			select b.station_name + isnull(b.:analyseType,'') AS id,
+								b.station_name,b.:analyseType as analyse_type,b.analyse_mode,a.day_count as dayCount 
+								,c.day_money as dayMoney,b.month_count as MonthCount, d.month_money as  MonthMoney  
+								from(SELECT station_name AS station_name, 
+								CASE WHEN :analyseType IS NULL OR 
+								:analyseType = '' THEN '' ELSE :analyseType 
+								END  AS :analyseType, balance_month AS analyse_mode, 
+								COUNT(DISTINCT task_no) * 1.00 AS day_count,  
+								SUM(m) AS day_money  
+								FROM vw_stat_taskdetail AS a WHERE 1=1 
+								AND :analyseType IS NOT NULL AND :analyseType <> 
+								'' AND datediff(dd,balance_time,:dateTime)=0 AND 
+								station_id IN (:stationIds )  AND 
+								task_kind = 10 AND sort < 3 
+								GROUP BY  station_name, :analyseType, balance_month ) AS a 
+								  left join   (SELECT 
+								  station_name AS station_name, 
+								  CASE  
+								  WHEN :analyseType IS NULL  
+								    OR :analyseType = '' THEN ''  
+								   ELSE :analyseType  
+								   END  AS :analyseType, 
+								   SUM(m) AS day_money  
+								  FROM 
+								    vw_stat_taskdetail AS a  
+								 WHERE   1=1 
+								  AND :analyseType IS NOT NULL 
+								  AND :analyseType <> ''  
+								  AND datediff(dd,:dateTime,balance_time)=0 
+								  AND station_id IN ( 
+								   :stationIds )  
+								  AND task_kind = 10  GROUP BY  station_name, 
+								    :analyseType)AS c  
+								  on a.station_name=c.station_name  
+								  and a.:analyseType=c.:analyseType 
+								 right join( 
+									 SELECT station_name AS station_name, 
+									CASE WHEN :analyseType IS NULL OR 
+									:analyseType = '' THEN '' ELSE :analyseType 
+									END  AS :analyseType, balance_month AS analyse_mode, 
+									 COUNT(DISTINCT task_no) * 1.00 AS month_count,  
+									SUM(m) AS month_money 
+									 FROM vw_stat_taskdetail AS a WHERE 1=1 
+									 AND :analyseType IS NOT NULL AND :analyseType <> 
+									   '' AND  DATEDIFF(DAY, :time, balance_time) >= 0
+		    					    AND DATEDIFF(DAY, :dateTime, balance_time) <= 0 
+									   AND station_id IN (:stationIds )  AND 
+								    task_kind = 10 AND sort < 3 
+									   GROUP BY  station_name, :analyseType, balance_month 
+								    )AS b on a.station_name=b.station_name and a.:analyseType=b.:analyseType
+								    left join  (   SELECT 
+								    station_name AS station_name, 
+								    CASE WHEN :analyseType IS NULL  
+								    OR  :analyseType = '' THEN ''  
+								    ELSE :analyseType   
+								    END  AS :analyseType, 
+								    balance_month AS analyse_mode, 
+								    SUM(m) AS month_money   FROM 
+								    vw_stat_taskdetail AS a   WHERE    1=1    
+								    AND :analyseType IS NOT NULL  
+								    AND :analyseType <>   ''  
+								    AND  DATEDIFF(DAY, :time, balance_time) >= 0
+		     						AND DATEDIFF(DAY, :dateTime, balance_time) <= 0  
+								    AND    station_id IN (  :stationIds )  
+								    AND    task_kind = 10  GROUP BY 
+								    station_name,:analyseType,balance_month )AS d  
+								     on b.station_name=d.station_name  
+								     and b.:analyseType=d.:analyseType 
+								     	 ORDER BY  station_name
+	]]>
+	</sql-query>
+	
+	<!-- 维修日报 时间段查询 -->
+	<sql-query name="maintainforTimeReport">
+		<return class="cn.sf_soft.report.model.MaintainReportofTime"/>
+		<![CDATA[
+			select a.station_name + isnull(A.:analyseType,'') AS id ,a.:analyseType as analyse_type,a.station_name,
+						A.time_count as dayCount,c.time_money as dayMoney from (SELECT 
+			             station_name AS station_name, 
+			           CASE WHEN :analyseType IS NULL  
+			                 OR :analyseType = '' THEN '' 
+			                 ELSE :analyseType 
+			              END  AS :analyseType,
+			              COUNT(DISTINCT task_no) * 1.00 AS time_count  
+			            FROM 
+			               vw_stat_taskdetail AS a  
+			            WHERE  1=1  
+			            AND :analyseType IS NOT NULL  
+			             AND :analyseType <> ''  
+			             AND  DATEDIFF(DAY, :beginTime, balance_time) >= 0
+		       			 AND DATEDIFF(DAY, :endTime, balance_time) <= 0
+			             AND station_id IN (:stationIds )   
+			              AND task_kind = 10  
+			              AND sort < 3  GROUP BY 
+			             station_name, :analyseType)as A 
+			             left join   (SELECT 
+			             station_name AS station_name, 
+			              CASE  
+			                WHEN :analyseType IS NULL  
+			               OR :analyseType = '' THEN ''  
+			              ELSE :analyseType  
+			             END  AS :analyseType,SUM(m) AS time_money   
+			            FROM  
+			           vw_stat_taskdetail AS a  
+			            WHERE 1=1  
+			            AND :analyseType IS NOT NULL  
+			            AND :analyseType <> '' 
+			            AND DATEDIFF(DAY, :beginTime, balance_time) >= 0
+		       			 AND DATEDIFF(DAY, :endTime, balance_time) <= 0
+			            AND station_id IN (:stationIds)  
+			            AND task_kind = 10  GROUP BY  
+			             station_name,:analyseType)AS c  
+			            on a.station_name = c.station_name  
+			            and a.:analyseType=c.:analyseType 
+			             ORDER BY  station_name 
+		
+		
+		]]>
+	
+	</sql-query>
+	
+	<!--索赔日报  by king -->
+	<sql-query name="claimDailyReport">
+		<return class="cn.sf_soft.report.model.MaintainClaimDailyReport"/>
+		<![CDATA[
+		SELECT  :dateTime AS date ,
+		        ISNULL(b.supplier_name, '') AS supplier_name,
+		        SUM(appraisal_qty) AS appraisal_qty ,
+		        SUM(appraisal_money) AS appraisal_money,
+		        b.month_appraisal_qty,
+		        b.month_appraisal_money
+		FROM    ( SELECT    supplier_name ,
+		                    COUNT(*) AS appraisal_qty ,
+		                    SUM(appraisal_money) AS appraisal_money
+		          FROM      ( SELECT    c.task_no ,
+		                                c.supplier_name ,
+		                                SUM(item_money_appraisal
+		                                    + part_money_appraisal
+		                                    + aid_money_appraisal
+		                                    + other_money_appraisal) AS appraisal_money
+		                      FROM      service_claims c
+		                      WHERE     approve_status <> 2
+		                                AND c.task_no IS NOT NULL
+		                                AND DATEDIFF(DAY, c.appraisal_time, :dateTime) = 0
+		                                AND station_id IN ( :stationIds )
+		                      GROUP BY  c.task_no ,
+		                                c.supplier_name
+		                    ) AS r
+		          GROUP BY  supplier_name
+		          UNION ALL
+		          SELECT    supplier_name ,
+		                    COUNT(*) AS appraisal_qty ,
+		                    SUM(item_money_appraisal + part_money_appraisal
+		                        + aid_money_appraisal + other_money_appraisal) AS appraisal_money
+		          FROM      service_claims c
+		          WHERE     approve_status <> 2
+		                    AND c.task_no IS NULL
+		                    AND DATEDIFF(DAY, c.appraisal_time, :dateTime) = 0
+		                    AND station_id IN ( :stationIds )
+		          GROUP BY  supplier_name
+		        ) AS a
+		RIGHT JOIN(
+		SELECT  
+		        supplier_name ,
+		        SUM(appraisal_qty) AS month_appraisal_qty ,
+		        SUM(appraisal_money) AS month_appraisal_money
+		FROM    ( SELECT    supplier_name ,
+		                    COUNT(*) AS appraisal_qty ,
+		                    SUM(appraisal_money) AS appraisal_money
+		          FROM      ( SELECT    c.task_no ,
+		                                c.supplier_name ,
+		                                SUM(item_money_appraisal
+		                                    + part_money_appraisal
+		                                    + aid_money_appraisal
+		                                    + other_money_appraisal) AS appraisal_money
+		                      FROM      service_claims c
+		                      WHERE     approve_status <> 2
+		                                AND c.task_no IS NOT NULL
+		                                AND DATEDIFF(month, c.appraisal_time,
+		                                             :dateTime) = 0
+		                                AND DATEDIFF(DAY, :dateTime, c.appraisal_time) <= 0
+		                                AND station_id IN ( :stationIds )
+		                      GROUP BY  c.task_no ,
+		                                c.supplier_name
+		                    ) AS r
+		          GROUP BY  supplier_name
+		          UNION ALL
+		          SELECT    supplier_name ,
+		                    COUNT(*) AS appraisal_qty ,
+		                    SUM(item_money_appraisal + part_money_appraisal
+		                        + aid_money_appraisal + other_money_appraisal) AS appraisal_money
+		          FROM      service_claims c
+		          WHERE     approve_status <> 2
+		                    AND c.task_no IS NULL
+		                    AND DATEDIFF(month, c.appraisal_time, :dateTime) = 0
+		                    AND DATEDIFF(DAY, :dateTime, c.appraisal_time) <= 0
+		                    AND station_id IN ( :stationIds )
+		          GROUP BY  supplier_name
+		        ) AS r
+		GROUP BY supplier_name
+		)AS b
+		ON a.supplier_name = b.supplier_name
+		GROUP BY b.supplier_name, 
+			b.month_appraisal_qty,
+			b.month_appraisal_money	 
+		]]>
+	</sql-query>
+	
+	
+	
+	
+	<!--三包索赔报表  cw -->
+	<sql-query name="maintainClaimsReport">
+		<return class="cn.sf_soft.report.model.MaintainClaimsReport"/>
+		<![CDATA[
+					 SELECT appraisal_mode_meaning ,
+			        SUM(appraisal_qty) AS appraisal_qty ,
+			        SUM(appraisal_money) AS appraisal_money
+			 FROM   ( SELECT    appraisal_mode_meaning ,
+			                    COUNT(*) AS appraisal_qty ,
+			                    SUM(appraisal_money) AS appraisal_money
+			          FROM      ( SELECT    f.meaning AS appraisal_mode_meaning ,
+			                                c.task_no ,
+			                                c.supplier_name ,
+			                                SUM(item_money_appraisal
+			                                    + part_money_appraisal
+			                                    + aid_money_appraisal
+			                                    + other_money_appraisal) AS appraisal_money
+			                      FROM      service_claims c
+			                                INNER JOIN ( SELECT code ,
+			                                                    meaning
+			                                             FROM   sys_flags
+			                                             WHERE  field_no = 'appraisal_mode'
+			                                           ) f ON c.appraisal_mode = f.code
+			                      WHERE     approve_status <> 2
+			                                AND c.task_no IS NOT NULL
+			                                AND c.station_id IN ( :stationIds )
+			                                AND c.appraisal_time > :beginTime
+			                                AND c.appraisal_time < :endTime
+			                      GROUP BY  f.meaning ,
+			                                c.task_no ,
+			                                c.supplier_name
+			                    ) AS r
+			          GROUP BY  appraisal_mode_meaning
+			          UNION ALL
+			          SELECT    f.meaning AS appraisal_mode_meaning ,
+			                    COUNT(*) AS appraisal_qty ,
+			                    SUM(item_money_appraisal + part_money_appraisal
+			                        + aid_money_appraisal + other_money_appraisal) AS appraisal_money
+			          FROM      service_claims c
+			                    INNER JOIN ( SELECT code ,
+			                                        meaning
+			                                 FROM   sys_flags
+			                                 WHERE  field_no = 'appraisal_mode'
+			                               ) f ON c.appraisal_mode = f.code
+			          WHERE     approve_status <> 2
+			                    AND c.task_no IS NULL
+			                    AND c.station_id IN ( :stationIds )
+			                    AND c.appraisal_time > :beginTime
+			                    AND c.appraisal_time < :endTime
+			          GROUP BY  f.meaning
+			        ) AS r
+			 GROUP BY appraisal_mode_meaning 
+		]]>
+	</sql-query>
+	
+</hibernate-mapping>

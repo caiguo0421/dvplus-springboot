@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="cn.sf_soft.vehicle.customer.model.OjbectNameForCheck" abstract="true">
+    	<id name="objectId">
+    		<column name="object_id"></column>
+    		<generator class="assigned"/>
+    	</id>
+    	<property name="objectNature">
+    		<column name="object_nature"></column>
+    	</property>
+    	<property name="mobile">
+    		<column name="mobile"></column>
+    	</property>
+    	<property name="certificateNo">
+    		<column name="certificate_no"></column>
+    	</property>
+    	<property name="shortName">
+    		<column name="short_name"></column>
+    	</property>
+    	<property name="objectName">
+    		<column name="object_name"></column>
+    	</property>
+    </class>
+</hibernate-mapping>

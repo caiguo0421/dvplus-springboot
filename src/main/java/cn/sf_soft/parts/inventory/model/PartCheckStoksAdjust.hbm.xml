@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+	<class name="cn.sf_soft.parts.inventory.model.PartCheckStoksAdjust"
+		abstract="true">
+		<id name="stockId">
+			<column name="stock_id"></column>
+			<generator class="assigned" />
+		</id>
+		<property name="warehouseId">
+			<column name="warehouse_id"></column>
+		</property>
+		<property name="cost">
+			<column name="cost"></column>
+		</property>
+		<property name="costNoTax">
+			<column name="cost_no_tax"></column>
+		</property>
+		<property name="carriage">
+			<column name="carriage"></column>
+		</property>
+		<property name="quantity">
+			<column name="quantity"></column>
+		</property>
+		<property name="quantityWay">
+			<column name="quantity_way"></column>
+		</property>
+		<property name="depositPosition">
+			<column name="deposit_position"></column>
+		</property>
+		<property name="proxyPrice">
+			<column name="proxy_price"></column>
+		</property>
+		<property name="warehouseName">
+			<column name="warehouse_name"></column>
+		</property>
+		<property name="supplierName">
+			<column name="supplier_name"></column>
+		</property>
+		<property name="planNo">
+			<column name="plan_no"></column>
+		</property>
+		<property name="quantityStock">
+			<column name="quantity_stock"></column>
+		</property>
+		<property name="partId">
+			<column name="part_id"></column>
+		</property>
+		<property name="partName">
+			<column name="part_name"></column>
+		</property>
+		<property name="partNo">
+			<column name="part_no"></column>
+		</property>
+		<property name="partMnemonic">
+			<column name="part_mnemonic"></column>
+		</property>
+		<property name="costRef">
+			<column name="cost_ref"></column>
+		</property>
+		<property name="partType">
+			<column name="part_type"></column>
+		</property>
+		<property name="partProperty">
+			<column name="part_property"></column>
+		</property>
+		<property name="specModel">
+			<column name="spec_model"></column>
+		</property>
+		<property name="producingArea">
+			<column name="producing_area"></column>
+		</property>
+		<property name="applicableModel">
+			<column name="applicable_model"></column>
+		</property>
+		<property name="dosage">
+			<column name="dosage"></column>
+		</property>
+		<property name="unit">
+			<column name="unit"></column>
+		</property>
+	<property name="inventoryTime">
+			<column name="inventory_time"></column>
+		</property>
+	</class>
+</hibernate-mapping>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- 查询变更合计的 SQL语句； 注意name属性的值不能重复 -->
+<hibernate-mapping>
+	<sql-query name="vwVehicleSaleContractInsuranceVaryMarge">
+		<!-- 保险统计 -->
+		<![CDATA[
+			select detail_vary_id,
+			sale_contract_insurance_id,
+			contract_detail_id,
+			round(category_income,0) as income,
+			round(ori_category_income,0) as ori_income,
+			round(out_come,0) as out_come,
+			round(ori_out_come,0) as ori_out_come,
+			round(real_cost,0) as real_cost,
+			abort_status
+			from(
+			select  detail_vary_id,sale_contract_insurance_id,contract_detail_id,category_income,ori_category_income,isnull(category_income,0)*isnull(category_scale,0) as out_come,isnull(ori_category_income,0)*isnull(category_scale,0) as ori_out_come, category_cost as real_cost,  abort_status  from Vehicle_Sale_Contract_Insurance_Vary where detail_vary_id =:detail_vary_id
+			union all select  null as detail_vary_id,  b.sale_contract_insurance_id,b.contract_detail_id,b.category_income,0 as ori_category_income,isnull(b.category_income,0)*isnull(b.category_scale,0) as out_come,0 as ori_out_come, b.category_cost as real_cost,(case when dvary.abort_status = 10 then 10 else 0 end ) as abort_status from  vehicle_sale_contract_Insurance  as b
+			left join vehicle_sale_contract_detail_vary as dvary on  dvary.contract_detail_id = b.contract_detail_id  AND  dvary.detail_vary_id =:detail_vary_id
+			where b.contract_detail_id =:contract_detail_id  AND  not exists (select 1 from Vehicle_Sale_Contract_Insurance_Vary  as c where c.detail_vary_id =:detail_vary_id  AND c.sale_contract_insurance_id = b.sale_contract_insurance_id) and (b.abort_status is null or b.abort_status <> 10)
+			) as tmp	
+		]]>
+	</sql-query>
+	
+	
+	<sql-query name="vwVehicleSaleContractPresentVaryMerge">
+		<!-- 精品统计 -->
+		<![CDATA[
+			select detail_vary_id,
+			sale_contract_present_id,
+			contract_detail_id,
+			round(income,0) as income,
+			round(ori_income,0) as ori_income,
+			round(out_come,0) as out_come,
+			round(ori_out_come,0) as ori_out_come,
+			round(real_cost,0) as real_cost,
+			abort_status
+			from(
+			select detail_vary_id,sale_contract_present_id,contract_detail_id,income,ori_income,isnull(pos_price,0)*(isnull(plan_quantity,0)-isnull(get_quantity,0))+ isnull(cost_record,0)*isnull(get_quantity,0) as out_come,isnull(pos_price,0)*(isnull(ori_plan_quantity,0)-isnull(get_quantity,0))+ isnull(cost_record,0)*isnull(get_quantity,0) as ori_out_come,isnull(get_quantity,0)*isnull(cost_record,0) as real_cost,abort_status from  Vehicle_Sale_Contract_Present_Vary where detail_vary_id =:detail_vary_id
+			union all 
+			select null as  detail_vary_id,b.sale_contract_present_id,b.contract_detail_id,income,0 as ori_income,isnull(b.pos_price,0)*(isnull(b.plan_quantity,0)-isnull(b.get_quantity,0))+ isnull(b.cost_record,0)*isnull(b.get_quantity,0)  as out_come,0 as ori_out_come,isnull(get_quantity,0)*isnull(cost_record,0) as real_cost,(case when dvary.abort_status = 10 then 10 else 0 end ) as abort_status  from  Vehicle_Sale_Contract_Present as b
+			left join vehicle_sale_contract_detail_vary as dvary on  dvary.contract_detail_id = b.contract_detail_id  AND  dvary.detail_vary_id =:detail_vary_id
+			where b.contract_detail_id =:contract_detail_id  AND (b.abort_status is null or b.abort_status <> 10) and not exists (select 1 from Vehicle_Sale_Contract_Present_Vary  as c where  c.detail_vary_id =:detail_vary_id  AND c.sale_contract_present_id = b.sale_contract_present_id)
+			) as tmp	
+		]]>
+	</sql-query>
+	
+	
+	<sql-query name="vwVehicleSaleContractItemVaryMerge">
+		<!-- 改装统计 -->
+		<![CDATA[
+			select detail_vary_id,
+			sale_contract_item_id,
+			contract_detail_id,
+			round(income,0) as income,
+			round(ori_income,0) as ori_income,
+			round(out_come,0) as out_come,
+			round(ori_out_come,0) as ori_out_come,
+			abort_status
+			from(
+			select detail_vary_id,sale_contract_item_id,contract_detail_id,income,ori_income,item_cost as out_come,ori_item_cost as ori_out_come,abort_status from Vehicle_Sale_Contract_Item_Vary where detail_vary_id =:detail_vary_id
+			union all
+			select null as detail_vary_id,b.sale_contract_item_id,b.contract_detail_id,b.income,0 as ori_income,b.item_cost as out_come,0 as  ori_out_come,(case when dvary.abort_status = 10 then 10 else 0 end ) as abort_status from Vehicle_Sale_Contract_Item   as b
+			left join vehicle_sale_contract_detail_vary as dvary on  dvary.contract_detail_id = b.contract_detail_id  AND  dvary.detail_vary_id =:detail_vary_id
+			where b.contract_detail_id =:contract_detail_id AND (b.abort_status is null or b.abort_status <> 10) and not exists (select 1 from Vehicle_Sale_Contract_Item_Vary  as c where  c.detail_vary_id =:detail_vary_id  AND c.sale_contract_item_id = b.sale_contract_item_id)
+			) as tmp
+		]]>
+	</sql-query>
+	
+	
+	<sql-query name="vwVehicleSaleContractChargeVaryMerge">
+		<!-- 费用统计 -->
+		<![CDATA[
+			select detail_vary_id,
+			sale_contract_charge_id,
+			contract_detail_id,
+			round(income,0) as income,
+			round(ori_income,0) as ori_income,
+			round(out_come,0) as out_come,
+			round(ori_out_come,0) as ori_out_come,
+			round(real_cost,0) as real_cost,
+			abort_status
+			from(
+			select detail_vary_id,sale_contract_charge_id,contract_detail_id,income,ori_income,(case when isnull(charge_pf,0)>isnull(charge_cost,0) then isnull(charge_pf,0) else isnull(charge_cost,0) end) as out_come,(case when isnull(ori_charge_pf,0)>isnull(ori_charge_cost,0) then isnull(ori_charge_pf,0) else isnull(ori_charge_cost,0) end) as ori_out_come,charge_cost as real_cost,abort_status from Vehicle_Sale_Contract_Charge_Vary where detail_vary_id =:detail_vary_id
+			union all
+			select null as detail_vary_id,b.sale_contract_charge_id,b.contract_detail_id,b.income,0 as ori_income,(case when isnull(b.charge_pf,0)>isnull(b.charge_cost,0) then isnull(b.charge_pf,0) else isnull(b.charge_cost,0) end) as out_come,0 as ori_out_come,b.charge_cost as real_cost,(case when dvary.abort_status = 10 then 10 else 0 end ) as abort_status from Vehicle_Sale_Contract_Charge as b
+			left join vehicle_sale_contract_detail_vary as dvary on  dvary.contract_detail_id = b.contract_detail_id  AND  dvary.detail_vary_id =:detail_vary_id
+			where b.contract_detail_id =:contract_detail_id AND (b.abort_status is null or b.abort_status <> 10) and not exists (select 1 from Vehicle_Sale_Contract_Charge_Vary  as c where  c.detail_vary_id =:detail_vary_id  AND c.sale_contract_charge_id = b.sale_contract_charge_id)
+			) as tmp
+		]]>
+	</sql-query>
+
+</hibernate-mapping>

@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.vehicle.customer.model.EffectiveCustomeCallBack" table="effective_custome_call_back"
+           schema="dbo">
+        <id name="backId" type="java.lang.String">
+            <column name="back_id" length="40" />
+            <generator class="assigned" />
+        </id>
+        <property name="customerId" column="customer_id"/>
+        <property name="backPurpose" column="back_purpose"/>
+        <property name="backWay" column="back_way"/>
+        <property name="backerId" column="backer_id"/>
+        <property name="backer" column="backer"/>
+        <property name="planBackTime" column="plan_back_time"/>
+        <property name="realBackTime" column="real_back_time"/>
+        <property name="backContent" column="back_content"/>
+        <property name="checkerId" column="checker_id"/>
+        <property name="checker" column="checker"/>
+        <property name="checkTime" column="check_time"/>
+        <property name="checkContent" column="check_content"/>
+        <property name="pics" column="pics"/>
+        <property name="address" column="address"/>
+        <property name="longitude" column="longitude"/>
+        <property name="latitude" column="latitude"/>
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,180 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.vehicle.loan.model.VehicleLoanCreditInvestigation" table="vehicle_loan_credit_investigation" schema="dbo">
+        <id name="documentNo">
+            <column name="document_no" sql-type="varchar(40)" length="40"/>
+        </id>
+        <property name="stationId">
+            <column name="station_id" sql-type="nvarchar(10)" length="10" />
+        </property>
+        <property name="arrangeNo">
+            <column name="arrange_no" sql-type="nvarchar(40)" length="40" />
+        </property>
+        <property name="status">
+            <column name="status" sql-type="tinyint"/>
+        </property>
+        <property name="goodBuyingRecord">
+            <column name="good_buying_record" sql-type="tinyint" />
+        </property>
+        <property name="fistPaySource">
+            <column name="fist_pay_source" sql-type="nvarchar(40)" length="40" />
+        </property>
+        <property name="hrProvince">
+            <column name="hr_province" sql-type="nvarchar(40)" length="40" />
+        </property>
+        <property name="hrCity">
+            <column name="hr_city" sql-type="nvarchar(40)" length="40"/>
+        </property>
+        <property name="hrArea">
+            <column name="hr_area" sql-type="nvarchar(40)" length="40"/>
+        </property>
+        <property name="hrAddress">
+            <column name="hr_address" sql-type="nvarchar(100)" length="100"/>
+        </property>
+        <property name="liveProvince">
+            <column name="live_province" sql-type="nvarchar(40)" length="40"/>
+        </property>
+        <property name="liveCity">
+            <column name="live_city" sql-type="nvarchar(40)" length="40"/>
+        </property>
+        <property name="liveArea">
+            <column name="live_area" sql-type="nvarchar(40)" length="40"/>
+        </property>
+        <property name="liveAddress">
+            <column name="live_address" sql-type="nvarchar(100)" length="100"/>
+        </property>
+        <property name="vnoId">
+            <column name="vno_id" sql-type="nvarchar(40)" length="40" />
+        </property>
+        <property name="purchaseUse">
+            <column name="purchase_use" sql-type="nvarchar(40)" length="40" />
+        </property>
+        <property name="familySituation">
+            <column name="family_situation" sql-type="nvarchar(max)" length="2147483647" />
+        </property>
+        <property name="mainCustomerFlag">
+            <column name="main_customer_flag" sql-type="tinyint" />
+        </property>
+        <property name="drugTakingFlag">
+            <column name="drug_taking_flag" sql-type="tinyint" />
+        </property>
+        <property name="gambleFlag">
+            <column name="gamble_flag" sql-type="tinyint" />
+        </property>
+        <property name="delictFlag">
+            <column name="delict_flag" sql-type="tinyint" />
+        </property>
+        <property name="debtFlag">
+            <column name="debt_flag" sql-type="tinyint" />
+        </property>
+        <property name="housingLoanFlag">
+            <column name="housing_loan_flag" sql-type="tinyint" />
+        </property>
+        <property name="workHistory">
+            <column name="work_history" sql-type="nvarchar(max)" length="2147483647" />
+        </property>
+        <property name="economicCondition">
+            <column name="economic_condition" sql-type="nvarchar(max)" length="2147483647" />
+        </property>
+        <property name="certificateSituation">
+            <column name="certificate_situation" sql-type="nvarchar(40)" length="40" />
+        </property>
+        <property name="investigateId">
+            <column name="investigate_id" sql-type="varchar(max)" length="2147483647" />
+        </property>
+        <property name="investigateSuggestion">
+            <column name="investigate_suggestion" sql-type="nvarchar(max)" length="2147483647" />
+        </property>
+        <property name="investigateMan">
+            <column name="investigate_man" sql-type="nvarchar(max)" length="2147483647" />
+        </property>
+        <property name="approveComment">
+            <column name="approve_comment" sql-type="nvarchar(max)" length="2147483647" />
+        </property>
+        <property name="auditComment">
+            <column name="audit_comment" sql-type="nvarchar(max)" length="2147483647" />
+        </property>
+        <property name="abortReason">
+            <column name="abort_reason" sql-type="nvarchar(max)" length="2147483647" />
+        </property>
+        <property name="warranterId">
+            <column name="warranter_id" sql-type="nvarchar(40)" length="40" />
+        </property>
+        <property name="affiliatedCompanyId">
+            <column name="affiliated_company_id" sql-type="nvarchar(40)" length="40" />
+        </property>
+        <property name="remark">
+            <column name="remark" sql-type="nvarchar(max)" length="2147483647" />
+        </property>
+        <property name="userId">
+            <column name="user_id" sql-type="nvarchar(40)" length="40" />
+        </property>
+        <property name="userNo">
+            <column name="user_no" sql-type="nvarchar(10)" length="10" />
+        </property>
+        <property name="userName">
+            <column name="user_name" sql-type="nvarchar(10)" length="10"/>
+        </property>
+        <property name="departmentId">
+            <column name="department_id" sql-type="nvarchar(40)" length="40" />
+        </property>
+        <property name="departmentNo">
+            <column name="department_no" sql-type="nvarchar(40)" length="40" />
+        </property>
+        <property name="departmentName">
+            <column name="department_name" sql-type="nvarchar(40)" length="40"/>
+        </property>
+        <property name="submitStationId">
+            <column name="submit_station_id" sql-type="nvarchar(40)" length="40" />
+        </property>
+        <property name="submitStationName">
+            <column name="submit_station_name" sql-type="nvarchar(10)" length="10"/>
+        </property>
+        <property name="creator">
+            <column name="creator" sql-type="nvarchar(20)" length="20" />
+        </property>
+        <property name="createTime">
+            <column name="create_time" sql-type="datetime" />
+        </property>
+        <property name="modifier">
+            <column name="modifier" sql-type="nvarchar(20)" length="20" />
+        </property>
+        <property name="modifyTime">
+            <column name="modify_time" sql-type="datetime" />
+        </property>
+        <property name="submitTime">
+            <column name="submit_time" sql-type="datetime" />
+        </property>
+        <property name="approverId">
+            <column name="approver_id" sql-type="varchar(max)" length="2147483647" />
+        </property>
+        <property name="approverNo">
+            <column name="approver_no" sql-type="varchar(max)" length="2147483647" />
+        </property>
+        <property name="approverName">
+            <column name="approver_name" sql-type="nvarchar(max)" length="2147483647" />
+        </property>
+        <property name="approveTime">
+            <column name="approve_time" sql-type="datetime" />
+        </property>
+        <property name="abortPersonId">
+            <column name="abort_person_id" sql-type="nvarchar(40)" length="40" />
+        </property>
+        <property name="abortPersonName">
+            <column name="abort_person_name" sql-type="nvarchar(20)" length="20" />
+        </property>
+        <property name="abortTime">
+            <column name="abort_time" sql-type="datetime" />
+        </property>
+        <property name="budgetNo">
+            <column name="budget_no" sql-type="nvarchar(40)" length="40" />
+        </property>
+        <property name="warranter2Id">
+            <column name="warranter2_id" sql-type="varchar(40)" length="40" />
+        </property>
+    </class>
+</hibernate-mapping>

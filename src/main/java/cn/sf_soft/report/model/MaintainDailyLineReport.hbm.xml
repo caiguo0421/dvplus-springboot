@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="cn.sf_soft.report.model.MainTainDailyLineReport" abstract="true">
+    	<composite-id>
+    		<key-property name="date">
+    			<column name="date"></column>
+    		</key-property>
+    		<key-property name="num">
+    			<column name="num"></column>
+    		</key-property>
+    		<key-property name="money">
+    			<column name="money"></column>
+    		</key-property>
+    	</composite-id>
+    </class>
+</hibernate-mapping>

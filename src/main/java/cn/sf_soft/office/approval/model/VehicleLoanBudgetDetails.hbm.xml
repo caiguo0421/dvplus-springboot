@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<class name="cn.sf_soft.office.approval.model.VehicleLoanBudgetDetails"
+		table="vehicle_loan_budget_details" schema="dbo">
+		<id name="selfId" type="java.lang.String">
+			<column name="self_id" length="40" />
+			<generator class="assigned" />
+		</id>
+		<property name="documentNo" type="java.lang.String">
+			<column name="document_no" />
+		</property>
+		<property name="saleContractDetailId" type="java.lang.String">
+			<column name="sale_contract_detail_id" />
+		</property>
+		<property name="vnoId" type="java.lang.String">
+			<column name="vno_id" />
+		</property>
+		<property name="vehicleVin" type="java.lang.String">
+			<column name="vehicle_vin" />
+		</property>
+		<property name="vehiclePriceTotal" type="java.lang.Double">
+			<column name="vehicle_price_total" scale="4" not-null="true" />
+		</property>
+		<property name="loanAmount" type="java.lang.Double">
+			<column name="loan_amount" scale="4" not-null="true" />
+		</property>
+		<property name="remark" type="java.lang.String">
+			<column name="remark" />
+		</property>
+		<property name="mortgageDate" type="java.sql.Timestamp">
+			<column name="mortgage_date" length="23" />
+		</property>
+		<property name="postDate" type="java.sql.Timestamp">
+			<column name="post_date" length="23" />
+		</property>
+		<property name="grantDate" type="java.sql.Timestamp">
+			<column name="grant_date" length="23" />
+		</property>
+		<property name="status" type="java.lang.Short">
+			<column name="status" not-null="true" />
+		</property>
+		<property name="approverId" type="java.lang.String">
+			<column name="approver_id" />
+		</property>
+		<property name="approveTime" type="java.sql.Timestamp">
+			<column name="approve_time" length="23" />
+		</property>
+		<property name="agentAmount" type="java.lang.Double">
+			<column name="agent_amount" />
+		</property>
+		<property name="superstructureAmount" type="java.lang.Double">
+			<column name="superstructure_amount" scale="4" />
+		</property>
+		<property name="interestRate" type="java.lang.Double">
+			<column name="interest_rate" precision="9" scale="6" />
+		</property>
+		<property name="periodNumber" type="java.lang.Integer">
+			<column name="period_number" />
+		</property>
+		<property name="monthPay" type="java.lang.Double">
+			<column name="month_pay" scale="4" />
+		</property>
+		<property name="loanRatio" type="java.lang.Double">
+			<column name="loan_ratio" precision="9" />
+		</property>
+		<property name="paymentRatio" type="java.lang.Double">
+			<column name="payment_ratio" precision="9" />
+		</property>
+		<property name="affiliatedCompanyId" type="java.lang.String">
+			<column name="affiliated_company_id" length="40" />
+		</property>
+
+		<property name="bulletinId" type="java.lang.String">
+			<column name="bulletin_id" />
+		</property>
+
+		<property name="bulletinNo" type="java.lang.String">
+			<column name="bulletin_no" />
+		</property>
+		<property name="rateType" type="java.lang.Short">
+			<column name="rate_type"/>
+		</property>
+
+		<property name="interest" type="java.lang.Double">
+			<column name="interest" precision="9" />
+		</property>
+	</class>
+</hibernate-mapping>

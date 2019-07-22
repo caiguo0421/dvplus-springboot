@@ -1,0 +1,482 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class name="cn.sf_soft.office.approval.model.VehicleSaleContractDetailVary" table="vehicle_sale_contract_detail_vary">
+        <id name="detailVaryId" type="java.lang.String">
+            <column name="detail_vary_id" length="40" />
+            <generator class="assigned" />
+        </id>
+        <property name="documentNo" type="java.lang.String">
+            <column name="document_no" />
+        </property>
+        <property name="contractDetailId" type="java.lang.String">
+            <column name="contract_detail_id" />
+        </property>
+        <property name="contractNo" type="java.lang.String">
+            <column name="contract_no" />
+        </property>
+        <property name="oriWarehouseName" type="java.lang.String">
+            <column name="ori_warehouse_name" />
+        </property>
+        <property name="oriVehicleId" type="java.lang.String">
+            <column name="ori_vehicle_id" />
+        </property>
+        <property name="oriVnoId" type="java.lang.String">
+            <column name="ori_vno_id" />
+        </property>
+        <property name="oriVehicleSalesCode" type="java.lang.String">
+            <column name="ori_vehicle_sales_code" />
+        </property>
+        <property name="oriVehicleVno" type="java.lang.String">
+            <column name="ori_vehicle_vno" />
+        </property>
+        <property name="oriVehicleName" type="java.lang.String">
+            <column name="ori_vehicle_name" />
+        </property>
+        <property name="oriVehicleStrain" type="java.lang.String">
+            <column name="ori_vehicle_strain" />
+        </property>
+        <property name="oriVehicleColor" type="java.lang.String">
+            <column name="ori_vehicle_color" />
+        </property>
+        <property name="oriVehicleVin" type="java.lang.String">
+            <column name="ori_vehicle_vin" />
+        </property>
+        <property name="oriVehicleEngineType" type="java.lang.String">
+            <column name="ori_vehicle_engine_type" />
+        </property>
+        <property name="oriVehicleEngineNo" type="java.lang.String">
+            <column name="ori_vehicle_engine_no" />
+        </property>
+        <property name="oriVehicleEligibleNo" type="java.lang.String">
+            <column name="ori_vehicle_eligible_no" />
+        </property>
+        <property name="oriVehicleOutFactoryTime" type="java.sql.Timestamp">
+            <column name="ori_vehicle_out_factory_time" length="23" />
+        </property>
+        <property name="oriVehiclePriceTotal" type="java.lang.Double">
+            <column name="ori_vehicle_price_total" />
+        </property>
+        <property name="oriVehiclePrice" type="java.lang.Double">
+            <column name="ori_vehicle_price" />
+        </property>
+        <property name="oriVehicleCost" type="java.lang.Double">
+            <column name="ori_vehicle_cost" />
+        </property>
+        <property name="oriVehicleCarriage" type="java.lang.Double">
+            <column name="ori_vehicle_carriage" />
+        </property>
+        <property name="oriVehicleQuantity" type="java.lang.Integer">
+            <column name="ori_vehicle_quantity" />
+        </property>
+        <property name="oriWarehouseId" type="java.lang.String">
+            <column name="ori_warehouse_id" />
+        </property>
+        <property name="oriVehicleVnoNew" type="java.lang.String">
+            <column name="ori_vehicle_vno_new" />
+        </property>
+        <property name="oriVehicleVinNew" type="java.lang.String">
+            <column name="ori_vehicle_vin_new" />
+        </property>
+        <property name="oriMinSalePrice" type="java.lang.Double">
+            <column name="ori_min_sale_price" />
+        </property>
+        <property name="oriMinProfit" type="java.lang.Double">
+            <column name="ori_min_profit" />
+        </property>
+        <property name="oriInsuranceIncome" type="java.lang.Double">
+            <column name="ori_insurance_income" />
+        </property>
+        <property name="oriInsurancePf" type="java.lang.Double">
+            <column name="ori_insurance_pf" />
+        </property>
+        <property name="oriInsuranceCost" type="java.lang.Double">
+            <column name="ori_insurance_cost" />
+        </property>
+        <property name="oriPresentIncome" type="java.lang.Double">
+            <column name="ori_present_income" />
+        </property>
+        <property name="oriPresentPf" type="java.lang.Double">
+            <column name="ori_present_pf" />
+        </property>
+        <property name="oriPresentCost" type="java.lang.Double">
+            <column name="ori_present_cost" />
+        </property>
+        <property name="oriConversionIncome" type="java.lang.Double">
+            <column name="ori_conversion_income" />
+        </property>
+        <property name="oriConversionPf" type="java.lang.Double">
+            <column name="ori_conversion_pf" />
+        </property>
+        <property name="oriConversionCost" type="java.lang.Double">
+            <column name="ori_conversion_cost" />
+        </property>
+        <property name="oriModifiedFee" type="java.lang.Double">
+            <column name="ori_modified_fee" />
+        </property>
+        <property name="oriChargeIncome" type="java.lang.Double">
+            <column name="ori_charge_income" />
+        </property>
+        <property name="oriChargePf" type="java.lang.Double">
+            <column name="ori_charge_pf" />
+        </property>
+        <property name="oriChargeCost" type="java.lang.Double">
+            <column name="ori_charge_cost" />
+        </property>
+        <property name="oriVehicleProfit" type="java.lang.Double">
+            <column name="ori_vehicle_profit" />
+        </property>
+        <property name="oriLargessAmount" type="java.lang.Double">
+            <column name="ori_largess_amount" />
+        </property>
+        <property name="oriDeliverAddress" type="java.lang.String">
+            <column name="ori_deliver_address" />
+        </property>
+        <property name="oriPlanDeliverTime" type="java.sql.Timestamp">
+            <column name="ori_plan_deliver_time" length="23" />
+        </property>
+        <property name="oriRealDeliverTime" type="java.sql.Timestamp">
+            <column name="ori_real_deliver_time" length="23" />
+        </property>
+        <property name="oriVehicleCardNo" type="java.lang.String">
+            <column name="ori_vehicle_card_no" />
+        </property>
+        <property name="oriVehicleCardTime" type="java.sql.Timestamp">
+            <column name="ori_vehicle_card_time" length="23" />
+        </property>
+        <property name="oriInsuranceNo" type="java.lang.String">
+            <column name="ori_insurance_no" />
+        </property>
+        <property name="oriInsuranceCompanyName" type="java.lang.String">
+            <column name="ori_insurance_company_name" />
+        </property>
+        <property name="oriInsuranceCompanyNo" type="java.lang.String">
+            <column name="ori_insurance_company_no" />
+        </property>
+        <property name="oriInsuranceCompanyId" type="java.lang.String">
+            <column name="ori_insurance_company_id" />
+        </property>
+        <property name="oriDriveRoomNo" type="java.lang.String">
+            <column name="ori_drive_room_no" />
+        </property>
+        <property name="oriMaintainFee" type="java.lang.Double">
+            <column name="ori_maintain_fee" />
+        </property>
+        <property name="oriLargessPart" type="java.lang.Double">
+            <column name="ori_largess_part" />
+        </property>
+        <property name="oriLargessService" type="java.lang.Double">
+            <column name="ori_largess_service" />
+        </property>
+        <property name="oriCustomerIdProfit" type="java.lang.String">
+            <column name="ori_customer_id_profit" />
+        </property>
+        <property name="oriCustomerNoProfit" type="java.lang.String">
+            <column name="ori_customer_no_profit" />
+        </property>
+        <property name="oriCustomerNameProfit" type="java.lang.String">
+            <column name="ori_customer_name_profit" />
+        </property>
+        <property name="oriVehicleCostRef" type="java.lang.Double">
+            <column name="ori_vehicle_cost_ref" />
+        </property>
+        <property name="oriVehicleNameNew" type="java.lang.String">
+            <column name="ori_vehicle_name_new" />
+        </property>
+        <property name="oriVehicleEligibleNoNew" type="java.lang.String">
+            <column name="ori_vehicle_eligible_no_new" />
+        </property>
+        <property name="oriVnoIdNew" type="java.lang.String">
+            <column name="ori_vno_id_new" />
+        </property>
+        <property name="oriIsContainInsuranceCost" type="java.lang.Boolean">
+            <column name="ori_is_contain_insurance_cost" />
+        </property>
+        <property name="oriProfession" type="java.lang.String">
+            <column name="ori_profession" />
+        </property>
+        <property name="oriTicketOutStockFlag" type="java.lang.Boolean">
+            <column name="ori_ticket_out_stock_flag" />
+        </property>
+        <property name="oriTicketOutStockAmount" type="java.lang.Double">
+            <column name="ori_ticket_out_stock_amount" />
+        </property>
+        <property name="oriBelongToSupplierRebate" type="java.lang.Double">
+            <column name="ori_belong_to_supplier_rebate" />
+        </property>
+        <property name="oriDiscountAmount" type="java.lang.Double">
+            <column name="ori_discount_amount" />
+        </property>
+        <property name="oriTaxationAmount" type="java.lang.Double">
+            <column name="ori_taxation_amount" />
+        </property>
+        <property name="oriProfitReturn" type="java.lang.Double">
+            <column name="ori_profit_return" />
+        </property>
+        <property name="oriOtherCost" type="java.lang.Double">
+            <column name="ori_other_cost" />
+        </property>
+        <property name="oriSubjectMatter" type="java.lang.String">
+            <column name="ori_subject_matter" />
+        </property>
+        <property name="oriTransportRoutes" type="java.lang.String">
+            <column name="ori_transport_routes" />
+        </property>
+        <property name="oriStartPoint" type="java.lang.String">
+            <column name="ori_start_point" />
+        </property>
+        <property name="oriWaysPoint" type="java.lang.String">
+            <column name="ori_ways_point" />
+        </property>
+        <property name="oriEndPoint" type="java.lang.String">
+            <column name="ori_end_point" />
+        </property>
+        <property name="warehouseName" type="java.lang.String">
+            <column name="warehouse_name" />
+        </property>
+        <property name="vehicleId" type="java.lang.String">
+            <column name="vehicle_id" />
+        </property>
+        <property name="vnoId" type="java.lang.String">
+            <column name="vno_id" />
+        </property>
+        <property name="vehicleSalesCode" type="java.lang.String">
+            <column name="vehicle_sales_code" />
+        </property>
+        <property name="vehicleVno" type="java.lang.String">
+            <column name="vehicle_vno" />
+        </property>
+        <property name="vehicleName" type="java.lang.String">
+            <column name="vehicle_name" />
+        </property>
+        <property name="vehicleStrain" type="java.lang.String">
+            <column name="vehicle_strain" />
+        </property>
+        <property name="vehicleColor" type="java.lang.String">
+            <column name="vehicle_color" />
+        </property>
+        <property name="vehicleVin" type="java.lang.String">
+            <column name="vehicle_vin" />
+        </property>
+        <property name="vehicleEngineType" type="java.lang.String">
+            <column name="vehicle_engine_type" />
+        </property>
+        <property name="vehicleEngineNo" type="java.lang.String">
+            <column name="vehicle_engine_no" />
+        </property>
+        <property name="vehicleEligibleNo" type="java.lang.String">
+            <column name="vehicle_eligible_no" />
+        </property>
+        <property name="vehicleOutFactoryTime" type="java.sql.Timestamp">
+            <column name="vehicle_out_factory_time" length="23" />
+        </property>
+        <property name="vehiclePriceTotal" type="java.lang.Double">
+            <column name="vehicle_price_total" />
+        </property>
+        <property name="vehiclePrice" type="java.lang.Double">
+            <column name="vehicle_price" />
+        </property>
+        <property name="vehicleCost" type="java.lang.Double">
+            <column name="vehicle_cost" />
+        </property>
+        <property name="vehicleCarriage" type="java.lang.Double">
+            <column name="vehicle_carriage" />
+        </property>
+        <property name="vehicleQuantity" type="java.lang.Integer">
+            <column name="vehicle_quantity" />
+        </property>
+        <property name="warehouseId" type="java.lang.String">
+            <column name="warehouse_id" />
+        </property>
+        <property name="vehicleVnoNew" type="java.lang.String">
+            <column name="vehicle_vno_new" />
+        </property>
+        <property name="vehicleVinNew" type="java.lang.String">
+            <column name="vehicle_vin_new" />
+        </property>
+        <property name="minSalePrice" type="java.lang.Double">
+            <column name="min_sale_price" />
+        </property>
+        <property name="minProfit" type="java.lang.Double">
+            <column name="min_profit" />
+        </property>
+        <property name="insuranceIncome" type="java.lang.Double">
+            <column name="insurance_income" />
+        </property>
+        <property name="insurancePf" type="java.lang.Double">
+            <column name="insurance_pf" />
+        </property>
+        <property name="insuranceCost" type="java.lang.Double">
+            <column name="insurance_cost" />
+        </property>
+        <property name="presentIncome" type="java.lang.Double">
+            <column name="present_income" />
+        </property>
+        <property name="presentPf" type="java.lang.Double">
+            <column name="present_pf" />
+        </property>
+        <property name="presentCost" type="java.lang.Double">
+            <column name="present_cost" />
+        </property>
+        <property name="conversionIncome" type="java.lang.Double">
+            <column name="conversion_income" />
+        </property>
+        <property name="conversionPf" type="java.lang.Double">
+            <column name="conversion_pf" />
+        </property>
+        <property name="conversionCost" type="java.lang.Double">
+            <column name="conversion_cost" />
+        </property>
+        <property name="modifiedFee" type="java.lang.Double">
+            <column name="modified_fee" />
+        </property>
+        <property name="chargeIncome" type="java.lang.Double">
+            <column name="charge_income" />
+        </property>
+        <property name="chargePf" type="java.lang.Double">
+            <column name="charge_pf" />
+        </property>
+        <property name="chargeCost" type="java.lang.Double">
+            <column name="charge_cost" />
+        </property>
+        <property name="vehicleProfit" type="java.lang.Double">
+            <column name="vehicle_profit" />
+        </property>
+        <property name="largessAmount" type="java.lang.Double">
+            <column name="largess_amount" />
+        </property>
+        <property name="deliverAddress" type="java.lang.String">
+            <column name="deliver_address" />
+        </property>
+        <property name="planDeliverTime" type="java.sql.Timestamp">
+            <column name="plan_deliver_time" length="23" />
+        </property>
+        <property name="realDeliverTime" type="java.sql.Timestamp">
+            <column name="real_deliver_time" length="23" />
+        </property>
+         <property name="bestDeliverTime" type="java.sql.Timestamp">
+            <column name="best_deliver_time" length="23" />
+        </property>
+         <property name="oriBestDeliverTime" type="java.sql.Timestamp">
+            <column name="ori_best_deliver_time" length="23" />
+        </property>
+        <property name="vehicleCardNo" type="java.lang.String">
+            <column name="vehicle_card_no" />
+        </property>
+        <property name="vehicleCardTime" type="java.sql.Timestamp">
+            <column name="vehicle_card_time" length="23" />
+        </property>
+        <property name="insuranceNo" type="java.lang.String">
+            <column name="insurance_no" />
+        </property>
+        <property name="insuranceCompanyName" type="java.lang.String">
+            <column name="insurance_company_name" />
+        </property>
+        <property name="insuranceCompanyNo" type="java.lang.String">
+            <column name="insurance_company_no" />
+        </property>
+        <property name="insuranceCompanyId" type="java.lang.String">
+            <column name="insurance_company_id" />
+        </property>
+        <property name="driveRoomNo" type="java.lang.String">
+            <column name="drive_room_no" />
+        </property>
+        <property name="maintainFee" type="java.lang.Double">
+            <column name="maintain_fee" />
+        </property>
+        <property name="largessPart" type="java.lang.Double">
+            <column name="largess_part" />
+        </property>
+        <property name="largessService" type="java.lang.Double">
+            <column name="largess_service" />
+        </property>
+        <property name="customerIdProfit" type="java.lang.String">
+            <column name="customer_id_profit" />
+        </property>
+        <property name="customerNoProfit" type="java.lang.String">
+            <column name="customer_no_profit" />
+        </property>
+        <property name="customerNameProfit" type="java.lang.String">
+            <column name="customer_name_profit" />
+        </property>
+        <property name="vehicleCostRef" type="java.lang.Double">
+            <column name="vehicle_cost_ref" />
+        </property>
+        <property name="vehicleNameNew" type="java.lang.String">
+            <column name="vehicle_name_new" />
+        </property>
+        <property name="vehicleEligibleNoNew" type="java.lang.String">
+            <column name="vehicle_eligible_no_new" />
+        </property>
+        <property name="vnoIdNew" type="java.lang.String">
+            <column name="vno_id_new" />
+        </property>
+        <property name="isContainInsuranceCost" type="java.lang.Boolean">
+            <column name="is_contain_insurance_cost" not-null="true" />
+        </property>
+        <property name="profession" type="java.lang.String">
+            <column name="profession" />
+        </property>
+        <property name="ticketOutStockFlag" type="java.lang.Boolean">
+            <column name="ticket_out_stock_flag" />
+        </property>
+        <property name="ticketOutStockAmount" type="java.lang.Double">
+            <column name="ticket_out_stock_amount" />
+        </property>
+        <property name="belongToSupplierRebate" type="java.lang.Double">
+            <column name="belong_to_supplier_rebate" />
+        </property>
+        <property name="discountAmount" type="java.lang.Double">
+            <column name="discount_amount" />
+        </property>
+        <property name="taxationAmount" type="java.lang.Double">
+            <column name="taxation_amount" />
+        </property>
+        <property name="profitReturn" type="java.lang.Double">
+            <column name="profit_return" />
+        </property>
+        <property name="otherCost" type="java.lang.Double">
+            <column name="other_cost" />
+        </property>
+        <property name="subjectMatter" type="java.lang.String">
+            <column name="subject_matter" />
+        </property>
+        <property name="transportRoutes" type="java.lang.String">
+            <column name="transport_routes" />
+        </property>
+        <property name="startPoint" type="java.lang.String">
+            <column name="start_point" />
+        </property>
+        <property name="waysPoint" type="java.lang.String">
+            <column name="ways_point" />
+        </property>
+        <property name="endPoint" type="java.lang.String">
+            <column name="end_point" />
+        </property>
+        <property name="abortStatus" type="java.lang.Short">
+            <column name="abort_status" />
+        </property>
+        <property name="abortComment" type="java.lang.String">
+            <column name="abort_comment" />
+        </property>
+        <property name="vehicleComment" type="java.lang.String">
+            <column name="vehicle_comment" />
+        </property>
+        <property name="relationDetailId" type="java.lang.String">
+            <column name="relation_detail_id" />
+        </property>
+        <property name="oriRelationDetailId" type="java.lang.String">
+            <column name="ori_relation_detail_id" />
+        </property>
+
+        <!-- 预防定金 -->
+        <property name="deposit" type="java.lang.Double">
+            <column name="deposit" />
+        </property>
+        <property name="oriDeposit" type="java.lang.Double">
+            <column name="ori_deposit" />
+        </property>
+    </class>
+</hibernate-mapping>

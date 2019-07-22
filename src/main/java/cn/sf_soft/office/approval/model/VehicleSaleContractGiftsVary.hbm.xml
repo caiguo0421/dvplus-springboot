@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class name="cn.sf_soft.office.approval.model.VehicleSaleContractGiftsVary" table="vehicle_sale_contract_gifts_vary" >
+        <id name="saleContractGiftsVaryId" type="java.lang.String">
+            <column name="sale_contract_gifts_vary_id" length="40" />
+            <generator class="assigned" />
+        </id>
+        <property name="detailVaryId" type="java.lang.String">
+            <column name="detail_vary_id" />
+        </property>
+        <property name="giftId" type="java.lang.String">
+            <column name="gift_id" />
+        </property>
+        <property name="contractDetailId" type="java.lang.String">
+            <column name="contract_detail_id" />
+        </property>
+        <property name="detailId" type="java.lang.String">
+            <column name="detail_id" />
+        </property>
+        <property name="itemId" type="java.lang.String">
+            <column name="item_id" not-null="true" />
+        </property>
+        <property name="itemName" type="java.lang.String">
+            <column name="item_name" not-null="true" />
+        </property>
+        <property name="itemType" type="java.lang.Short">
+            <column name="item_type" not-null="true" />
+        </property>
+        <property name="amount" type="java.lang.Double">
+            <column name="amount" />
+        </property>
+        <property name="giveFlag" type="java.lang.Short">
+            <column name="give_flag" not-null="true" />
+        </property>
+        <property name="remark" type="java.lang.String">
+            <column name="remark" />
+        </property>
+        <property name="abortStatus" type="java.lang.Short">
+            <column name="abort_status" />
+        </property>
+        <property name="abortComment" type="java.lang.String">
+            <column name="abort_comment" />
+        </property>
+        <property name="contractNo" type="java.lang.String">
+            <column name="contract_no" />
+        </property>
+    </class>
+</hibernate-mapping>

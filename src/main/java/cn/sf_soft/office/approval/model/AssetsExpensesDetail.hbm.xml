@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated 2015-4-28 15:14:09 by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="cn.sf_soft.office.approval.model.AssetsExpensesDetail" table="assets_expenses_detail" schema="dbo" >    
+            <id name="aedId" type="string">
+                <column name="aed_id" length="40" />
+                <generator class="assigned" />
+            </id>
+            <property name="documentId" type="string">
+                <column name="document_id" length="40" />
+            </property>
+            <property name="documentType" type="java.lang.Short">
+                <column name="document_type" />
+            </property>
+            <property name="objType" type="java.lang.Short">
+                <column name="obj_type" />
+            </property>
+            <property name="objNo" type="string">
+                <column name="obj_no" length="40" />
+            </property>
+            <property name="objId" type="string">
+                <column name="obj_id" length="40" />
+            </property>
+            <property name="objName" type="string">
+                <column name="obj_name" length="100" />
+            </property>
+            <property name="amount" type="java.lang.Double">
+                <column name="amount" precision="9" />
+            </property>
+    </class>
+</hibernate-mapping>

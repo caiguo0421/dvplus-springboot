@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+	<!-- =======================================意向客户======================================= -->
+
+	<!--查询意向客户信息 -->
+	<sql-query name="sqlMaster">
+		<![CDATA[
+		SELECT  *
+				
+		FROM    ( SELECT    a.* ,
+		                    b.station_name ,
+		                    c.meaning AS customer_type_meaning ,
+		                    e.meaning AS object_nature_meaning ,
+		                    f.mobile AS introducer_mobile ,
+		                    f.address AS introducer_address ,
+		                    ( SELECT TOP ( 1 )
+                                		seller_id
+		                      FROM      presell_visitors n
+		                      WHERE     n.visitor_id = a.object_id
+		                                AND ( n.visit_result IS NULL
+		                                      OR n.visit_result = ''
+		                                    )
+		                    ) AS sel_id ,
+		                    ( SELECT TOP 1
+		                                seller
+		                      FROM      dbo.presell_visitors
+		                      WHERE     visitor_id = a.OBJECT_ID
+										AND ( visit_result IN ( 10, 20 ) 
+											  OR visit_result IS NULL
+											)
+		                      ORDER BY  create_time DESC
+		                    ) AS last_seller ,
+		                    h.visit_result AS last_visit_result ,
+		                    h.visit_result_meaning AS last_visit_result_meaning ,
+							ISNULL(g.is_bought, 0) is_bought ,
+							CASE WHEN ( SELECT  COUNT(*)
+		                                FROM    dbo.finance_document_entries J
+		                                WHERE   J.object_id = a.object_id
+		                              ) > 0 THEN 1
+		                         ELSE 0
+		                    END AS is_consumption,
+		                    
+		                    ( SELECT TOP ( 1 )
+		                                first_talk_comment
+		                      FROM      presell_visitors 
+		                      WHERE     visitor_id = a.object_id
+		                      			:saleClueNoCondition
+		                      ORDER BY create_time DESC
+		                    ) first_talk_comment ,
+		                    ( SELECT TOP ( 1 )
+		                                real_back_time
+		                      FROM      presell_visitors_back
+		                      WHERE     visitor_no IN (
+		                                SELECT  visitor_no
+		                                FROM    presell_visitors
+		                                WHERE   visitor_id = a.object_id )ORDER BY real_back_time DESC
+		                    ) last_real_back_time ,
+		                    ( SELECT TOP ( 1 )
+		                                self_id AS self_id
+		                      FROM      customer_retain_vehicle
+		                      WHERE     customer_id = a.object_id
+		                    ) AS self_id ,
+		                    ( SELECT TOP ( 1 )
+		                                vehicle_brand AS vehicle_brand
+		                      FROM      customer_retain_vehicle
+		                      WHERE     customer_id = a.object_id
+		                    ) AS vehicle_brand ,
+		                    ( SELECT TOP ( 1 )
+		                                vehicle_strain AS vehicle_strain
+		                      FROM      customer_retain_vehicle
+		                      WHERE     customer_id = a.object_id
+		                    ) AS vehicle_strain 
+							
+		          FROM      dbo.interested_customers a
+		                    LEFT JOIN sys_stations b ON a.station_id = b.station_id
+		                    LEFT JOIN ( SELECT  code ,
+		                                        meaning
+		                                FROM    sys_flags
+		                                WHERE   field_no = 'visitor_type'
+		                              ) c ON a.customer_type = c.code
+		                    LEFT JOIN ( SELECT  code ,
+		                                        meaning
+		                                FROM    sys_flags
+		                                WHERE   field_no = 'object_nature'
+		                              ) e ON a.object_nature = e.code
+		                    LEFT JOIN interested_customers f ON a.introducer_id = f.OBJECT_ID
+		                    LEFT JOIN ( SELECT DISTINCT            
+												l.customer_id ,
+		                                        1 AS is_bought
+		                                FROM    vehicle_sale_contract_detail x
+		                                        LEFT JOIN dbo.vehicle_sale_contracts l ON x.contract_no = l.contract_no
+		                                WHERE   ( x.approve_status = 1
+		                                          OR x.approve_status = 2
+		                                        )
+		                                        AND l.contract_status <> 3
+		                                        AND l.contract_status <> 4
+		                              ) g ON a.object_id = g.customer_id
+		                    LEFT JOIN ( SELECT  *
+		                                FROM    ( SELECT    ROW_NUMBER() OVER ( PARTITION  BY x.visitor_id ORDER BY x.modify_time DESC ) AS rowNumber ,
+		                                                    x.visitor_id ,
+		                                                    x.visit_result ,
+		                                                    y.meaning AS visit_result_meaning
+		                                          FROM      presell_visitors x
+		                                                    LEFT JOIN ( SELECT
+		                                                              code ,
+		                                                              meaning
+		                                                              FROM
+		                                                              dbo.sys_flags
+		                                                              WHERE
+		                                                              field_no = 'visit_result'
+		                                                              ) y ON x.visit_result = y.code
+		                                          WHERE     x.visit_result IN ( 10, 20 )
+		                                        ) t
+		                                WHERE   t.rowNumber = 1
+		                              ) h ON a.object_id = h.visitor_id
+		          WHERE     a.object_type & 2 = 2
+		                    AND a.object_kind & 1 = 1
+		                    AND ISNULL(a.status, 0) = 1
+		                    AND a.customer_type = 30
+		        ) tmp
+		WHERE   1 = 1
+        ]]>
+	</sql-query>
+	<!--查询销售线索信息  -->
+	<sql-query name="sqlVisitor">
+		<![CDATA[
+		SELECT  *
+		FROM    ( SELECT    a.* ,
+		                    b.meaning AS visit_addr_meaning ,
+		                    c.meaning AS buy_type_meaning ,
+		                    d.meaning AS visit_result_meaning ,
+		                    f.meaning AS last_visit_result_meaning ,
+		                    ( SELECT TOP ( 1 )
+                                		real_back_time
+		                      FROM      presell_visitors_back
+		                      WHERE     visitor_no = a.visitor_no
+		                      ORDER BY  real_back_time DESC
+		                    ) last_visit_time
+		          FROM      presell_visitors a
+		                    LEFT JOIN ( SELECT  code ,
+		                                        meaning
+		                                FROM    sys_flags
+		                                WHERE   field_no = 'visit_addr'
+		                              ) b ON a.visit_addr = b.code
+		                    LEFT JOIN ( SELECT  code ,
+		                                        meaning
+		                                FROM    sys_flags
+		                                WHERE   field_no = 'vs_buy_type'
+		                              ) c ON a.buy_type = c.code
+		                    LEFT JOIN ( SELECT  code ,
+		                                        meaning
+		                                FROM    sys_flags
+		                                WHERE   field_no = 'visit_result'
+		                              ) d ON a.visit_result = d.code
+		                    LEFT JOIN ( SELECT  code ,
+		                                        meaning
+		                                FROM    sys_flags
+		                                WHERE   field_no = 'visit_result'
+		                              ) f ON a.last_visit_result = f.code
+		        ) presell_visitors
+		WHERE   1 = 1 
+        ]]>
+	</sql-query>
+	
+	
+	<!-- 保有车辆_品系 -->
+	<!-- <sql-query name="selectVehicleStrain">
+	<return class="cn.sf_soft.vehicle.customer.model.VehicleType"/>
+		<![CDATA[
+		SELECT  ISNULL(a.vehicle_strain, a.vehicle_brand) AS name_group ,
+		        vno_id ,
+		        station_id ,
+		        vehicle_vno ,
+		        vehicle_name ,
+		        vehicle_strain ,
+		        vehicle_name_id ,
+		        catalogs_type ,
+		        vehicle_brand ,
+		        parent_id
+		FROM    vw_vehicle_type a
+		WHERE   catalogs_type < 30
+		        AND vno_id IN ( SELECT  vehicle_strain_id
+		                        FROM    vw_vehicle_type
+		                        WHERE   catalogs_type = 20
+		                        UNION
+		                        SELECT  vehicle_brand_id
+		                        FROM    vw_vehicle_type
+		                        WHERE   catalogs_type = 20 )		      
+        ]]>
+	</sql-query> -->
+	<sql-query name="selectVehicleStrain">
+	<return class="cn.sf_soft.vehicle.customer.model.VehicleType"/>
+		<![CDATA[
+		SELECT ISNULL(a.common_name, b.common_name) AS name_group ,
+		b.self_id as vno_id,
+		null as station_id,
+		null AS vehicle_vno ,
+		NULL AS vehicle_name ,
+		b.common_name AS vehicle_strain ,
+		NULL AS vehicle_name_id ,
+		NULL AS catalogs_type ,
+        a.common_name AS vehicle_brand ,
+        a.self_id AS parent_id
+ FROM   base_vehicle_name a
+        RIGHT JOIN base_vehicle_name b ON a.self_id = b.parent_id
+ WHERE  a.common_type = '车辆品牌'
+ UNION
+ SELECT a.common_name AS name_group ,
+		a.self_id AS vno_id ,
+		null as station_id,
+		null AS vehicle_vno ,
+		NULL AS vehicle_name ,
+		NULL AS vehicle_strain,
+        NULL AS vehicle_name_id ,
+		NULL AS catalogs_type ,        
+        a.common_name AS vehicle_brand ,
+        NULL AS parent_id
+ FROM   base_vehicle_name a
+ WHERE  a.common_type = '车辆品牌'		      
+        ]]>
+	</sql-query>
+	<!-- 车辆型号-->
+	<!-- <sql-query name="selectVehicleType">
+		<![CDATA[
+		SELECT  vno_id ,
+				station_id,
+		        vehicle_vno ,
+		        vehicle_name ,
+		        vehicle_name_id ,
+		        vehicle_brand ,
+		        vehicle_strain ,
+		        parent_id ,
+		        '' AS name_group
+		FROM    dbo.vw_vehicle_type
+		WHERE   catalogs_type = 40
+		        AND vehicle_vno IS NOT NULL
+		        AND station_id IS NOT NULL
+		        AND vehicle_name_id IS NOT NULL
+		        AND sell_show = 1
+		        AND (station_id IS NULL OR station_id LIKE :stationId)
+		        AND forbid_flag = 0
+        ]]>
+	</sql-query> -->
+	<sql-query name="selectVehicleType">
+		<![CDATA[
+		SELECT  a.self_id as vno_id ,
+        NULL AS station_id ,
+        a.product_model vehicle_vno ,
+        ISNULL(a.model_name, '无名称') vehicle_name ,
+        NULL AS vehicle_name_id ,
+        NULL AS vehicle_brand ,
+        a.vehicle_strain AS vehicle_strain ,
+        NULL AS parent_id ,
+        '' AS name_group
+FROM    ( SELECT    a.* ,
+                    b.common_name AS vehicle_name ,
+                    b.common_no ,
+                    --c.common_name AS vehicle_strain ,
+                    d.common_name AS vehicle_brand ,
+                    e.meaning AS vehicle_kind_meaning
+          FROM      base_vehicle_model_catalog AS a
+                    LEFT JOIN base_vehicle_name AS b ON a.vehicle_name_id = b.self_id
+                                                        AND b.common_type = '车辆名称'
+                    LEFT JOIN base_vehicle_name AS c ON b.parent_id = c.self_id
+                                                        AND c.common_type = '车辆品系'
+                    LEFT JOIN base_vehicle_name AS d ON c.parent_id = d.self_id
+                                                        AND d.common_type = '车辆品牌'
+                    LEFT JOIN sys_flags AS e ON e.field_no = 'vehicle_kind'
+                                                AND a.vehicle_kind = e.code
+                    LEFT JOIN base_vehicle_model_catalog_price AS f ON a.self_id = f.parent_id
+                                                              AND (f.station_id IS NULL OR f.station_id LIKE :stationId) 
+                    
+        ) AS a
+WHERE   status = '有效'
+        AND is_primary = 1
+        ]]>
+	</sql-query>
+	<!--
+	获取省市区的基础数据
+	--><sql-query name="selectCitys">
+	<return class="cn.sf_soft.vehicle.customer.model.ObjectOfPlace"/>
+			<![CDATA[
+				SELECT  province_no AS id ,
+				        province_name AS name ,
+				        NULL AS parent_id
+				FROM    base_provinces
+				UNION
+				SELECT  city_no AS id ,
+				        city_name AS name ,
+				        province_no AS parent_id
+				FROM    base_cities
+				UNION
+				SELECT  area_no AS id ,
+				        area_name AS NAME ,
+				        city_no AS parent_id
+				FROM    base_areas
+        ]]>
+	</sql-query>
+
+	<sql-query name="customerMapTotal"><![CDATA[
+		SELECT ISNULL(SUM (ding_che),0) AS order_vehicle_count, ISNULL(SUM (jiao_che),0) AS deliver_vehicle_count, ISNULL(SUM (cheng_jiao),0) AS visit_success,
+  		ISNULL(SUM (zhan_bai),0) AS visit_failure
+		FROM ( SELECT b.station_id, b.station_name, 1 AS ding_che, 0 AS jiao_che, 0 AS cheng_jiao, 0 AS zhan_bai
+		FROM dbo.vehicle_sale_contract_detail a
+		LEFT JOIN dbo.vw_vehicle_sale_contracts b ON b.contract_no = a.contract_no
+		WHERE 1 = 1
+		AND a.approve_status IN ( 0, 1, 20 )
+		AND b.contract_status <> 3
+		AND b.contract_status <> 4
+		AND a.real_deliver_time IS NULL
+		AND DATEDIFF (YEAR, b.sign_time, GETDATE ()) = 0
+		:customer_condition
+		-- AND b.customer_province = '广东省' --省  查找条件
+		-- AND b.customer_city = '深圳市' --市  查找条件
+		-- AND b.customer_area = '罗湖区' --区  查找条件
+		-- AND b.station_id = 'A' --站点  查找条件
+		-- AND b.customer_profession = '零担运输' -- 行业  查找条件
+		-- AND b.seller_id = '93c28555-5dc9-4d75-9af0-f6031d7cf4ca' --自己（销售员）  查找条件
+		UNION ALL
+		SELECT b.station_id, b.station_name, 0, 1, 0, 0
+		FROM dbo.vehicle_sale_contract_detail a
+		LEFT JOIN dbo.vw_vehicle_sale_contracts b ON b.contract_no = a.contract_no
+		WHERE 1 = 1
+		AND a.approve_status IN ( 0, 1, 20 )
+		AND b.contract_status <> 3
+		AND b.contract_status <> 4
+		AND a.real_deliver_time IS NOT NULL
+		AND DATEDIFF (YEAR, a.real_deliver_time, GETDATE ()) = 0
+		:customer_condition
+		-- AND b.customer_province = '广东省' --省  查找条件
+		-- AND b.customer_city = '深圳市' --市  查找条件
+		-- AND b.customer_area = '罗湖区' --区  查找条件
+		-- AND b.station_id = 'A' --站点  查找条件
+		-- AND b.customer_profession = '零担运输' -- 行业  查找条件
+		-- AND b.seller_id = '93c28555-5dc9-4d75-9af0-f6031d7cf4ca' --自己（销售员）  查找条件
+		UNION ALL
+		SELECT a.station_id, c.station_name, 0, 0, 1, 0
+		FROM dbo.presell_visitors a
+		LEFT JOIN dbo.vw_interested_customers b ON b.object_id = a.visitor_id
+		LEFT JOIN dbo.sys_stations c ON c.station_id = a.station_id
+		WHERE 1 = 1
+		AND a.visit_result = 10
+		AND DATEDIFF (YEAR, a.visit_time, GETDATE ()) = 0
+		:condition
+		-- AND b.province = '广东省' --省  查找条件
+		-- AND b.city = '深圳市' --市  查找条件
+		-- AND b.area = '罗湖区' --区  查找条件
+		-- AND a.station_id = 'A' --站点  查找条件
+		-- AND b.profession = '零担运输' -- 行业  查找条件
+		-- AND a.seller_id = '93c28555-5dc9-4d75-9af0-f6031d7cf4ca' --自己（销售员）  查找条件
+		UNION ALL
+		SELECT a.station_id, c.station_name, 0, 0, 0, 1
+		FROM dbo.presell_visitors a
+		LEFT JOIN dbo.vw_interested_customers b ON b.object_id = a.visitor_id
+		LEFT JOIN dbo.sys_stations c ON c.station_id = a.station_id
+		WHERE 1 = 1
+		AND a.visit_result = 20
+		AND DATEDIFF (YEAR, a.visit_time, GETDATE ()) = 0
+		:condition
+		-- AND b.province = '广东省' --省  查找条件
+		-- AND b.city = '深圳市' --市  查找条件
+		-- AND b.area = '罗湖区' --区  查找条件
+		-- AND a.station_id = 'A' --站点  查找条件
+		-- AND b.profession = '零担运输' -- 行业  查找条件
+		-- AND a.seller_id = '93c28555-5dc9-4d75-9af0-f6031d7cf4ca' --自己（销售员）  查找条件
+		) a
+		WHERE 1 = 1;
+	 ]]></sql-query>
+</hibernate-mapping>
+	

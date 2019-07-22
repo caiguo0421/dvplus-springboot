@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+
+<hibernate-mapping>
+    <class name="cn.sf_soft.office.approval.model.VehicleSaleContractChargeVary" table="vehicle_sale_contract_charge_vary">
+        <id name="vehicleSaleContractChargeVaryId" type="java.lang.String">
+            <column name="vehicle_sale_contract_charge_vary_id" length="50" />
+            <generator class="assigned" />
+        </id>
+        <property name="detailVaryId" type="java.lang.String">
+            <column name="detail_vary_id" />
+        </property>
+        <property name="saleContractChargeId" type="java.lang.String">
+            <column name="sale_contract_charge_id" />
+        </property>
+        <property name="contractDetailId" type="java.lang.String">
+            <column name="contract_detail_id" />
+        </property>
+        <property name="chargeId" type="java.lang.String">
+            <column name="charge_id" />
+        </property>
+        <property name="chargeName" type="java.lang.String">
+            <column name="charge_name" />
+        </property>
+        <property name="chargePf" type="java.lang.Double">
+            <column name="charge_pf" precision="9" />
+        </property>
+        <property name="chargeCost" type="java.lang.Double">
+            <column name="charge_cost" precision="9" />
+        </property>
+        <property name="costStatus" type="java.lang.Short">
+            <column name="cost_status" />
+        </property>
+        <property name="chargeComment" type="java.lang.String">
+            <column name="charge_comment" />
+        </property>
+        <property name="abortStatus" type="java.lang.Short">
+            <column name="abort_status" />
+        </property>
+        <property name="abortComment" type="java.lang.String">
+            <column name="abort_comment" />
+        </property>
+        <property name="income" type="java.lang.Double">
+            <column name="income" precision="9" />
+        </property>
+        <property name="paidByBill" type="java.lang.Boolean">
+            <column name="paid_by_bill" />
+        </property>
+        <property name="remark" type="java.lang.String">
+            <column name="remark" />
+        </property>
+        <property name="contractNo" type="java.lang.String">
+            <column name="contract_no" />
+        </property>
+        <property name="oriChargePf" type="java.lang.Double">
+            <column name="ori_charge_pf" precision="9" />
+        </property>
+        <property name="oriChargeCost" type="java.lang.Double">
+            <column name="ori_charge_cost" precision="9" />
+        </property>
+        <property name="oriIncome" type="java.lang.Double">
+            <column name="ori_income" precision="9" />
+        </property>
+        <property name="oriPaidByBill" type="java.lang.Boolean">
+            <column name="ori_paid_by_bill" />
+        </property>
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.vehicle.contract.model.VehicleSaleQuotationLoanBudgetCharge"
+           table="vehicle_sale_quotation_loan_budget_charge" schema="dbo">
+        <id name="selfId" column="self_id"/>
+        <property name="quotationLoanBudgetId" column="quotation_loan_budget_id"/>
+        <property name="chargeId" column="charge_id"/>
+        <property name="direction" column="direction"/>
+        <property name="objectId" column="object_id"/>
+        <property name="arapDate" column="arap_date"/>
+        <property name="returnDate" column="return_date"/>
+        <property name="moneyType" column="money_type"/>
+        <property name="amount" column="amount"/>
+        <property name="loanAmount" column="loan_amount"/>
+        <property name="cost" column="cost"/>
+        <property name="isReimbursed" column="is_reimbursed"/>
+        <property name="abortReason" column="abort_reason"/>
+        <property name="status" column="status"/>
+        <property name="remark" column="remark"/>
+        <property name="creatorId" column="creator_id"/>
+        <property name="createTime" column="create_time"/>
+        <property name="abortTime" column="abort_time"/>
+        <property name="abortPersonId" column="abort_person_id"/>
+        <property name="chargeName" column="charge_name" />
+    </class>
+</hibernate-mapping>

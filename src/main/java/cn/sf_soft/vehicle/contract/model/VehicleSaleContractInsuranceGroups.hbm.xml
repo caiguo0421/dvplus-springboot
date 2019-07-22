@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="cn.sf_soft.vehicle.contract.model.VehicleSaleContractInsuranceGroups" table="vehicle_sale_contract_insurance_groups" schema="dbo" >
+        <id name="insuranceGroupId" column="insurance_group_id"/>
+        <property name="groupId" column="group_id"/>
+        <property name="insuranceYear" column="insurance_year"/>
+        <property name="categoryId" column="category_id"/>
+        <property name="categoryName" column="category_name"/>
+        <property name="categoryType" column="category_type"/>
+        <property name="categoryIncome" column="category_income"/>
+        <property name="categoryScale" column="category_scale"/>
+        <property name="remark" column="remark"/>
+        <property name="supplierId" column="supplier_id"/>
+        <property name="purchaseSort" column="purchase_sort"/>
+        <property name="isFree" column="is_free"/>
+        <property name="contractNo" column="contract_no"/>
+        <property name="taxRate" column="tax_rate"/>
+        <property name="rebateRatio" column="rebate_ratio"/>
+    </class>
+</hibernate-mapping>

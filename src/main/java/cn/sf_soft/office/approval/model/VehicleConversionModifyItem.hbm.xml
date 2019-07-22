@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+
+<hibernate-mapping>
+    <class name="cn.sf_soft.office.approval.model.VehicleConversionModifyItem" table="vehicle_conversion_modify_item">
+        <id name="modifyId" type="java.lang.String">
+            <column name="modify_id" length="40" />
+            <generator class="assigned" />
+        </id>
+        <property name="conversionNo" type="java.lang.String">
+            <column name="conversion_no" />
+        </property>
+        <property name="vscdId" type="java.lang.String">
+            <column name="vscd_id" />
+        </property>
+        <property name="vsccId" type="java.lang.String">
+            <column name="vscc_id" />
+        </property>
+        <property name="itemId" type="java.lang.String">
+            <column name="item_id" />
+        </property>
+        <property name="itemNo" type="java.lang.String">
+            <column name="item_no" />
+        </property>
+        <property name="itemName" type="java.lang.String">
+            <column name="item_name" not-null="true" />
+        </property>
+        <property name="itemCost" type="java.lang.Double">
+            <column name="item_cost" precision="9" not-null="true" />
+        </property>
+        <property name="income" type="java.lang.Double">
+            <column name="income" precision="9" />
+        </property>
+        <property name="oriItemCost" type="java.lang.Double">
+            <column name="ori_item_cost" precision="9" />
+        </property>
+        <property name="oriIncome" type="java.lang.Double">
+            <column name="ori_income" precision="9" />
+        </property>
+        <property name="status" type="java.lang.Short">
+            <column name="status" />
+        </property>
+        <property name="varyType" type="java.lang.Short">
+            <column name="vary_type" />
+        </property>
+        <property name="comment" type="java.lang.String">
+            <column name="comment" />
+        </property>
+        <property name="oriItemId" type="java.lang.String">
+            <column name="ori_item_id" />
+        </property>
+        <property name="oriItemNo" type="java.lang.String">
+            <column name="ori_item_no" />
+        </property>
+        <property name="oriItemName" type="java.lang.String">
+            <column name="ori_item_name" />
+        </property>
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<class name="cn.sf_soft.office.approval.model.VehicleInStockDetail"
+		table="vehicle_in_stock_detail">
+		<id name="inStockDetailId" type="java.lang.String">
+			<column name="in_stock_detail_id" length="40" />
+			<generator class="assigned" />
+		</id>
+		<property name="inStockNo" type="java.lang.String">
+			<column name="in_stock_no" length="20" />
+		</property>
+		<property name="vnoId" type="java.lang.String">
+			<column name="vno_id" length="40" />
+		</property>
+		<property name="vehicleSalesCode" type="java.lang.String">
+			<column name="vehicle_sales_code" length="50" />
+		</property>
+		<property name="vehicleVno" type="java.lang.String">
+			<column name="vehicle_vno" length="40" />
+		</property>
+		<property name="vehicleName" type="java.lang.String">
+			<column name="vehicle_name" />
+		</property>
+		<property name="vehicleStrain" type="java.lang.String">
+			<column name="vehicle_strain" />
+		</property>
+		<property name="vehicleColor" type="java.lang.String">
+			<column name="vehicle_color" />
+		</property>
+		<property name="vehicleVin" type="java.lang.String">
+			<column name="vehicle_vin" length="30" />
+		</property>
+		<property name="vehicleEngineType" type="java.lang.String">
+			<column name="vehicle_engine_type" />
+		</property>
+		<property name="vehicleEngineNo" type="java.lang.String">
+			<column name="vehicle_engine_no" length="20" />
+		</property>
+		<property name="vehicleEligibleNo" type="java.lang.String">
+			<column name="vehicle_eligible_no" length="30" />
+		</property>
+		<property name="vehicleOutFactoryTime" type="java.sql.Timestamp">
+			<column name="vehicle_out_factory_time" length="23" />
+		</property>
+		<property name="vehicleCost" type="java.lang.Double">
+			<column name="vehicle_cost" precision="9" />
+		</property>
+		<property name="vehiclePrice" type="java.lang.Double">
+			<column name="vehicle_price" precision="9" />
+		</property>
+		<property name="vehicleCarriage" type="java.lang.Double">
+			<column name="vehicle_carriage" precision="9" />
+		</property>
+		<property name="payDeposit" type="java.lang.Double">
+			<column name="pay_deposit" precision="9" />
+		</property>
+		<property name="vehicleQuantity" type="java.lang.Integer">
+			<column name="vehicle_quantity" />
+		</property>
+		<property name="profitReturn" type="java.lang.Double">
+			<column name="profit_return" precision="9" />
+		</property>
+		<property name="invoiceNo" type="java.lang.String">
+			<column name="invoice_no" length="20" />
+		</property>
+		<property name="purchaseContractDetailId" type="java.lang.String">
+			<column name="purchase_contract_detail_id" length="40" />
+		</property>
+		<property name="vehicleKind" type="java.lang.Short">
+			<column name="vehicle_kind" />
+		</property>
+		<property name="vehicleComment" type="java.lang.String">
+			<column name="vehicle_comment" />
+		</property>
+		<property name="paymentStatus" type="java.lang.Short">
+			<column name="payment_status" />
+		</property>
+		<property name="errorFlag" type="java.lang.String">
+			<column name="error_flag" length="1" />
+		</property>
+		<property name="conversionStatus" type="java.lang.Short">
+			<column name="conversion_status" />
+		</property>
+		<property name="conversionAmount" type="java.lang.Double">
+			<column name="conversion_amount" precision="9" />
+		</property>
+		<property name="hypervalentComment" type="java.lang.String">
+			<column name="hypervalent_comment" />
+		</property>
+		<property name="driveRoomNo" type="java.lang.String">
+			<column name="drive_room_no" />
+		</property>
+		<property name="oriDetailId" type="java.lang.String">
+			<column name="ori_detail_id" length="40" />
+		</property>
+		<property name="vehicleId" type="java.lang.String">
+			<column name="vehicle_id" length="40" />
+		</property>
+		<property name="futurePayDate" type="java.sql.Timestamp">
+			<column name="future_pay_date" length="23" />
+		</property>
+		<property name="vehicleCarriageNew" type="java.lang.Double">
+			<column name="vehicle_carriage_new" precision="9" />
+		</property>
+		<property name="interestBearingTime" type="java.sql.Timestamp">
+			<column name="interest_bearing_time" length="23" />
+		</property>
+		<property name="rate" type="java.lang.Double">
+			<column name="rate" precision="9" scale="4" />
+		</property>
+		<property name="interestImputed" type="java.lang.Double">
+			<column name="interest_imputed" />
+		</property>
+		<property name="profitReturnScale" type="java.lang.Double">
+			<column name="profit_return_scale" precision="9" scale="3" />
+		</property>
+		<property name="vehicleType" type="java.lang.Short">
+			<column name="vehicle_type" />
+		</property>
+		<property name="invoiceDate" type="java.sql.Timestamp">
+			<column name="invoice_date" length="23" />
+		</property>
+		<property name="viPayType" type="java.lang.Short">
+			<column name="vi_pay_type" />
+		</property>
+		<property name="vehicleSelfNo" type="java.lang.String">
+			<column name="vehicle_self_no" />
+		</property>
+		<property name="refundmentAmount" type="java.lang.Double">
+			<column name="refundment_amount" />
+		</property>
+		<property name="outStockNo" type="java.lang.String">
+			<column name="out_stock_no" length="60" />
+		</property>
+		<property name="saleContractNo" type="java.lang.String">
+			<column name="sale_contract_no" length="60" />
+		</property>
+		<property name="saleDetailApproiveStatusOri" type="java.lang.Short">
+			<column name="sale_detail_approive_status_ori" />
+		</property>
+		<property name="otherCharge" type="java.lang.Double">
+			<column name="other_charge" />
+		</property>
+		<property name="taxRate" type="java.lang.Double">
+			<column name="tax_rate" precision="9" scale="4" />
+		</property>
+		<property name="noTaxPrice" type="java.lang.Double">
+			<column name="no_tax_price" />
+		</property>
+		<property name="vehicleTax" type="java.lang.Double">
+			<column name="vehicle_tax" />
+		</property>
+		<property name="vehicleSaleDocuments" type="java.lang.String">
+			<column name="vehicle_sale_documents" />
+		</property>
+		<property name="trackingDetailId" type="java.lang.String">
+			<column name="tracking_detail_id" length="40" />
+		</property>
+		<property name="issuedNo" type="java.lang.String">
+			<column name="issued_no" />
+		</property>
+		<property name="sapContractNo" type="java.lang.String">
+			<column name="sap_contract_no" />
+		</property>
+		<property name="speedRatio" type="java.lang.String">
+			<column name="speed_ratio" />
+		</property>
+		<property name="tireType" type="java.lang.String">
+			<column name="tire_type" />
+		</property>
+		<property name="drivingMileage" type="java.lang.Double">
+			<column name="driving_mileage" />
+		</property>
+		<property name="vehicleCardNo" type="java.lang.String">
+			<column name="vehicle_card_no" />
+		</property>
+		<property name="underpanNo" type="java.lang.String">
+			<column name="underpan_no" length="15" />
+		</property>
+		<property name="deliveryNo" type="java.lang.String">
+			<column name="delivery_no" length="30" />
+		</property>
+	</class>
+</hibernate-mapping>
