@@ -16,7 +16,6 @@ import cn.sf_soft.office.approval.model.ApproveDocuments;
 
 @Component("documentStaticCalcTask")
 public class DocumentStaticCalcTask extends ApplicationObjectSupport implements Runnable {
-	@Autowired
 	@Qualifier("baseDao")
 	protected BaseDao dao;
 	static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(DocumentStaticCalcTask.class);

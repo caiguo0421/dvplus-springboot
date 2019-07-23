@@ -3,7 +3,6 @@ package cn.sf_soft.user.service.impl;
 import cn.sf_soft.basedata.model.SysStations;
 import cn.sf_soft.common.Config;
 import cn.sf_soft.common.ServiceException;
-import cn.sf_soft.common.dao.BaseDao;
 import cn.sf_soft.common.util.EncryptionUtil;
 import cn.sf_soft.common.util.GetChineseFirstChar;
 import cn.sf_soft.user.dao.UserDao;
@@ -28,20 +27,16 @@ import java.util.regex.Pattern;
 public class UserServiceImpl implements UserService {
 
     @Autowired
-    @Qualifier("userDaoHibernate")
     private UserDao userDao;
 
-    @Autowired
-    private BaseDao baseDao;
+
 
     static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(UserServiceImpl.class);
     // modify by shichunshan 设置用户权限改到业务层做
     @Autowired
     protected Config config;
 
-    public void setUserDao(UserDao userDao) {
-        this.userDao = userDao;
-    }
+    
 
 //    @SuppressWarnings("unchecked")
 //    public SysUsers login(String userNo, String password, String clientKey, String OS) {
@@ -113,7 +108,7 @@ public class UserServiceImpl implements UserService {
 
             if (StringUtils.isNotBlank(loginDepartmentId)) {
                 user.setLoginDepartmentId(loginDepartmentId);
-                SysUnits loginDepartment = baseDao.get(SysUnits.class, loginDepartmentId);
+                SysUnits loginDepartment = userDao.get(SysUnits.class, loginDepartmentId);
                 if (loginDepartment == null) {
                     logger.warn(String.format("登陆站点部门有误，loginDepartmentId有误:%s,未查到记录", loginStationId));
                 } else {
@@ -135,7 +130,7 @@ public class UserServiceImpl implements UserService {
                 loginLogs.setLoginUserId(user.getUserId());
                 loginLogs.setLoginType(StringUtils.isEmpty(OS) ? "H5" : OS);
                 loginLogs.setLoginDevice(clientKey);
-                baseDao.save(loginLogs);
+                userDao.save(loginLogs);
             }
         }
         return user;
@@ -175,7 +170,7 @@ public class UserServiceImpl implements UserService {
 
             if (StringUtils.isNotBlank(loginDepartmentId)) {
                 user.setLoginDepartmentId(loginDepartmentId);
-                SysUnits loginDepartment = baseDao.get(SysUnits.class, loginDepartmentId);
+                SysUnits loginDepartment = userDao.get(SysUnits.class, loginDepartmentId);
                 if (loginDepartment == null) {
                     logger.warn(String.format("登陆站点部门有误，loginDepartmentId有误:%s,未查到记录", loginStationId));
                 } else {
@@ -197,7 +192,7 @@ public class UserServiceImpl implements UserService {
                 loginLogs.setLoginUserId(user.getUserId());
                 loginLogs.setLoginType(StringUtils.isEmpty(OS) ? "H5" : OS);
                 loginLogs.setLoginDevice(clientKey);
-                baseDao.save(loginLogs);
+                userDao.save(loginLogs);
             }
         }
         return user;
@@ -205,7 +200,7 @@ public class UserServiceImpl implements UserService {
 
     private SysUsers checkUser(String OS, String userNo, String password, boolean updatePwd){
         logger.debug("检查用户是否存在(os:{};userNo:{};password:{})", new Object[]{OS, userNo, password});
-        List<SysUsers> users = (List<SysUsers>)baseDao.findByHql("from SysUsers u left join fetch u.roles  " +
+        List<SysUsers> users = (List<SysUsers>)userDao.findByHql("from SysUsers u left join fetch u.roles  " +
                         "where u.userNo=? and u.status=1",
                 new Object[] { userNo });
         if(null == users || users.isEmpty()){
@@ -231,7 +226,7 @@ public class UserServiceImpl implements UserService {
                     try {
                         //将用户密码修改成base64编码后的密码
                         pwdEncoded = EncryptionUtil.encodeNew(password);
-                        Query query = baseDao.getCurrentSession().createQuery("update SysUsers set password=? where userId=?");
+                        Query query = userDao.getCurrentSession().createQuery("update SysUsers set password=? where userId=?");
                         query.setParameter(0, pwdEncoded);
                         query.setParameter(1, user.getUserId());
                         query.executeUpdate();
@@ -273,7 +268,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private SysUsers findUser(String OS, String userNo, String password){
-        List<SysUsers> users = (List<SysUsers>)baseDao.findByHql("from SysUsers u left join fetch u.roles  where u.userNo=? and u.status=1",
+        List<SysUsers> users = (List<SysUsers>)userDao.findByHql("from SysUsers u left join fetch u.roles  where u.userNo=? and u.status=1",
                 new Object[] { userNo });
         if(null == users || users.isEmpty()){
             return null;
@@ -335,7 +330,7 @@ public class UserServiceImpl implements UserService {
         sql = "SELECT * FROM ( " + sql + ") r WHERE r._id = 1 AND r.row_id > " + (pageNo - 1) * pageSize +
                 " AND " +
                 " r.row_id <= " + (pageNo) * pageSize;
-        List<Map<String, Object>> rtnData = baseDao.getMapBySQL(sql, null);
+        List<Map<String, Object>> rtnData = userDao.getMapBySQL(sql, null);
         //增加拼音 caigx
         if (rtnData != null && rtnData.size() > 0) {
             for (Map<String, Object> item : rtnData) {
@@ -387,7 +382,7 @@ public class UserServiceImpl implements UserService {
                 "LEFT JOIN \n" +
                 "(SELECT unit_id, unit_name FROM sys_units) d ON a.department = d.unit_id \n" +
                 "WHERE a.user_id = '" + userId + "'";
-        List<Map<String, Object>> result = baseDao.getMapBySQL(sql, null);
+        List<Map<String, Object>> result = userDao.getMapBySQL(sql, null);
         if (result.size() == 0) {
             return null;
         } else {
@@ -412,7 +407,7 @@ public class UserServiceImpl implements UserService {
         if (unitId != null && unitId.length() > 0) {
             sql += " AND a.department LIKE '" + unitId + "'";
         }
-        List<Map<String, Object>> result = baseDao.getMapBySQL(sql, null);
+        List<Map<String, Object>> result = userDao.getMapBySQL(sql, null);
         return Long.parseLong(result.get(0).get("ct").toString());
     }
 
@@ -437,7 +432,7 @@ public class UserServiceImpl implements UserService {
                 "  INNER JOIN sys_units d ON a.department=d.unit_id\n" +
                 "WHERE\n" +
                 "  b.user_no='" + userNo + "'";
-        response.put("secondary", baseDao.getMapBySQL(sql, null));
+        response.put("secondary", userDao.getMapBySQL(sql, null));
 
         sql = "SELECT\n" +
                 "  a.user_id,--用户ID\n" +
@@ -460,14 +455,14 @@ public class UserServiceImpl implements UserService {
                 "  LEFT JOIN\n" +
                 "  (SELECT unit_id, unit_name FROM sys_units) d ON a.department = d.unit_id\n" +
                 "where a.user_no = '" + userNo + "'";
-        List<Map<String, Object>> l = baseDao.getMapBySQL(sql, null);
+        List<Map<String, Object>> l = userDao.getMapBySQL(sql, null);
         response.put("major", l.size() > 0 ? l.get(0) : null);
         return response;
     }
 
     @Override
     public List<String> queryReportSellerIds(String userId) {
-        Boolean extend_popedom = baseDao.getMapBySQL("SELECT * FROM sys_roles_popedoms a\n" +
+        Boolean extend_popedom = userDao.getMapBySQL("SELECT * FROM sys_roles_popedoms a\n" +
                 "  INNER JOIN sys_users_roles b ON a.role_id=b.role_id\n" +
                 "WHERE\n" +
                 "  a.popedom_id='00851020' AND b.user_id = '" + userId + "'", null).size() > 0;
@@ -476,7 +471,7 @@ public class UserServiceImpl implements UserService {
             return null;
         }
 
-        Boolean department_popedom = baseDao.getMapBySQL("SELECT * FROM sys_roles_popedoms a\n" +
+        Boolean department_popedom = userDao.getMapBySQL("SELECT * FROM sys_roles_popedoms a\n" +
                 "INNER JOIN sys_users_roles b ON a.role_id=b.role_id\n" +
                 "WHERE \n" +
                 "a.popedom_id='00851010'\n" +
@@ -485,7 +480,7 @@ public class UserServiceImpl implements UserService {
         List<String> user_ids;
 
         if (department_popedom) {
-            List<Map<String, Object>> result = baseDao.getMapBySQL("SELECT user_id FROM sys_users\n" +
+            List<Map<String, Object>> result = userDao.getMapBySQL("SELECT user_id FROM sys_users\n" +
                     "WHERE department = (SELECT department\n" +
                     "FROM sys_users\n" +
                     "WHERE user_id = '" + userId + "')", null);
@@ -544,7 +539,7 @@ public class UserServiceImpl implements UserService {
         String[] stations = user.getRuledStationIdsByModuleId(moduleId);
         if (stations == null || stations.length == 0) {
             //如果根据模块ID取不取模块的管辖站点，需取当前登陆部门的管辖站点
-            SysUnits department = baseDao.get(SysUnits.class, user.getDepartment());
+            SysUnits department = userDao.get(SysUnits.class, user.getDepartment());
             String stationId = department.getStationId();
             if (StringUtils.isNotEmpty(stationId)) {
                 stations = stationId.split(",");

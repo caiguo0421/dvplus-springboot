@@ -10,7 +10,8 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.persistence.EntityManagerFactory;
 
-@Configuration
+
+//@Configuration
 public class HibernateConfig {
 
 //    @Autowired
@@ -35,8 +36,9 @@ public class HibernateConfig {
 //    @Autowired
 //    private EntityManagerFactory entityManagerFactory;
 //
-//    public Session getSession() {
-//        return entityManagerFactory.unwrap(SessionFactory.class).openSession();
+//    @Bean
+//    public SessionFactory getSessionFactory() {
+//        return entityManagerFactory.unwrap(SessionFactory.class);
 //    }
 
 

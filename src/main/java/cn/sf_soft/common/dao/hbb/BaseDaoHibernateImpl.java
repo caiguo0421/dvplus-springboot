@@ -59,7 +59,7 @@ public class BaseDaoHibernateImpl extends HibernateDaoSupport implements BaseDao
 
     @Autowired
     public void setSessionFactoryOverride(SessionFactory sessionFactory) {
-        super.setSessionFactory(sessionFactory);
+        this.setSessionFactory(sessionFactory);
     }
 
 
